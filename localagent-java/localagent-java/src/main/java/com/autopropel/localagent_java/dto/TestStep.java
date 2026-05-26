@@ -13,6 +13,7 @@ public class TestStep {
     public String screenshot_path;
     public String stepDesc;
     public String errorLog;
+    public String screenshotBase64;
 
     // We will mutate these statuses during execution
     public Integer executed_status;

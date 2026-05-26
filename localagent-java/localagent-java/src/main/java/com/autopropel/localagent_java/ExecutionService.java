@@ -542,7 +542,12 @@ public class ExecutionService {
             File destFile = new File(screenshotDir, "screenshot_" + step.step_result_id + "_" + System.currentTimeMillis() + ".png");
             Files.copy(srcFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             step.screenshot_path = destFile.getAbsolutePath();
-            logger.info("Screenshot saved to: {}", step.screenshot_path);
+            
+            // Encode to Base64 for cloud upload
+            byte[] fileContent = Files.readAllBytes(destFile.toPath());
+            step.screenshotBase64 = java.util.Base64.getEncoder().encodeToString(fileContent);
+            
+            logger.info("Screenshot saved and encoded for: {}", step.screenshot_path);
         } catch (Exception e) {
             logger.error("Failed to capture screenshot", e);
         }
