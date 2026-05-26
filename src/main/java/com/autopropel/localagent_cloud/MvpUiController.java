@@ -44,6 +44,7 @@ public class MvpUiController {
     private final TestSuiteRepository testSuiteRepository;
     private final TestSuiteGroupMappingRepository testSuiteGroupMappingRepository;
     private final AgentGroupMappingRepository agentGroupMappingRepository;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public MvpUiController(
             ExecutionRepository executionRepository,
@@ -58,7 +59,8 @@ public class MvpUiController {
             TestCaseGroupMappingRepository testCaseGroupMappingRepository,
             TestSuiteRepository testSuiteRepository,
             TestSuiteGroupMappingRepository testSuiteGroupMappingRepository,
-            AgentGroupMappingRepository agentGroupMappingRepository) {
+            AgentGroupMappingRepository agentGroupMappingRepository,
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.executionRepository = executionRepository;
         this.stepResultRepository = stepResultRepository;
         this.screenshotRepository = screenshotRepository;
@@ -72,6 +74,7 @@ public class MvpUiController {
         this.testSuiteRepository = testSuiteRepository;
         this.testSuiteGroupMappingRepository = testSuiteGroupMappingRepository;
         this.agentGroupMappingRepository = agentGroupMappingRepository;
+        this.objectMapper = objectMapper;
     }
 
     // =========================================================================
@@ -189,12 +192,13 @@ public class MvpUiController {
         runRequest.put("iterations", iterations);
 
         try {
-            String payloadJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(runRequest);
+            String payloadJson = objectMapper.writeValueAsString(runRequest);
             Map<String, Object> jobDto = new HashMap<>();
             jobDto.put("executionId", execution.getId());
             jobDto.put("payloadJson", payloadJson);
             return ResponseEntity.ok(jobDto);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
