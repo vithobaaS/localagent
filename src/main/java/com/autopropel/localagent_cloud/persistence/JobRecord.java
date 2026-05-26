@@ -9,7 +9,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -33,9 +32,8 @@ public class JobRecord {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private JobStatus status;
-
-    @Lob
-    @Column(name = "payload_json", nullable = false)
+    // Postgres: store JSON payload as TEXT (not CLOB/oid)
+    @Column(name = "payload_json", nullable = false, columnDefinition = "text")
     private String payloadJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)
