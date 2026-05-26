@@ -105,7 +105,11 @@ public class MvpUiController {
         
         // Parse step results and upload screenshots to S3
         try {
-            java.util.List<Map<String, Object>> testCaseList = (java.util.List<Map<String, Object>>) result.get("testCase");
+            Map<String, Object> runResult = result;
+            if (result.containsKey("result")) {
+                runResult = (Map<String, Object>) result.get("result");
+            }
+            java.util.List<Map<String, Object>> testCaseList = (java.util.List<Map<String, Object>>) runResult.get("testCase");
             if (testCaseList != null && !testCaseList.isEmpty()) {
                 Map<String, Object> firstIterationMap = testCaseList.get(0);
                 java.util.List<Map<String, Object>> iterations = (java.util.List<Map<String, Object>>) firstIterationMap.get("iteration1");
