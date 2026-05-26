@@ -1,0 +1,49 @@
+# Build outputs
+/target/
+**/target/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Maven wrapper downloads
+.mvn/wrapper/maven-wrapper.jar
+
+# Local runtime data
+/data/
+**/data/
+localagent-cloud/data/
+
+# Logs
+*.log
+*.log.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Java
+*.class
+*.jar
+
+# Test reports
+**/surefire-reports/
+
+# Screenshots and generated artifacts
+screenshots/
+**/screenshots/
+
+# Vendor / dependency folders if they are generated locally
+vendor/
+vendor_slim/
+
+# Local agent runtime files
+localagent/driver_log.txt
+localagent/*.log
+localagent/**/*.log

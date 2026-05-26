@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  localagent-cloud:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: localagent-cloud
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - localagent-network
+    restart: unless-stopped
+
+networks:
+  localagent-network:
+    driver: bridge
