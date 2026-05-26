@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPropel Coordinator Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Main App Layout -->
+    <div class="app-layout">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-dot"></span>
+                    <h2>AutoPropel</h2>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80" alt="User Profile" class="avatar">
+                <div class="user-info">
+                    <h3>Suresh Kumar S</h3>
+                    <span class="status-indicator online">Online</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- MAIN NAVIGATION -->
+                <div class="nav-section">MAIN NAVIGATION</div>
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+
+                <!-- SCHEDULER -->
+                <div class="nav-section">SCHEDULER</div>
+                <a href="#" class="nav-item" data-view="create-scheduler">
+                    <span class="nav-icon">📅</span> Create scheduler
+                </a>
+                <a href="#" class="nav-item" data-view="list-scheduler">
+                    <span class="nav-icon">📋</span> List scheduler
+                </a>
+
+                <!-- TEST SUITE -->
+                <div class="nav-section">TEST SUITE</div>
+                <a href="#" class="nav-item" data-view="create-test-suite">
+                    <span class="nav-icon">📦</span> Create Test Suite
+                </a>
+                <a href="#" class="nav-item" data-view="list-test-suite">
+                    <span class="nav-icon">👁️</span> Test Suite List
+                </a>
+
+                <!-- TEST CASE -->
+                <div class="nav-section">TEST CASE</div>
+                <a href="#" class="nav-item" data-view="create-test-case">
+                    <span class="nav-icon">📝</span> Create Test Case
+                </a>
+                <a href="#" class="nav-item" data-view="list-test-case">
+                    <span class="nav-icon">🔎</span> Test Case List
+                </a>
+
+                <!-- GROUPS -->
+                <div class="nav-section">GROUPS</div>
+                <a href="#" class="nav-item" data-view="create-groups">
+                    <span class="nav-icon">👥</span> Create Groups
+                </a>
+                <a href="#" class="nav-item" data-view="list-groups">
+                    <span class="nav-icon">🗺️</span> List Groups
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p>Copyright &copy; 2026 AutoPropel.</p>
+                <span>Version 1.0 Beta</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="menu-toggle" id="menuToggleBtn">☰</button>
+                <div class="header-right">
+                    <button class="header-icon-btn">
+                        <span class="icon">✉️</span>
+                        <span class="badge">4</span>
+                    </button>
+                    <button class="header-icon-btn">
+                        <span class="icon">🔔</span>
+                        <span class="badge warning">10</span>
+                    </button>
+                    <div class="header-user">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="avatar-sm">
+                        <span>Suresh Kumar S</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Dynamic Content Container -->
+            <div class="page-container" id="pageContent">
+                
+                <!-- VIEW 1: Dashboard (Executions List) -->
+                <section id="view-dashboard" class="page-view active">
+                    <div class="page-header">
+                        <h1>Dashboard</h1>
+                        <div class="breadcrumbs">Home &gt; Dashboard</div>
+                    </div>
+                    
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h2>Recent Test Executions</h2>
+                            <button class="btn btn-primary" onclick="window.print()">Download Report</button>
+                        </div>
+                        
+                        <div class="table-toolbar">
+                            <div class="show-entries">
+                                Show 
+                                <select id="dashboardEntriesSelect">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select> 
+                                entries
+                            </div>
+                            <div class="search-box">
+                                <label>Search: <input type="text" id="dashboardSearchInput"></label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="executionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Test Suit Name</th>
+                                        <th>Browser Type</th>
+                                        <th>Last Run</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows -->
+                                    <tr class="loading-row">
+                                        <td colspan="6">Loading executions...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="table-pagination-info">
+                            <div class="pagination-text" id="dashboardPaginationInfo">Showing 0 to 0 of 0 entries</div>
+                            <div class="pagination-buttons" id="dashboardPaginationButtons">
+                                <button class="btn btn-pagination" disabled>Previous</button>
+                                <button class="btn btn-pagination active">1</button>
+                                <button class="btn btn-pagination" disabled>Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: Create Scheduler -->
+                <section id="view-create-scheduler" class="page-view">
+                    <div class="page-header">
+                        <h1>Request</h1>
+                        <div class="breadcrumbs">Home &gt; Create Test Case</div>
+                    </div>
+                    
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h2>Basic Details</h2>
+                        </div>
+                        <form id="createSchedulerForm">
+                            <div class="form-group">
+                                <label for="schedTestSuiteName">Test Suit Name</label>
+                                <select id="schedTestSuiteName" required>
+                                    <option value="">Select Suite</option>
+                                    <option value="Boingo Signup Websit">Boingo Signup Websit</option>
+                                    <option value="Boingo Andr Mobil Br">Boingo Andr Mobil Br</option>
+                                    <option value="Quad Project Mgmt">Quad Project Mgmt</option>
+                                    <option value="Boin Test Static Web">Boin Test Static Web</option>
+                                    <option value="Boingo APK Suite">Boingo APK Suite</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="schedExecutionType">Execution Type</label>
+                                <select id="schedExecutionType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="now">now</option>
+                                    <option value="scheduled">scheduled</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="schedBrowser">Browser</label>
+                                <select id="schedBrowser" required>
+                                    <option value="">Select Browser</option>
+                                    <option value="chrome">chrome</option>
+                                    <option value="firefox">firefox</option>
+                                    <option value="safari">safari</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="schedStatus">Status</label>
+                                <select id="schedStatus" required>
+                                    <option value="">Select Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: List Scheduler -->
+                <section id="view-list-scheduler" class="page-view">
+                    <div class="page-header">
+                        <h1>Test Scheduler</h1>
+                        <div class="breadcrumbs">Home &gt; View Test Scheduler</div>
+                    </div>
+                    
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h2>All Scheduled Tests</h2>
+                        </div>
+                        <div class="table-toolbar">
+                            <div class="show-entries">
+                                Show 
+                                <select id="schedulerEntriesSelect">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                </select> 
+                                entries
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="schedulersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Test Suite Name</th>
+                                        <th>Execution Type</th>
+                                        <th>Browser Type</th>
+                                        <th>Report</th>
+                                        <th>View</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="loading-row">
+                                        <td colspan="5">Loading scheduled tests...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: Create Groups -->
+                <section id="view-create-groups" class="page-view">
+                    <div class="page-header">
+                        <h1>Create Group</h1>
+                        <div class="breadcrumbs">Home &gt; Create Group</div>
+                    </div>
+                    
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h2>Group Parameters</h2>
+                        </div>
+                        <form id="createGroupForm">
+                            <div class="form-group">
+                                <label for="groupName">Group Name</label>
+                                <input type="text" id="groupName" placeholder="e.g. dfgsdasdf_suresh" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="groupDesc">Group Description</label>
+                                <textarea id="groupDesc" rows="4" placeholder="e.g. sdfgfdsgdsfgasdf_sureshK" required></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: List Groups -->
+                <section id="view-list-groups" class="page-view">
+                    <div class="page-header">
+                        <h1>View Groups <small>All Groups</small></h1>
+                        <div class="breadcrumbs">Home &gt; View Groups</div>
+                    </div>
+                    
+                    <div class="card card-table">
+                        <div class="card-header">
+                            <h2>Group Directory</h2>
+                        </div>
+                        <div class="table-toolbar">
+                            <div class="show-entries">
+                                Show 
+                                <select id="groupEntriesSelect">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                </select> 
+                                entries
+                            </div>
+                            <div class="search-box">
+                                <label>Search: <input type="text" id="groupsSearchInput"></label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table" id="groupsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Group Id</th>
+                                        <th>Group Name</th>
+                                        <th>Group Desc</th>
+                                        <th>Group Created at</th>
+                                        <th>View</th>
+                                        <th>Map</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="loading-row">
+                                        <td colspan="6">Loading groups...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STUB VIEW FOR UNIMPLEMENTED MENU ITEMS -->
+                <section id="view-stub" class="page-view">
+                    <div class="page-header">
+                        <h1 id="stubTitle">Feature Title</h1>
+                        <div class="breadcrumbs" id="stubBreadcrumbs">Home &gt; Feature</div>
+                    </div>
+                    <div class="card">
+                        <div class="stub-content">
+                            <span class="stub-icon">🚀</span>
+                            <h3>Coming Soon!</h3>
+                            <p>This module is part of the next release sprint and will be fully connected shortly.</p>
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+        </main>
+    </div>
+
+    <!-- REPORT DETAILS MODAL / SLIDE OVER -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalExecutionTitle">Execution Report</h3>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="execution-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Execution ID</span>
+                        <span class="meta-val" id="metaExecId">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Status</span>
+                        <span class="meta-val status-badge" id="metaExecStatus">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Started At</span>
+                        <span class="meta-val" id="metaExecStarted">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Finished At</span>
+                        <span class="meta-val" id="metaExecFinished">-</span>
+                    </div>
+                </div>
+
+                <div class="steps-section">
+                    <h4>Test Steps Breakdown</h4>
+                    <div class="table-responsive">
+                        <table class="data-table small" id="modalStepsTable">
+                            <thead>
+                                <tr>
+                                    <th>Index</th>
+                                    <th>Action Name</th>
+                                    <th>Executed</th>
+                                    <th>Result</th>
+                                    <th>Error / Details</th>
+                                    <th>Screenshot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Step rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX FOR SCREENSHOTS -->
+    <div class="lightbox" id="imageLightbox">
+        <span class="lightbox-close" id="closeLightboxBtn">&times;</span>
+        <img src="" alt="Screenshot" class="lightbox-img" id="lightboxImg">
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
