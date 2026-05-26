@@ -81,50 +81,6 @@ body {
     letter-spacing: -0.5px;
 }
 
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.user-info h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: #f8fafc;
-}
-
-.status-indicator {
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.status-indicator::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-}
-
-.status-indicator.online {
-    color: var(--success);
-}
-
-.status-indicator.online::before {
-    background-color: var(--success);
-}
-
 .sidebar-nav {
     flex: 1;
     padding: 16px 12px;
@@ -523,15 +479,6 @@ body {
 .btn-pagination:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-/* View Control */
-.page-view {
-    display: none;
-}
-
-.page-view.active {
-    display: block;
 }
 
 /* Forms */
