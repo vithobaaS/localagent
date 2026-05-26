@@ -1,0 +1,53 @@
+{
+    "result": {
+        "environmentId": "agent_windows_01",
+        "browserTypeId": 1,
+        "browserTypeName": "Chrome",
+        "referenceId": "google_amazon_apple_run_visible",
+        "headless": false,
+        "speed": "slow",
+        "delayMs": 2000,
+        "iterationval": "iteration1",
+        "testCase": [
+            {
+                "iteration1": [
+                    {
+                        "testSteps": [
+                            {
+                                "step_result_id": "step_1_nav_google",
+                                "actionName": "Navigate",
+                                "data": "https://www.google.com",
+                                "screenShot": "After"
+                            },
+                            {
+                                "step_result_id": "step_2_nav_amazon",
+                                "actionName": "Navigate",
+                                "data": "https://www.amazon.com",
+                                "screenShot": "After"
+                            },
+                            {
+                                "step_result_id": "step_3_type_query",
+                                "actionName": "Set",
+                                "locatorName": "id=twotabsearchtextbox",
+                                "data": "apple",
+                                "screenShot": "After"
+                            },
+                            {
+                                "step_result_id": "step_4_click_search",
+                                "actionName": "Click",
+                                "locatorName": "id=nav-search-submit-button",
+                                "screenShot": "After"
+                            },
+                            {
+                                "step_result_id": "step_5_wait_5s",
+                                "actionName": "Wait",
+                                "data": "5000",
+                                "screenShot": "After"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

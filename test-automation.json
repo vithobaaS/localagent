@@ -1,0 +1,36 @@
+{
+    "result": {
+        "environmentId": "1",
+        "browserTypeId": 1,
+        "browserTypeName": "Chrome",
+        "referenceId": "custom_run_001",
+        "iterationval": "iteration1",
+        "testCase": [
+            {
+                "iteration1": [
+                    {
+                        "testSteps": [
+                            {
+                                "step_result_id": "step_1",
+                                "actionName": "Navigate",
+                                "data": "https://www.google.com"
+                            },
+                            {
+                                "step_result_id": "step_2",
+                                "actionName": "Set",
+                                "locatorName": "textarea[name='q']",
+                                "data": "AutoPropel LocalAgent automation"
+                            },
+                            {
+                                "step_result_id": "step_3",
+                                "actionName": "ScrollTo",
+                                "locatorName": "input[name='btnK']",
+                                "screenshot": "After"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: localagent-java
+
+logging:
+  level:
+    root: INFO
+    com.autopropel: DEBUG
+
+localagent:
+  driver-path: "C:\\Users\\vitho\\Downloads\\localagent\\localagent\\DriverFiles"
+  cloud-url: "${LOCALAGENT_CLOUD_URL:http://localhost:8080}"
+  poll-interval-ms: 10000
+  polling-enabled: "${LOCALAGENT_POLLING_ENABLED:true}"
+  max-step-count: 500
+  max-execution-ms: 300000

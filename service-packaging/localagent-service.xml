@@ -1,0 +1,9 @@
+<service>
+  <id>localagent-service</id>
+  <name>AutoPropel LocalAgent Service</name>
+  <description>AutoPropel LocalAgent background execution runner daemon.</description>
+  <executable>java</executable>
+  <arguments>-jar "%BASE%\localagent-java-0.0.1-SNAPSHOT.jar" --spring.profiles.active=prod</arguments>
+  <logmode>rotate</logmode>
+  <onfailure action="restart" delay="10 sec"/>
+</service>

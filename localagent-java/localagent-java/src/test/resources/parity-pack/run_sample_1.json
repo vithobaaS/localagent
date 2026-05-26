@@ -1,0 +1,39 @@
+{
+    "result": {
+        "environmentId": "1",
+        "environmentName": "Desktop",
+        "projectId": "12",
+        "applicationId": "2",
+        "applicationName": "Web App",
+        "platformId": "1",
+        "platformName": "Windows",
+        "browserTypeId": 1,
+        "browserTypeName": "Chrome",
+        "groupId": "101",
+        "groupName": "Login Tests",
+        "referenceId": "run_999",
+        "serviceUrl": "http://autopropel-cloud-api",
+        "request_handler": "token_abc123",
+        "iterationval": "iteration1",
+        "testCase": [
+            {
+                "iteration1": [
+                    {
+                        "testSteps": [
+                            {
+                                "step_result_id": "step_1",
+                                "actionName": "Navigate",
+                                "data": "https://google.com"
+                            },
+                            {
+                                "step_result_id": "step_2",
+                                "actionName": "Click",
+                                "data": "input[name='q']"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

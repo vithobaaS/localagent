@@ -1,0 +1,54 @@
+{
+    "result": {
+        "environmentId": "1",
+        "browserTypeId": 1,
+        "browserTypeName": "Chrome",
+        "referenceId": "youtube_search_enter_001",
+        "headless": false,
+        "speed": "slow",
+        "delayMs": 3000,
+        "iterationval": "iteration1",
+        "testCase": [
+            {
+                "iteration1": [
+                    {
+                        "testSteps": [
+                            {
+                                "step_result_id": "step_1_navigate_youtube",
+                                "actionName": "Navigate",
+                                "locatorName": null,
+                                "objectDetail": null,
+                                "data": "https://www.youtube.com",
+                                "screenShot": "None"
+                            },
+                            {
+                                "step_result_id": "step_2_wait_search_input",
+                                "actionName": "WaitUntill",
+                                "locatorName": "xpath=//input[@name='search_query']",
+                                "objectDetail": null,
+                                "data": "",
+                                "screenShot": "None"
+                            },
+                            {
+                                "step_result_id": "step_3_type_query_enter",
+                                "actionName": "Set",
+                                "locatorName": "xpath=//input[@name='search_query']",
+                                "objectDetail": null,
+                                "data": "automation testing tutorials[ENTER]",
+                                "screenShot": "None"
+                            },
+                            {
+                                "step_result_id": "step_4_wait_results",
+                                "actionName": "Wait",
+                                "locatorName": null,
+                                "objectDetail": null,
+                                "data": "5000",
+                                "screenShot": "After"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

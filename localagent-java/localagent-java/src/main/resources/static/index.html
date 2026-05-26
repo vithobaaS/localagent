@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoPropel LocalAgent</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        // Immediate theme set to prevent flash of unstyled content
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark-theme');
+        }
+    </script>
+    
+    <style>
+        :root {
+            /* Light Theme Styling variables */
+            --bg-color: #f8fafc;
+            --header-bg: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(226, 232, 240, 0.8);
+            --border-hover: rgba(203, 213, 225, 1);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent-color: #6366f1; /* Indigo */
+            --accent-hover: #4f46e5;
+            --accent-light: rgba(99, 102, 241, 0.05);
+            --success-color: #10b981;
+            --success-light: rgba(16, 185, 129, 0.08);
+            --error-color: #f43f5e;
+            --error-light: rgba(244, 63, 94, 0.08);
+            --warning-color: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.08);
+            --glass-blur: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --card-radius: 16px;
+            --input-radius: 10px;
+            --font-outfit: 'Outfit', sans-serif;
+            --font-inter: 'Inter', sans-serif;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html.dark-theme {
+            /* Dark Theme Styling variables */
+            --bg-color: #0b0f19;
+            --header-bg: rgba(15, 23, 42, 0.85);
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-hover-bg: rgba(24, 33, 50, 0.8);
+            --border-color: rgba(31, 41, 55, 0.6);
+            --border-hover: rgba(55, 65, 81, 0.9);
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-color: #818cf8;
+            --accent-hover: #6366f1;
+            --accent-light: rgba(129, 140, 248, 0.1);
+            --success-color: #34d399;
+            --success-light: rgba(52, 211, 153, 0.12);
+            --error-color: #fb7185;
+            --error-light: rgba(251, 113, 133, 0.12);
+            --warning-color: #fbbf24;
+            --warning-light: rgba(251, 191, 36, 0.12);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-inter);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2.5rem;
+            background: var(--header-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #fff;
+            font-family: var(--font-outfit);
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+        }
+
+        .logo-text h1 {
+            font-family: var(--font-outfit);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: block;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.85rem;
+            align-items: center;
+        }
+
+        .agent-status-badge {
+            background: var(--success-light);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.45rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--success-color);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.15rem;
+            border-radius: var(--input-radius);
+            font-family: var(--font-inter);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .btn:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+            color: white;
+            box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:disabled {
+            background: var(--text-muted);
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            color: var(--error-color);
+            border-color: rgba(244, 63, 94, 0.2);
+            background: var(--error-light);
+        }
+
+        .btn-danger:hover {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 2rem;
+            padding: 2rem 2.5rem;
+            max-width: 1500px;
+            margin: 0 auto;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1100px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-family: var(--font-outfit);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: normal;
+            margin-top: 0.15rem;
+        }
+
+        /* Config Grid */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
+            background: var(--accent-light);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"], input[type="number"], select {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.65rem 0.85rem;
+            border-radius: var(--input-radius);
+            font-family: var(--font-inter);
+            font-size: 0.88rem;
+            outline: none;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        /* Toggle switches instead of raw checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.35rem;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            height: 100%;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .3s ease;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s ease;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--accent-color);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Steps Container */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .step-row {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .step-row:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-sm);
+            background: var(--card-hover-bg);
+        }
+
+        .step-num {
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            background: var(--accent-light);
+            color: var(--accent-color);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+
+        .step-inputs {
+            display: grid;
+            grid-template-columns: minmax(130px, 1.2fr) minmax(85px, 0.8fr) minmax(160px, 1.5fr) minmax(160px, 2fr);
+            gap: 0.75rem;
+            flex-grow: 1;
+            align-items: center;
+        }
+
+        .step-inputs.no-locator {
+            grid-template-columns: minmax(130px, 1.2fr) minmax(200px, 3.5fr);
+        }
+
+        .step-screenshot-toggle {
+            cursor: pointer;
+            padding: 0.5rem 0.85rem;
+            border-radius: var(--input-radius);
+            border: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition);
+        }
+
+        .step-screenshot-toggle:hover {
+            border-color: var(--border-hover);
+            background: var(--card-hover-bg);
+        }
+
+        .step-screenshot-toggle.active {
+            background: var(--success-light);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .step-delete {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.45rem;
+            border-radius: var(--input-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .step-delete:hover {
+            color: var(--error-color);
+            background: var(--error-light);
+        }
+
+        .step-builder-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        /* Right Panel Execution Status */
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border-radius: 12px;
+            background: var(--accent-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-info h3 {
+            font-family: var(--font-outfit);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .status-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-idle { background: var(--border-color); color: var(--text-secondary); }
+        .status-running { 
+            background: var(--accent-light); 
+            color: var(--accent-color); 
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            animation: pulse-accent 2s infinite; 
+        }
+        .status-passed { background: var(--success-light); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-failed { background: var(--error-light); color: var(--error-color); border: 1px solid rgba(244, 63, 94, 0.2); }
+
+        @keyframes pulse-accent {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        /* Timeline Results */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+            margin-top: 0.5rem;
+        }
+
+        .timeline-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .timeline-card:hover {
+            transform: translateX(4px);
+            border-color: var(--border-hover);
+        }
+
+        .timeline-card.passed { border-left: 4px solid var(--success-color); }
+        .timeline-card.failed { border-left: 4px solid var(--error-color); }
+        .timeline-card.skipped { border-left: 4px solid var(--text-muted); opacity: 0.65; }
+
+        .timeline-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .timeline-status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .timeline-status-icon.passed {
+            background: var(--success-light);
+            color: var(--success-color);
+        }
+
+        .timeline-status-icon.failed {
+            background: var(--error-light);
+            color: var(--error-color);
+        }
+
+        .timeline-status-icon.skipped {
+            background: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .timeline-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .timeline-action-tag {
+            font-size: 0.72rem;
+            font-weight: 650;
+            padding: 0.15rem 0.45rem;
+            background: var(--accent-light);
+            color: var(--accent-color);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 4px;
+            margin-left: 0.35rem;
+        }
+
+        .timeline-details {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 0.4rem;
+            margin-left: 1.65rem;
+        }
+
+        .timeline-details code {
+            font-family: monospace;
+            background: var(--accent-light);
+            color: var(--text-primary);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .timeline-error-log {
+            color: var(--error-color);
+            font-size: 0.75rem;
+            margin-top: 0.4rem;
+            padding: 0.45rem 0.75rem;
+            background: var(--error-light);
+            border-radius: 6px;
+            border-left: 3px solid var(--error-color);
+        }
+
+        .screenshot-thumb {
+            width: 52px;
+            height: 34px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1.5px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .screenshot-thumb:hover {
+            transform: scale(1.15);
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Developer Drawer Logs (Terminal style) */
+        .logs-drawer {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logs-header {
+            background: var(--card-bg);
+            padding: 0.8rem 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            user-select: none;
+            transition: var(--transition);
+        }
+
+        .logs-header:hover {
+            background: var(--card-hover-bg);
+        }
+
+        .mac-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .mac-red { background: #f43f5e; }
+        .mac-yellow { background: #fbbf24; }
+        .mac-green { background: #10b981; }
+
+        .logs-content {
+            background: #090d16;
+            color: #38bdf8;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            padding: 1.25rem;
+            height: 180px;
+            overflow-y: auto;
+            display: none;
+            line-height: 1.5;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logs-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Modal styling */
+        .modal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 15, 25, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-bg.active {
+            opacity: 1;
+        }
+
+        .modal-inner {
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            max-width: 680px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-bg.active .modal-inner {
+            transform: scale(1);
+        }
+
+        .modal-title-bar {
+            padding: 1.25rem 1.75rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-outfit);
+            font-weight: 750;
+            font-size: 1.15rem;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem 1.75rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            height: 320px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            border-radius: var(--input-radius);
+            border: 1px solid var(--border-color);
+            background: #090d16;
+            color: #38bdf8;
+            resize: none;
+            outline: none;
+            line-height: 1.4;
+        }
+
+        .modal-body textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">A</div>
+            <div class="logo-text">
+                <h1>AutoPropel LocalAgent</h1>
+                <span>Test Execution Runner</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="agent-status-badge">
+                <span class="status-dot"></span>
+                <span>Runner Online</span>
+            </div>
+            <button class="btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle Theme">
+                <!-- Inner HTML is loaded dynamically by Javascript -->
+            </button>
+            <button class="btn" onclick="openJsonModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Import / Export JSON</span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Left Panel: Test Case Flow -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Test Flow Configuration</h2>
+                    <p class="card-subtitle">Define actions and parameters for local execution</p>
+                </div>
+            </div>
+
+            <!-- Configuration Parameters -->
+            <div class="config-grid">
+                <div class="form-group">
+                    <label for="browserTypeId">Browser</label>
+                    <select id="browserTypeId">
+                        <option value="" disabled selected hidden>Select Browser</option>
+                        <option value="1">Google Chrome</option>
+                        <option value="2">Mozilla Firefox</option>
+                        <option value="3">Apple Safari (macOS)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="speed">Pacing Speed</label>
+                    <select id="speed">
+                        <option value="" disabled selected hidden>Select Pacing Speed</option>
+                        <option value="slow">Slow Pacing (2s Delay)</option>
+                        <option value="normal">Normal Speed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="delayMs">Pacing Delay (ms)</label>
+                    <input type="number" id="delayMs" value="" placeholder="e.g. 3000">
+                </div>
+                <div class="form-group">
+                    <label for="referenceId">Run Reference</label>
+                    <input type="text" id="referenceId" value="" placeholder="e.g. manual_web_run_01">
+                </div>
+                <div class="form-group" style="justify-content: center;">
+                    <label class="checkbox-group">
+                        <span class="toggle-switch">
+                            <input type="checkbox" id="headless">
+                            <span class="toggle-slider"></span>
+                        </span>
+                        <span>Run Headless</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Steps list -->
+            <div class="steps-container" id="stepsContainer">
+                <!-- Javascript builds steps here -->
+            </div>
+
+            <!-- Add and template actions -->
+            <div class="step-builder-actions">
+                <button class="btn btn-primary" onclick="addStep()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Add Step</span>
+                </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" onclick="loadTemplate('amazon')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                        <span>Load Amazon Template</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="clearSteps()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span>Clear All</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Run and Results -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Run Controls & Progress</h2>
+                    <p class="card-subtitle">Monitor Selenium runs in real-time</p>
+                </div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="status-header">
+                <div class="status-info">
+                    <h3 id="statusTitle">Idle</h3>
+                    <p id="statusDesc">Ready to start test run.</p>
+                </div>
+                <span class="status-badge status-idle" id="statusBadge">Idle</span>
+            </div>
+
+            <button class="btn btn-primary" id="runBtn" onclick="runTestCase()" style="padding: 0.85rem; font-size: 0.95rem; justify-content: center; width: 100%;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Execute Test Case</span>
+            </button>
+
+            <!-- Results List -->
+            <div>
+                <label style="margin-bottom: 0.5rem; display: block;">Step Execution Timeline</label>
+                <div class="timeline" id="timelineResults">
+                    <div style="color: var(--text-secondary); text-align: center; padding: 2.5rem; font-size: 0.85rem;">
+                        No steps executed yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dev Logs Drawer -->
+            <div class="logs-drawer">
+                <div class="logs-header" onclick="toggleLogs()">
+                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                        <span class="mac-dot mac-red"></span>
+                        <span class="mac-dot mac-yellow"></span>
+                        <span class="mac-dot mac-green"></span>
+                        <span style="margin-left: 0.45rem;">Developer Logs Console</span>
+                    </div>
+                    <span id="logsToggleIcon">▼</span>
+                </div>
+                <div class="logs-content" id="logsContent">
+                    <div>[CONSOLE] Ready. Build steps and click Execute to view run execution logs here.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Previews -->
+    <div class="modal-bg" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-inner" id="modalCard">
+            <div class="modal-title-bar">
+                <span id="modalTitle">Title</span>
+                <button class="step-delete" onclick="closeModalDirect()" style="font-size: 1.3rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const actionOptions = [
+            { value: "Navigate", placeholder: "URL (e.g., https://www.google.com)", locator: false },
+            { value: "Click", placeholder: "Not required", locator: true },
+            { value: "Set", placeholder: "Text to enter", locator: true },
+            { value: "Wait", placeholder: "Wait time in ms (e.g. 5000)", locator: false },
+            { value: "WaitUntill", placeholder: "Wait for visibility", locator: true },
+            { value: "WaitUntilElementIsClickable", placeholder: "Wait until element is clickable", locator: true },
+            { value: "AssertEquals", placeholder: "Expected exact text value", locator: true },
+            { value: "AssertContains", placeholder: "Expected text substring", locator: true },
+            { value: "DoubleClick", placeholder: "Not required", locator: true },
+            { value: "RightClick", placeholder: "Not required", locator: true },
+            { value: "SelectDropdown", placeholder: "Value or visible text to select", locator: true },
+            { value: "ScrollTo", placeholder: "Not required", locator: true },
+            { value: "SwitchFrame", placeholder: "Index or name of iframe", locator: false },
+            { value: "SwitchDefaultContent", placeholder: "Not required", locator: false },
+            { value: "ClickAlert", placeholder: "Accept or Dismiss", locator: false },
+            { value: "Refresh", placeholder: "Not required", locator: false },
+            { value: "GoBack", placeholder: "Not required", locator: false },
+            { value: "UploadFile", placeholder: "Local path to file", locator: true },
+            { value: "SetCheckBoxStatus", placeholder: "true/checked or false/unchecked", locator: true },
+            { value: "Goto", placeholder: "Step number to loop back to", locator: false }
+        ];
+
+        let stepCount = 0;
+
+        function addStep(data = {}) {
+            stepCount++;
+            const container = document.getElementById('stepsContainer');
+
+            const row = document.createElement('div');
+            row.className = 'step-row';
+            row.id = `step_row_${stepCount}`;
+
+            // Step number indicator
+            const numSpan = document.createElement('div');
+            numSpan.className = 'step-num';
+            numSpan.innerText = stepCount;
+            row.appendChild(numSpan);
+
+            // Inputs container
+            const inputsDiv = document.createElement('div');
+            inputsDiv.className = 'step-inputs';
+            inputsDiv.id = `step_inputs_${stepCount}`;
+
+            // Action dropdown
+            const actionSelect = document.createElement('select');
+            actionSelect.id = `action_${stepCount}`;
+            actionSelect.onchange = () => handleActionChange(actionSelect.id.split('_').pop());
+            
+            const optPlaceholder = document.createElement('option');
+            optPlaceholder.value = "";
+            optPlaceholder.text = "Select Action";
+            optPlaceholder.disabled = true;
+            optPlaceholder.selected = !data.actionName;
+            optPlaceholder.hidden = true;
+            actionSelect.appendChild(optPlaceholder);
+
+            actionOptions.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt.value;
+                o.text = opt.value;
+                if (data.actionName === opt.value) o.selected = true;
+                actionSelect.appendChild(o);
+            });
+            inputsDiv.appendChild(actionSelect);
+
+            // Parse strategy and locator value
+            let strategy = "id";
+            let locatorVal = "";
+            if (data.locatorName) {
+                if (data.locatorName.includes('=')) {
+                    const eqIndex = data.locatorName.indexOf('=');
+                    strategy = data.locatorName.substring(0, eqIndex);
+                    locatorVal = data.locatorName.substring(eqIndex + 1);
+                } else {
+                    locatorVal = data.locatorName;
+                }
+            }
+
+            // Strategy dropdown
+            const strategySelect = document.createElement('select');
+            strategySelect.id = `strategy_${stepCount}`;
+            strategySelect.onchange = () => handleStrategyChange(strategySelect.id.split('_').pop());
+            const strategies = ["id", "name", "xpath", "css", "class", "linkText", "partialLinkText", "tagName"];
+            strategies.forEach(s => {
+                const o = document.createElement('option');
+                o.value = s;
+                o.text = s;
+                if (strategy === s) o.selected = true;
+                strategySelect.appendChild(o);
+            });
+            inputsDiv.appendChild(strategySelect);
+
+            // Locator input
+            const locatorInput = document.createElement('input');
+            locatorInput.type = 'text';
+            locatorInput.id = `locator_${stepCount}`;
+            locatorInput.value = locatorVal;
+            inputsDiv.appendChild(locatorInput);
+
+            // Data input
+            const dataInput = document.createElement('input');
+            dataInput.type = 'text';
+            dataInput.id = `data_${stepCount}`;
+            dataInput.placeholder = 'Data...';
+            dataInput.value = data.data || '';
+            inputsDiv.appendChild(dataInput);
+
+            row.appendChild(inputsDiv);
+
+            // Screenshot Toggle Button
+            const screenshotToggle = document.createElement('div');
+            screenshotToggle.className = 'step-screenshot-toggle';
+            screenshotToggle.id = `screenshot_${stepCount}`;
+            screenshotToggle.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <span>Capture</span>
+            `;
+            if (data.screenShot === 'After') {
+                screenshotToggle.classList.add('active');
+            }
+            screenshotToggle.onclick = () => {
+                screenshotToggle.classList.toggle('active');
+            };
+            row.appendChild(screenshotToggle);
+
+            // Delete action button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'step-delete';
+            deleteBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            `;
+            deleteBtn.onclick = () => deleteStep(row.id);
+            row.appendChild(deleteBtn);
+
+            container.appendChild(row);
+
+            handleActionChange(stepCount);
+            renumberSteps();
+        }
+
+        function handleActionChange(index) {
+            const actionVal = document.getElementById(`action_${index}`).value;
+            const strategySelect = document.getElementById(`strategy_${index}`);
+            const locatorInput = document.getElementById(`locator_${index}`);
+            const inputsDiv = document.getElementById(`step_inputs_${index}`);
+            const dataInput = document.getElementById(`data_${index}`);
+
+            const conf = actionOptions.find(o => o.value === actionVal);
+            if (conf) {
+                let dataPlaceholder = "Data / value";
+                switch (actionVal) {
+                    case "Navigate": dataPlaceholder = "URL (e.g. https://...)"; break;
+                    case "Wait": dataPlaceholder = "Wait ms (e.g. 5000)"; break;
+                    case "SwitchFrame": dataPlaceholder = "Frame ID / index"; break;
+                    case "Goto": dataPlaceholder = "Step number (e.g. 2)"; break;
+                    case "AssertEquals": dataPlaceholder = "Expected text"; break;
+                    case "AssertContains": dataPlaceholder = "Substring to check"; break;
+                    case "SelectDropdown": dataPlaceholder = "Option label to select"; break;
+                    case "SetCheckBoxStatus": dataPlaceholder = "Checked status (true/false)"; break;
+                    default: dataPlaceholder = conf.placeholder; break;
+                }
+                dataInput.placeholder = dataPlaceholder;
+
+                if (conf.locator) {
+                    strategySelect.style.display = 'block';
+                    locatorInput.style.display = 'block';
+                    inputsDiv.classList.remove('no-locator');
+                    handleStrategyChange(index);
+                } else {
+                    strategySelect.style.display = 'none';
+                    locatorInput.style.display = 'none';
+                    locatorInput.value = '';
+                    inputsDiv.classList.add('no-locator');
+                }
+            } else {
+                dataInput.placeholder = 'Data / value';
+                strategySelect.style.display = 'none';
+                locatorInput.style.display = 'none';
+                locatorInput.value = '';
+                inputsDiv.classList.add('no-locator');
+            }
+        }
+
+        function handleStrategyChange(index) {
+            const strategyVal = document.getElementById(`strategy_${index}`).value;
+            const locatorInput = document.getElementById(`locator_${index}`);
+            let prompt = "Locator value";
+            switch (strategyVal) {
+                case "css": prompt = "CSS selector (e.g. #search-input)"; break;
+                case "xpath": prompt = "XPath expression (e.g. //input[@name='q'])"; break;
+                case "id": prompt = "Element ID (e.g. twotabsearchtextbox)"; break;
+                case "name": prompt = "Element Name (e.g. search_query)"; break;
+                case "class": prompt = "Class Name (e.g. nav-input)"; break;
+                case "linkText": prompt = "Exact link text"; break;
+                case "partialLinkText": prompt = "Partial link text"; break;
+                case "tagName": prompt = "HTML Tag Name (e.g. input)"; break;
+            }
+            locatorInput.placeholder = prompt;
+        }
+
+        function requiresLocator(actionName) {
+            const conf = actionOptions.find(o => o.value === actionName);
+            return conf ? conf.locator === true : false;
+        }
+
+        function deleteStep(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                renumberSteps();
+            }
+        }
+
+        function renumberSteps() {
+            const container = document.getElementById('stepsContainer');
+            const rows = container.getElementsByClassName('step-row');
+            let idx = 1;
+            for (let row of rows) {
+                const numEl = row.querySelector('.step-num');
+                if (numEl) numEl.innerText = idx;
+                idx++;
+            }
+        }
+
+        function clearSteps() {
+            document.getElementById('stepsContainer').innerHTML = '';
+            logConsole('Cleared all steps.', 'info');
+        }
+
+        function toggleLogs() {
+            const logsContent = document.getElementById('logsContent');
+            const toggleIcon = document.getElementById('logsToggleIcon');
+            if (logsContent.style.display === 'block') {
+                logsContent.style.display = 'none';
+                toggleIcon.innerText = '▼';
+            } else {
+                logsContent.style.display = 'block';
+                toggleIcon.innerText = '▲';
+            }
+        }
+
+        function logConsole(text, level = 'info') {
+            const content = document.getElementById('logsContent');
+            const line = document.createElement('div');
+            
+            let color = '#9ca3af';
+            if (level === 'error') color = '#f87171';
+            else if (level === 'success') color = '#34d399';
+            else if (level === 'warn') color = '#fbbf24';
+            
+            line.style.color = color;
+            const timestamp = new Date().toLocaleTimeString();
+            line.innerText = `[${timestamp}] [${level.toUpperCase()}] ${text}`;
+            content.appendChild(line);
+            content.scrollTop = content.scrollHeight;
+        }
+
+        function loadTemplate(type) {
+            clearSteps();
+            if (type === 'amazon') {
+                document.getElementById('browserTypeId').value = '1';
+                document.getElementById('headless').checked = false;
+                document.getElementById('speed').value = 'slow';
+                document.getElementById('delayMs').value = '3000';
+                document.getElementById('referenceId').value = 'amazon_search_run_001';
+
+                addStep({ actionName: 'Navigate', data: 'https://www.amazon.com' });
+                addStep({ actionName: 'Set', locatorName: 'id=twotabsearchtextbox', data: 'apple macbook air 13 inch' });
+                addStep({ actionName: 'Click', locatorName: 'id=nav-search-submit-button', screenShot: 'After' });
+                addStep({ actionName: 'Wait', data: '10000' });
+                logConsole('Loaded Amazon Search test template.', 'info');
+            }
+        }
+
+        function getPayload() {
+            const container = document.getElementById('stepsContainer');
+            const rows = container.getElementsByClassName('step-row');
+
+            const testSteps = [];
+            let stepNum = 1;
+            for (let row of rows) {
+                const suffix = row.id.split('_').pop();
+                const actionName = document.getElementById(`action_${suffix}`).value || "Navigate";
+                const strategy = document.getElementById(`strategy_${suffix}`).value || "id";
+                const locatorVal = document.getElementById(`locator_${suffix}`).value;
+                const data = document.getElementById(`data_${suffix}`).value;
+                const screenShot = document.getElementById(`screenshot_${suffix}`).classList.contains('active') ? 'After' : 'None';
+
+                const locatorName = (requiresLocator(actionName) && locatorVal && locatorVal.trim()) ? `${strategy}=${locatorVal.trim()}` : null;
+
+                testSteps.push({
+                    step_result_id: `step_${stepNum}_${actionName.toLowerCase()}`,
+                    actionName: actionName,
+                    locatorName: locatorName,
+                    objectDetail: null,
+                    data: data,
+                    screenShot: screenShot
+                });
+                stepNum++;
+            }
+
+            const browserTypeIdVal = document.getElementById('browserTypeId').value;
+            const browserTypeId = browserTypeIdVal ? parseInt(browserTypeIdVal) : 1;
+            const browserName = browserTypeId === 1 ? 'Chrome' : browserTypeId === 2 ? 'Firefox' : 'Safari';
+
+            return {
+                result: {
+                    environmentId: "1",
+                    browserTypeId: browserTypeId,
+                    browserTypeName: browserName,
+                    referenceId: document.getElementById('referenceId').value || `run_${Date.now()}`,
+                    headless: document.getElementById('headless').checked,
+                    speed: document.getElementById('speed').value || 'slow',
+                    delayMs: parseInt(document.getElementById('delayMs').value) || 3000,
+                    iterationval: "iteration1",
+                    testCase: [
+                        {
+                            iteration1: [
+                                {
+                                    testSteps: testSteps
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+        }
+
+        async function runTestCase() {
+            const runBtn = document.getElementById('runBtn');
+            const payload = getPayload();
+
+            if (payload.result.testCase[0].iteration1[0].testSteps.length === 0) {
+                alert("Please add at least one test step first.");
+                return;
+            }
+
+            // Set UI execution state
+            runBtn.disabled = true;
+            updateStatus('Running', 'Executing actions in Selenium...', 'status-running');
+            document.getElementById('timelineResults').innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 2rem; font-size: 0.8rem;">Running test case flow locally...</div>';
+            logConsole(`Executing run workflow: ${payload.result.referenceId}`, 'info');
+
+            try {
+                const response = await fetch('/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const txt = await response.text();
+                    throw new Error(`Server Error: ${txt}`);
+                }
+
+                const result = await response.json();
+                renderResults(result);
+            } catch (err) {
+                logConsole(`Execution error: ${err.message}`, 'error');
+                updateStatus('Failed', `Execution failed: ${err.message}`, 'status-failed');
+                document.getElementById('timelineResults').innerHTML = `<div style="color: var(--error-color); text-align: center; padding: 1.5rem; font-size: 0.8rem; font-weight: bold;">Error: ${err.message}</div>`;
+            } finally {
+                runBtn.disabled = false;
+            }
+        }
+
+        function updateStatus(title, desc, badgeClass) {
+            const titleEl = document.getElementById('statusTitle');
+            const descEl = document.getElementById('statusDesc');
+            const badgeEl = document.getElementById('statusBadge');
+
+            titleEl.innerText = title;
+            descEl.innerText = desc;
+            badgeEl.className = `status-badge ${badgeClass}`;
+            badgeEl.innerText = title;
+        }
+
+        function renderResults(payload) {
+            const res = payload.result;
+            const timeline = document.getElementById('timelineResults');
+            timeline.innerHTML = '';
+
+            const passed = res.result_status === 1;
+            updateStatus(
+                passed ? 'Passed' : 'Failed',
+                passed ? 'Execution completed successfully.' : 'One or more steps failed during execution.',
+                passed ? 'status-passed' : 'status-failed'
+            );
+
+            logConsole(`Test Case execution finished. Overall status: ${passed ? 'PASSED' : 'FAILED'}`, passed ? 'success' : 'error');
+
+            const steps = res.testCase[0].iteration1[0].testSteps;
+            steps.forEach(step => {
+                const isSkipped = step.executed_status === 0;
+                const isPassed = step.result_status === 1;
+
+                const card = document.createElement('div');
+                card.className = `timeline-card ${isSkipped ? 'skipped' : isPassed ? 'passed' : 'failed'}`;
+
+                const info = document.createElement('div');
+                info.className = 'timeline-info';
+
+                let detailsStr = step.locatorName ? `Locator: <code>${step.locatorName}</code>` : '';
+                if (step.data) {
+                    detailsStr += (detailsStr ? ' | ' : '') + `Data: <code>${step.data}</code>`;
+                }
+                if (step.errorLog) {
+                    detailsStr += `<div class="timeline-error-log">Error: ${step.errorLog}</div>`;
+                }
+
+                const badgeSvg = isSkipped 
+                    ? `<span class="timeline-status-icon skipped"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>`
+                    : isPassed
+                        ? `<span class="timeline-status-icon passed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>`
+                        : `<span class="timeline-status-icon failed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>`;
+
+                info.innerHTML = `
+                    <div class="timeline-title-wrapper">
+                        ${badgeSvg}
+                        <div class="timeline-title">${step.step_result_id} <span class="timeline-action-tag">${step.actionName}</span></div>
+                    </div>
+                    <div class="timeline-details">${detailsStr}</div>
+                `;
+                card.appendChild(info);
+
+                // Thumbnail container
+                if (step.screenshot_path) {
+                    const filename = step.screenshot_path.split(/[\\/]/).pop();
+                    const url = `/api/screenshots/${filename}`;
+                    
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'screenshot-thumb';
+                    img.onclick = () => openScreenshotModal(url, step.step_result_id);
+                    card.appendChild(img);
+                }
+
+                timeline.appendChild(card);
+
+                if (!isSkipped) {
+                    logConsole(`Action [${step.actionName}] on ${step.step_result_id} -> ${isPassed ? 'SUCCESS' : 'FAILED'}`, isPassed ? 'success' : 'error');
+                } else {
+                    logConsole(`Action [${step.actionName}] on ${step.step_result_id} -> SKIPPED`, 'info');
+                }
+            });
+        }
+
+        // Lightbox modals
+        function openScreenshotModal(url, title) {
+            document.getElementById('modalTitle').innerText = `Screenshot - ${title}`;
+            document.getElementById('modalBody').innerHTML = `<img src="${url}" alt="Screenshot">`;
+            
+            const overlay = document.getElementById('modalOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.classList.add('active');
+            }, 10);
+        }
+
+        function openJsonModal() {
+            document.getElementById('modalTitle').innerText = 'Import or Export JSON Payload';
+            
+            const rawJson = JSON.stringify(getPayload(), null, 4);
+            document.getElementById('modalBody').innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Paste a JSON payload here to import test steps, or copy the current JSON output below.</p>
+                    <textarea id="jsonInputArea" spellcheck="false" placeholder="Paste your JSON payload here...">${rawJson}</textarea>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="btn btn-primary" onclick="importJsonPayload()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 15 11"></polyline><line x1="12" y1="3" x2="12" y2="14"></line><path d="M5 20h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2z"></path></svg>
+                            <span>Load Steps</span>
+                        </button>
+                        <button class="btn" onclick="copyJsonToClipboard()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Copy JSON</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            const overlay = document.getElementById('modalOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.classList.add('active');
+            }, 10);
+        }
+
+        function copyJsonToClipboard() {
+            const area = document.getElementById('jsonInputArea');
+            area.select();
+            document.execCommand('copy');
+            logConsole('JSON copied to clipboard.', 'success');
+        }
+
+        function importJsonPayload() {
+            const raw = document.getElementById('jsonInputArea').value;
+            try {
+                const parsed = JSON.parse(raw);
+                if (!parsed.result || !parsed.result.testCase || !parsed.result.testCase[0]) {
+                    throw new Error("Invalid format structure.");
+                }
+
+                const res = parsed.result;
+                document.getElementById('browserTypeId').value = res.browserTypeId || '1';
+                document.getElementById('headless').checked = res.headless === true;
+                document.getElementById('speed').value = res.speed || 'slow';
+                document.getElementById('delayMs').value = res.delayMs || '';
+                document.getElementById('referenceId').value = res.referenceId || 'manual_import_run';
+
+                const itKey = res.iterationval || 'iteration1';
+                const steps = res.testCase[0][itKey][0].testSteps;
+
+                clearSteps();
+                steps.forEach(step => {
+                    addStep({
+                        actionName: step.actionName,
+                        locatorName: step.locatorName,
+                        data: step.data,
+                        screenShot: step.screenShot
+                    });
+                });
+
+                closeModalDirect();
+                logConsole(`Loaded ${steps.length} steps from JSON successfully.`, 'success');
+            } catch (err) {
+                alert(`Error parsing JSON: ${err.message}`);
+            }
+        }
+
+        function closeModal(e) {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModalDirect();
+            }
+        }
+
+        function closeModalDirect() {
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 250);
+        }
+
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeToggleIcon();
+            logConsole(`Theme switched to ${isDark ? 'Dark' : 'Light'} Mode.`, 'info');
+        }
+
+        function updateThemeToggleIcon() {
+            const themeBtn = document.getElementById('themeToggleBtn');
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            if (isDark) {
+                themeBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span>Light Mode</span>
+                `;
+            } else {
+                themeBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <span>Dark Mode</span>
+                `;
+            }
+        }
+
+        window.onload = () => {
+            updateThemeToggleIcon();
+            loadTemplate('amazon');
+        };
+    </script>
+</body>
+</html>
