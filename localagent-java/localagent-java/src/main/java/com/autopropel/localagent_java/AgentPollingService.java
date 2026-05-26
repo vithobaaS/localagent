@@ -92,8 +92,49 @@ public class AgentPollingService {
             if (job != null && job.payloadJson != null) {
                 logger.info("Received job execution #{} from cloud queue", job.executionId);
 
-                // Deserialize payload
-                RunRequest jobRequest = objectMapper.readValue(job.payloadJson, RunRequest.class);
+                // Map clean Cloud payload to legacy RunRequest structure expected by ExecutionService
+                com.fasterxml.jackson.databind.JsonNode rootNode = objectMapper.readTree(job.payloadJson);
+                
+                com.autopropel.localagent_java.dto.RunResult runResult = new com.autopropel.localagent_java.dto.RunResult();
+                runResult.referenceId = "execution_" + job.executionId;
+                
+                String browser = rootNode.path("browserType").asText("chrome");
+                runResult.browserTypeId = "firefox".equalsIgnoreCase(browser) ? 2 : 1;
+                runResult.iterationval = "iteration1";
+                
+                java.util.List<java.util.Map<String, java.util.List<com.autopropel.localagent_java.dto.TestCaseIteration>>> testCaseList = new java.util.ArrayList<>();
+                java.util.Map<String, java.util.List<com.autopropel.localagent_java.dto.TestCaseIteration>> iterationMap = new java.util.HashMap<>();
+                java.util.List<com.autopropel.localagent_java.dto.TestCaseIteration> iterations = new java.util.ArrayList<>();
+                
+                com.fasterxml.jackson.databind.JsonNode iterationsNode = rootNode.path("iterations");
+                if (iterationsNode.isArray()) {
+                    for (com.fasterxml.jackson.databind.JsonNode iterNode : iterationsNode) {
+                        com.autopropel.localagent_java.dto.TestCaseIteration tci = new com.autopropel.localagent_java.dto.TestCaseIteration();
+                        tci.testSteps = new java.util.ArrayList<>();
+                        
+                        com.fasterxml.jackson.databind.JsonNode stepsNode = iterNode.path("steps");
+                        if (stepsNode.isArray()) {
+                            for (com.fasterxml.jackson.databind.JsonNode stepNode : stepsNode) {
+                                com.autopropel.localagent_java.dto.TestStep ts = new com.autopropel.localagent_java.dto.TestStep();
+                                ts.step_result_id = stepNode.path("id").asText("0");
+                                ts.actionName = stepNode.path("actionName").asText("");
+                                ts.locatorName = stepNode.path("locatorType").asText("");
+                                ts.objectDetail = stepNode.path("locatorValue").asText("");
+                                ts.data = stepNode.path("testData").asText("");
+                                ts.stepDesc = stepNode.path("description").asText("");
+                                ts.screenShot = "After"; // Default
+                                tci.testSteps.add(ts);
+                            }
+                        }
+                        iterations.add(tci);
+                    }
+                }
+                iterationMap.put("iteration1", iterations);
+                testCaseList.add(iterationMap);
+                runResult.testCase = testCaseList;
+                
+                RunRequest jobRequest = new RunRequest();
+                jobRequest.result = runResult;
 
                 // Execute job
                 RunRequest result = executionService.execute(jobRequest);
