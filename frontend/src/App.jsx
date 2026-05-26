@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, NavLink, Link, useNavigate, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import './App.css';
 
 function App() {
-  const navigate = useNavigate();
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   // Shared Modal / Lightbox State
   const [selectedExecId, setSelectedExecId] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
+
+  const currentPath = window.location.pathname;
+  const isTabActive = (path) => {
+    const fullPath = `/autopropel${path}`;
+    return currentPath === fullPath;
+  };
 
   return (
     <div className="app-layout">
@@ -25,45 +30,45 @@ function App() {
           <nav className="sidebar-nav">
             {/* MAIN NAVIGATION */}
             <div className="nav-section">MAIN NAVIGATION</div>
-            <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <a href="/autopropel/dashboard" className={`nav-item ${isTabActive('/dashboard') ? 'active' : ''}`}>
               <span className="nav-icon">📊</span> Dashboard
-            </NavLink>
+            </a>
 
             {/* SCHEDULER */}
             <div className="nav-section">SCHEDULER</div>
-            <NavLink to="/scheduler/create" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <a href="/autopropel/scheduler/create" className={`nav-item ${isTabActive('/scheduler/create') ? 'active' : ''}`}>
               <span className="nav-icon">📅</span> Create scheduler
-            </NavLink>
-            <NavLink to="/scheduler" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            </a>
+            <a href="/autopropel/scheduler" className={`nav-item ${isTabActive('/scheduler') ? 'active' : ''}`}>
               <span className="nav-icon">📋</span> List scheduler
-            </NavLink>
+            </a>
 
             {/* TEST SUITE */}
             <div className="nav-section">TEST SUITE</div>
-            <NavLink to="/stub/create-test-suite" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <a href="/autopropel/stub/create-test-suite" className={`nav-item ${isTabActive('/stub/create-test-suite') ? 'active' : ''}`}>
               <span className="nav-icon">📦</span> Create Test Suite
-            </NavLink>
-            <NavLink to="/stub/test-suite-list" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            </a>
+            <a href="/autopropel/stub/test-suite-list" className={`nav-item ${isTabActive('/stub/test-suite-list') ? 'active' : ''}`}>
               <span className="nav-icon">👁️</span> Test Suite List
-            </NavLink>
+            </a>
 
             {/* TEST CASE */}
             <div className="nav-section">TEST CASE</div>
-            <NavLink to="/stub/create-test-case" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <a href="/autopropel/stub/create-test-case" className={`nav-item ${isTabActive('/stub/create-test-case') ? 'active' : ''}`}>
               <span className="nav-icon">📝</span> Create Test Case
-            </NavLink>
-            <NavLink to="/stub/test-case-list" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            </a>
+            <a href="/autopropel/stub/test-case-list" className={`nav-item ${isTabActive('/stub/test-case-list') ? 'active' : ''}`}>
               <span className="nav-icon">🔎</span> Test Case List
-            </NavLink>
+            </a>
 
             {/* GROUPS */}
             <div className="nav-section">GROUPS</div>
-            <NavLink to="/groups/create" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <a href="/autopropel/groups/create" className={`nav-item ${isTabActive('/groups/create') ? 'active' : ''}`}>
               <span className="nav-icon">👥</span> Create Groups
-            </NavLink>
-            <NavLink to="/groups" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            </a>
+            <a href="/autopropel/groups" className={`nav-item ${isTabActive('/groups') ? 'active' : ''}`}>
               <span className="nav-icon">🗺️</span> List Groups
-            </NavLink>
+            </a>
           </nav>
 
           <div className="sidebar-footer">
@@ -99,9 +104,9 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardView onSelectExec={setSelectedExecId} />} />
             <Route path="/scheduler" element={<SchedulerListView />} />
-            <Route path="/scheduler/create" element={<CreateSchedulerView navigate={navigate} />} />
+            <Route path="/scheduler/create" element={<CreateSchedulerView />} />
             <Route path="/groups" element={<GroupsListView />} />
-            <Route path="/groups/create" element={<CreateGroupView navigate={navigate} />} />
+            <Route path="/groups/create" element={<CreateGroupView />} />
             <Route path="/stub/create-test-suite" element={<StubView title="Create Test Suite" breadcrumbs="Home > Create Test Suite" />} />
             <Route path="/stub/test-suite-list" element={<StubView title="Test Suite List" breadcrumbs="Home > Test Suite List" />} />
             <Route path="/stub/create-test-case" element={<StubView title="Create Test Case" breadcrumbs="Home > Create Test Case" />} />
@@ -376,7 +381,7 @@ function SchedulerListView() {
 // -------------------------------------------------------------
 // VIEW: CREATE SCHEDULER
 // -------------------------------------------------------------
-function CreateSchedulerView({ navigate }) {
+function CreateSchedulerView() {
   const [suiteName, setSuiteName] = useState('');
   const [execType, setExecType] = useState('');
   const [browser, setBrowser] = useState('');
@@ -398,7 +403,7 @@ function CreateSchedulerView({ navigate }) {
     })
       .then(res => {
         if (res.ok) {
-          navigate('/scheduler');
+          window.location.href = '/autopropel/scheduler';
         } else {
           alert("Failed to save scheduler.");
         }
@@ -587,7 +592,7 @@ function GroupsListView() {
 // -------------------------------------------------------------
 // VIEW: CREATE GROUP
 // -------------------------------------------------------------
-function CreateGroupView({ navigate }) {
+function CreateGroupView() {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
 
@@ -605,7 +610,7 @@ function CreateGroupView({ navigate }) {
     })
       .then(res => {
         if (res.ok) {
-          navigate('/groups');
+          window.location.href = '/autopropel/groups';
         } else {
           alert("Failed to save group.");
         }
