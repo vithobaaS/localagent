@@ -554,6 +554,35 @@ public class MvpUiController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/test-suites/{id}/run")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> runTestSuite(
+            @PathVariable("id") Long id,
+            @RequestBody(required = false) Map<String, Object> body) {
+        return testSuiteRepository.findById(id).map(suite -> {
+            String browser = "chrome";
+            if (body != null && body.containsKey("browserType")) {
+                browser = (String) body.get("browserType");
+            } else if (suite.getBrowserType() != null) {
+                browser = suite.getBrowserType();
+            }
+
+            Scheduler scheduler = new Scheduler();
+            scheduler.setTestSuiteName(suite.getName());
+            scheduler.setTestSuiteId(suite.getId());
+            scheduler.setExecutionType("now");
+            scheduler.setBrowserType(browser);
+            scheduler.setStatus("active");
+            scheduler = schedulerRepository.save(scheduler);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("scheduler", scheduler);
+            result.put("suite", suite);
+            result.put("message", "Test suite queued for immediate execution");
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/test-suites/{id}")
     public ResponseEntity<Void> deleteTestSuite(@PathVariable("id") Long id) {
         if (!testSuiteRepository.existsById(id)) {
