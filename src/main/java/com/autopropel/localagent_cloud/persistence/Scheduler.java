@@ -23,6 +23,9 @@ public class Scheduler {
     @Column(name = "execution_type", nullable = false)
     private String executionType;
 
+    @Column(name = "cron_expression")
+    private String cronExpression;
+
     @Column(name = "browser_type", nullable = false)
     private String browserType;
 
@@ -63,6 +66,14 @@ public class Scheduler {
 
     public void setExecutionType(String executionType) {
         this.executionType = executionType;
+    }
+
+    public String getCronExpression() {
+        return cronExpression;
+    }
+
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
     }
 
     public String getBrowserType() {

@@ -506,7 +506,7 @@ function SchedulerFormView() {
   const isEdit = !!id;
   const navigate = useNavigate();
   const [suites, setSuites] = useState([]);
-  const [form, setForm] = useState({ testSuiteId: '', executionType: '', browserType: '', status: 'active' });
+  const [form, setForm] = useState({ testSuiteId: '', executionType: '', cronExpression: '', browserType: '', status: 'active' });
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(!isEdit);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -516,7 +516,7 @@ function SchedulerFormView() {
     if (isEdit) {
       fetch(`/api/schedulers`).then(r => r.json()).then(all => {
         const s = all.find(x => x.id === +id);
-        if (s) setForm({ testSuiteId: s.testSuiteId || '', executionType: s.executionType || '', browserType: s.browserType || '', status: s.status || 'active' });
+        if (s) setForm({ testSuiteId: s.testSuiteId || '', executionType: s.executionType || '', cronExpression: s.cronExpression || '', browserType: s.browserType || '', status: s.status || 'active' });
         setLoaded(true);
       });
     }
@@ -550,6 +550,12 @@ function SchedulerFormView() {
               <select className="form-select" value={form.executionType} onChange={e => set('executionType', e.target.value)} required>
                 <option value="">Select…</option><option value="now">▶ Run Now</option><option value="scheduled">🕐 Scheduled</option>
               </select></div>
+            {form.executionType === 'scheduled' && (
+              <div className="form-group"><label className="form-label">Cron Schedule <span className="req">*</span></label>
+                <input className="form-input" placeholder="e.g. 0 0 12 * * ?" value={form.cronExpression} onChange={e => set('cronExpression', e.target.value)} required />
+                <small className="form-hint">Format: Second Minute Hour Day Month Weekday</small>
+              </div>
+            )}
             <div className="form-group"><label className="form-label">Browser <span className="req">*</span></label>
               <select className="form-select" value={form.browserType} onChange={e => set('browserType', e.target.value)} required>
                 <option value="">Select…</option><option value="chrome">🌐 Chrome</option><option value="firefox">🦊 Firefox</option><option value="edge">🔷 Edge</option>
