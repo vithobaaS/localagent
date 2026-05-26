@@ -99,12 +99,119 @@ public class MvpUiController {
     }
 
     // =========================================================================
-    // AGENTS
+    // AGENTS & EXECUTION BRIDGE
     // =========================================================================
 
     @GetMapping("/agents")
     public ResponseEntity<List<Agent>> getAgents() {
         return ResponseEntity.ok(agentRepository.findAll());
+    }
+
+    @PostMapping("/agents/register")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> registerAgent(@RequestBody Map<String, Object> body) {
+        String agentId = (String) body.get("id");
+        if (agentId == null || agentId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Agent agent = agentRepository.findById(agentId).orElse(new Agent());
+        agent.setId(agentId);
+        agent.setName((String) body.getOrDefault("name", agentId));
+        agent.setOs((String) body.get("os"));
+        agent.setAgentVersion((String) body.get("agentVersion"));
+        agent.setCapabilitiesJson((String) body.get("capabilitiesJson"));
+        agent.setLastSeenAt(java.time.LocalDateTime.now());
+        
+        agentRepository.save(agent);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/agents/{id}/heartbeat")
+    @Transactional
+    public ResponseEntity<Void> agentHeartbeat(@PathVariable("id") String id) {
+        agentRepository.findById(id).ifPresent(agent -> {
+            agent.setLastSeenAt(java.time.LocalDateTime.now());
+            agentRepository.save(agent);
+        });
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/agents/{id}/jobs/next")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> getNextJob(@PathVariable("id") String agentId) {
+        // Find any active scheduler with executionType "now" (instant run)
+        List<Scheduler> activeJobs = schedulerRepository.findAll().stream()
+                .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
+                .toList();
+
+        if (activeJobs.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        // Grab the first job
+        Scheduler job = activeJobs.get(0);
+        
+        // Mark it as running/processed so other agents don't grab it
+        job.setStatus("processing");
+        schedulerRepository.save(job);
+
+        // Create an Execution record
+        Execution execution = new Execution();
+        execution.setEnvironmentJson("{\"referenceId\":\"" + job.getTestSuiteName() + "\",\"browserTypeName\":\"" + job.getBrowserType() + "\"}");
+        execution.setStatus("running");
+        execution.setCreatedAt(java.time.LocalDateTime.now());
+        execution = executionRepository.save(execution);
+
+        // Fetch Test Suite and Steps to build the payload
+        List<Map<String, Object>> iterations = new ArrayList<>();
+        if (job.getTestSuiteId() != null) {
+            List<TestSuiteGroupMapping> groupMappings = testSuiteGroupMappingRepository.findByTestSuiteIdOrderByGroupOrder(job.getTestSuiteId());
+            for (TestSuiteGroupMapping gm : groupMappings) {
+                List<TestCaseGroupMapping> caseMappings = testCaseGroupMappingRepository.findByTestCaseGroupIdOrderByCaseOrder(gm.getTestCaseGroupId());
+                for (TestCaseGroupMapping cm : caseMappings) {
+                    List<TestStep> steps = testStepRepository.findByTestCaseIdOrderByStepOrder(cm.getTestCaseId());
+                    
+                    Map<String, Object> iter = new HashMap<>();
+                    iter.put("testCaseId", cm.getTestCaseId());
+                    iter.put("steps", steps);
+                    iterations.add(iter);
+                }
+            }
+        }
+
+        Map<String, Object> runRequest = new HashMap<>();
+        runRequest.put("executionId", execution.getId());
+        runRequest.put("browserType", job.getBrowserType());
+        runRequest.put("iterations", iterations);
+
+        try {
+            String payloadJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(runRequest);
+            Map<String, Object> jobDto = new HashMap<>();
+            jobDto.put("executionId", execution.getId());
+            jobDto.put("payloadJson", payloadJson);
+            return ResponseEntity.ok(jobDto);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/executions/{id}/results")
+    @Transactional
+    public ResponseEntity<Void> postExecutionResults(
+            @PathVariable("id") Long executionId, 
+            @RequestBody Map<String, Object> result) {
+            
+        executionRepository.findById(executionId).ifPresent(exec -> {
+            exec.setStatus((String) result.getOrDefault("status", "completed"));
+            exec.setFinishedAt(java.time.LocalDateTime.now());
+            executionRepository.save(exec);
+        });
+        
+        return ResponseEntity.ok().build();
     }
 
     // =========================================================================
