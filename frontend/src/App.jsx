@@ -328,11 +328,40 @@ function DashboardView({ onSelectExec }) {
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
   const getBrowser = (e) => { try { return (JSON.parse(e.environmentJson || '{}').browserTypeName || 'chrome').toLowerCase(); } catch { return 'chrome'; } };
 
+  const stopExecution = async (id) => {
+    if (!window.confirm("Are you sure you want to stop this execution?")) return;
+    try {
+      const res = await fetch(`/api/executions/${id}/stop`, { method: 'POST' });
+      if (res.ok) {
+        setExecs(execs.map(e => e.id === id ? { ...e, status: 'aborted' } : e));
+        window.toast('success', 'Stopped', 'Execution stopped successfully.');
+      } else {
+        window.toast('error', 'Error', 'Failed to stop execution.');
+      }
+    } catch {
+      window.toast('error', 'Error', 'Error connecting to server.');
+    }
+  };
+
+  const rerunExecution = async (id) => {
+    try {
+      const res = await fetch(`/api/executions/${id}/rerun`, { method: 'POST' });
+      if (res.ok) {
+        window.toast('success', 'Success', 'Re-run triggered successfully.');
+        setTimeout(() => window.location.reload(), 1000); // Reload to show new execution
+      } else {
+        window.toast('error', 'Error', 'Failed to re-run execution.');
+      }
+    } catch {
+      window.toast('error', 'Error', 'Error connecting to server.');
+    }
+  };
+
   const filtered = execs.filter(e => { const q = search.toLowerCase(); return getName(e).toLowerCase().includes(q) || e.status.toLowerCase().includes(q) || String(e.id).includes(q); });
   const paged = filtered.slice(page * entries, (page + 1) * entries);
 
   const total = execs.length;
-  const passed = execs.filter(e => e.status?.toLowerCase() === 'success').length;
+  const passed = execs.filter(e => e.status?.toLowerCase() === 'success' || e.status?.toLowerCase() === 'completed').length;
   const failed = execs.filter(e => e.status?.toLowerCase() === 'failed').length;
   const running = execs.filter(e => e.status?.toLowerCase() === 'running').length;
 
@@ -411,7 +440,17 @@ function DashboardView({ onSelectExec }) {
                 <td><span className={`badge ${statusBadge(getBrowser(e))}`}>{getBrowser(e)}</span></td>
                 <td><span className="text-muted text-sm">{fmt(e.createdAt)}</span></td>
                 <td><span className={`badge ${statusBadge(e.status)}`}>{e.status}</span></td>
-                <td><div className="action-row"><button className="act-btn view" title="View Report" onClick={() => onSelectExec(e.id)}>👁️</button></div></td>
+                <td>
+                  <div className="action-row">
+                    {(e.status === 'running' || e.status === 'queued') && (
+                      <button className="act-btn kill" title="Stop Execution" style={{color: '#dc2626'}} onClick={() => stopExecution(e.id)}>🛑</button>
+                    )}
+                    {(e.status !== 'running' && e.status !== 'queued') && (
+                      <button className="act-btn view" title="Re-run Execution" style={{color: '#059669'}} onClick={() => rerunExecution(e.id)}>▶️</button>
+                    )}
+                    <button className="act-btn view" title="View Report" onClick={() => onSelectExec(e.id)}>👁️</button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -218,6 +218,48 @@ public class MvpUiController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/executions/{id}/stop")
+    @Transactional
+    public ResponseEntity<Void> stopExecution(@PathVariable("id") Long executionId) {
+        executionRepository.findById(executionId).ifPresent(exec -> {
+            if ("running".equals(exec.getStatus()) || "queued".equals(exec.getStatus())) {
+                exec.setStatus("aborted");
+                exec.setFinishedAt(java.time.LocalDateTime.now());
+                executionRepository.save(exec);
+            }
+        });
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/executions/{id}/rerun")
+    @Transactional
+    public ResponseEntity<Void> rerunExecution(@PathVariable("id") Long executionId) {
+        executionRepository.findById(executionId).ifPresent(exec -> {
+            try {
+                com.fasterxml.jackson.databind.JsonNode env = objectMapper.readTree(exec.getEnvironmentJson());
+                String suiteName = env.path("referenceId").asText();
+                String browser = env.path("browserTypeName").asText("chrome");
+                
+                TestSuite suite = testSuiteRepository.findAll().stream()
+                        .filter(s -> s.getName().equals(suiteName))
+                        .findFirst().orElse(null);
+                        
+                Scheduler scheduler = new Scheduler();
+                scheduler.setTestSuiteName(suiteName);
+                if (suite != null) {
+                    scheduler.setTestSuiteId(suite.getId());
+                }
+                scheduler.setExecutionType("now");
+                scheduler.setBrowserType(browser);
+                scheduler.setStatus("active");
+                schedulerRepository.save(scheduler);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        return ResponseEntity.ok().build();
+    }
+
     // =========================================================================
     // SCHEDULERS (CRUD)
     // =========================================================================
