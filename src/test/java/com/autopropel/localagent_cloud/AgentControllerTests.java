@@ -10,14 +10,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.autopropel.localagent_cloud.dto.RunRequest;
 import com.autopropel.localagent_cloud.dto.RunResult;
+import com.autopropel.localagent_cloud.persistence.Agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
@@ -32,53 +34,54 @@ public class AgentControllerTests {
     private ObjectMapper objectMapper;
 
     @Test
-    public void testSchedulePollAndSubmitFlow() throws Exception {
-        // 1. Initial poll should return 204 No Content
-        mockMvc.perform(get("/api/agent/poll?agentId=test_agent"))
-                .andExpect(status().isNoContent());
+    public void testMvpFlow() throws Exception {
+        // 1. Register agent
+        Agent agent = new Agent();
+        agent.setId("agent_test_01");
+        agent.setName("Test Agent");
+        agent.setOs("Linux");
+        agent.setAgentVersion("1.0");
 
-        // 2. Schedule a job
-        RunRequest job = new RunRequest();
-        job.result = new RunResult();
-        job.result.referenceId = "cloud_job_789";
-        job.result.iterationval = "iteration1";
-        job.result.testCase = new ArrayList<>();
-        job.result.testCase.add(Map.of("iteration1", new ArrayList<>()));
-
-        mockMvc.perform(post("/api/agent/schedule-job?agentId=test_agent")
+        mockMvc.perform(post("/agents/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(job)))
+                .content(objectMapper.writeValueAsString(agent)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Job scheduled successfully"));
+                .andExpect(jsonPath("$.id").value("agent_test_01"))
+                .andExpect(jsonPath("$.name").value("Test Agent"));
 
-        // 3. Poll again - should return the job
-        mockMvc.perform(get("/api/agent/poll?agentId=test_agent"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.referenceId").value("cloud_job_789"));
-
-        // 4. Poll again - queue should be empty (204 No Content)
-        mockMvc.perform(get("/api/agent/poll?agentId=test_agent"))
-                .andExpect(status().isNoContent());
-
-        // 5. Submit result
-        job.result.result_status = 1;
-        mockMvc.perform(post("/api/agent/result")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(job)))
+        // 2. Heartbeat
+        mockMvc.perform(post("/agents/agent_test_01/heartbeat"))
                 .andExpect(status().isOk());
 
-        // 6. Check stored result
-        mockMvc.perform(get("/api/agent/job-result?referenceId=cloud_job_789"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.result_status").value(1));
+        // 3. Create Execution & Job
+        RunRequest runRequest = new RunRequest();
+        runRequest.result = new RunResult();
+        runRequest.result.referenceId = "mvp_run_789";
+        runRequest.result.environmentId = "agent_test_01";
+        runRequest.result.iterationval = "iteration1";
+        runRequest.result.testCase = new ArrayList<>();
+        runRequest.result.testCase.add(Map.of("iteration1", new ArrayList<>()));
 
-        // 7. Check status is exposed
-        mockMvc.perform(get("/api/agent/job-status?referenceId=cloud_job_789"))
+        MvcResult execResult = mockMvc.perform(post("/executions?agentId=agent_test_01")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(runRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", org.hamcrest.Matchers.is("SUCCESS")));
+                .andReturn();
 
-        // 8. Unknown jobs should return 404
-        mockMvc.perform(get("/api/agent/job-status?referenceId=missing_job"))
-                .andExpect(status().isNotFound());
+        String execIdStr = execResult.getResponse().getContentAsString();
+        Long execId = Long.parseLong(execIdStr);
+
+        // 4. Lease next job
+        mockMvc.perform(get("/agents/agent_test_01/jobs/next"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.agentId").value("agent_test_01"))
+                .andExpect(jsonPath("$.status").value("ASSIGNED"));
+
+        // 5. Submit execution results
+        runRequest.result.result_status = 1; // SUCCESS
+        mockMvc.perform(post("/executions/" + execId + "/results")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(runRequest)))
+                .andExpect(status().isOk());
     }
 }
