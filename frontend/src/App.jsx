@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
 /* ═══════════════════════════════════════════════════════
@@ -58,14 +58,14 @@ const statusBadge = (s) => {
 };
 
 /* ═══════════════════════════════════════════════════════
-   SIDEBAR NAVITEM
+   SIDEBAR NAV ITEM (uses React Router Link)
 ═══════════════════════════════════════════════════════ */
-function NavItem({ href, icon, label, active }) {
+function NavItem({ to, icon, label, active }) {
   return (
-    <a href={href} className={`nav-item${active ? ' active' : ''}`}>
+    <Link to={to} className={`nav-item${active ? ' active' : ''}`}>
       <span className="nav-icon-wrap">{icon}</span>
       {label}
-    </a>
+    </Link>
   );
 }
 
@@ -76,8 +76,9 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [execId, setExecId] = useState(null);
   const [lightbox, setLightbox] = useState(null);
-  const path = window.location.pathname;
-  const is = (p) => path === `/autopropel${p}` || path === p;
+  const location = useLocation();
+  const path = location.pathname;
+  const is = (p) => path === p;
 
   return (
     <div className="app-layout">
@@ -92,27 +93,27 @@ export default function App() {
 
           <nav className="sidebar-nav">
             <div className="nav-section">Overview</div>
-            <NavItem href="/autopropel/dashboard"            icon="📊" label="Dashboard"         active={is('/dashboard')} />
+            <NavItem to="/dashboard"            icon="📊" label="Dashboard"         active={is('/dashboard')} />
 
             <div className="nav-section">Scheduler</div>
-            <NavItem href="/autopropel/scheduler/create"     icon="➕" label="Create Scheduler"  active={is('/scheduler/create')} />
-            <NavItem href="/autopropel/scheduler"            icon="📅" label="All Schedulers"    active={is('/scheduler')} />
+            <NavItem to="/scheduler/create"     icon="➕" label="Create Scheduler"  active={is('/scheduler/create')} />
+            <NavItem to="/scheduler"            icon="📅" label="All Schedulers"    active={is('/scheduler')} />
 
             <div className="nav-section">Test Suite</div>
-            <NavItem href="/autopropel/test-suites/create"   icon="🗂️" label="Create Suite"      active={is('/test-suites/create')} />
-            <NavItem href="/autopropel/test-suites"          icon="📦" label="Suite List"         active={is('/test-suites')} />
+            <NavItem to="/test-suites/create"   icon="🗂️" label="Create Suite"      active={is('/test-suites/create')} />
+            <NavItem to="/test-suites"          icon="📦" label="Suite List"         active={is('/test-suites')} />
 
             <div className="nav-section">Test Case Group</div>
-            <NavItem href="/autopropel/test-case-groups/create" icon="📁" label="Create Group"   active={is('/test-case-groups/create')} />
-            <NavItem href="/autopropel/test-case-groups"     icon="📂" label="Group List"         active={is('/test-case-groups')} />
+            <NavItem to="/test-case-groups/create" icon="📁" label="Create Group"   active={is('/test-case-groups/create')} />
+            <NavItem to="/test-case-groups"     icon="📂" label="Group List"         active={is('/test-case-groups')} />
 
             <div className="nav-section">Test Case</div>
-            <NavItem href="/autopropel/test-cases/create"    icon="📝" label="Create Test Case"  active={is('/test-cases/create')} />
-            <NavItem href="/autopropel/test-cases"           icon="🔍" label="Test Case List"     active={is('/test-cases')} />
+            <NavItem to="/test-cases/create"    icon="📝" label="Create Test Case"  active={is('/test-cases/create')} />
+            <NavItem to="/test-cases"           icon="🔍" label="Test Case List"     active={is('/test-cases')} />
 
             <div className="nav-section">Agents</div>
-            <NavItem href="/autopropel/groups/create"        icon="👥" label="Create Group"      active={is('/groups/create')} />
-            <NavItem href="/autopropel/groups"               icon="🖥️" label="Agent Groups"      active={is('/groups')} />
+            <NavItem to="/groups/create"        icon="👥" label="Create Group"      active={is('/groups/create')} />
+            <NavItem to="/groups"               icon="🖥️" label="Agent Groups"      active={is('/groups')} />
           </nav>
 
           <div className="sidebar-footer">
@@ -186,7 +187,7 @@ function PageHeader({ title, crumb, actions }) {
       <div className="page-header-left">
         <h1>{title}</h1>
         <div className="breadcrumbs">
-          <span>Home</span>
+          <Link to="/dashboard">Home</Link>
           <span className="sep">›</span>
           <span>{crumb || title}</span>
         </div>
@@ -271,7 +272,6 @@ function DashboardView({ onSelectExec }) {
   });
   const paged = filtered.slice(page * entries, (page + 1) * entries);
 
-  // Quick stats
   const total  = execs.length;
   const passed = execs.filter(e => e.status?.toLowerCase() === 'success').length;
   const failed = execs.filter(e => e.status?.toLowerCase() === 'failed').length;
@@ -369,7 +369,7 @@ function SchedulerListView() {
   return (
     <div className="page-view">
       <PageHeader title="Schedulers" crumb="All Schedulers"
-        actions={<a href="/autopropel/scheduler/create" className="btn btn-primary">➕ New Scheduler</a>} />
+        actions={<Link to="/scheduler/create" className="btn btn-primary">➕ New Scheduler</Link>} />
       <TableCard title="All Scheduled Tests" total={data.length}
         entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
         page={page} onPage={setPage}>
@@ -385,7 +385,7 @@ function SchedulerListView() {
                 <div className="empty-state">
                   <div className="empty-state-icon">📅</div>
                   <h3>No schedulers yet</h3>
-                  <p><a href="/autopropel/scheduler/create" style={{color:'var(--brand)'}}>Create your first scheduler</a></p>
+                  <p><Link to="/scheduler/create" style={{color:'var(--brand)'}}>Create your first scheduler</Link></p>
                 </div>
               </td></tr>
             ) : paged.map(s => (
@@ -413,6 +413,7 @@ function SchedulerListView() {
    VIEW: CREATE SCHEDULER
 ═══════════════════════════════════════════════════════ */
 function CreateSchedulerView() {
+  const navigate = useNavigate();
   const [suites, setSuites] = useState([]);
   const [form, setForm] = useState({ testSuiteId: '', executionType: '', browserType: '', status: 'active' });
   const [saving, setSaving] = useState(false);
@@ -428,14 +429,14 @@ function CreateSchedulerView() {
     const suite = suites.find(s => String(s.id) === String(form.testSuiteId));
     const payload = { ...form, testSuiteName: suite?.name || '', testSuiteId: form.testSuiteId ? +form.testSuiteId : null };
     const r = await fetch('/api/schedulers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (r.ok) { toast('success', 'Scheduler created!', 'It will run as configured.'); setTimeout(() => window.location.href = '/autopropel/scheduler', 800); }
+    if (r.ok) { toast('success', 'Scheduler created!', 'It will run as configured.'); setTimeout(() => navigate('/scheduler'), 800); }
     else { toast('error', 'Failed', 'Could not save scheduler.'); setSaving(false); }
   };
 
   return (
     <div className="page-view">
       <PageHeader title="Create Scheduler" crumb="New Scheduler"
-        actions={<a href="/autopropel/scheduler" className="btn btn-ghost">← Back</a>} />
+        actions={<Link to="/scheduler" className="btn btn-ghost">← Back</Link>} />
       <div className="card form-card">
         <div className="card-header"><h2>⚙️ Scheduler Configuration</h2></div>
         <form onSubmit={save}>
@@ -476,7 +477,7 @@ function CreateSchedulerView() {
             </div>
           </div>
           <div className="form-actions">
-            <a href="/autopropel/scheduler" className="btn btn-ghost">Cancel</a>
+            <Link to="/scheduler" className="btn btn-ghost">Cancel</Link>
             <button type="submit" className="btn btn-success" disabled={saving}>
               {saving ? '⏳ Saving…' : '💾 Save Scheduler'}
             </button>
@@ -515,7 +516,7 @@ function GroupsListView() {
   return (
     <div className="page-view">
       <PageHeader title="Agent Groups" crumb="All Groups"
-        actions={<a href="/autopropel/groups/create" className="btn btn-primary">➕ New Group</a>} />
+        actions={<Link to="/groups/create" className="btn btn-primary">➕ New Group</Link>} />
       <TableCard title="Agent Group Directory" total={filtered.length}
         search={search} onSearch={s => { setSearch(s); setPage(0); }}
         entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
@@ -525,7 +526,7 @@ function GroupsListView() {
           <tbody>
             {loading ? <tr className="row-loading"><td colSpan={5}><div className="spinner"/></td></tr>
             : paged.length === 0 ? <tr className="row-empty"><td colSpan={5}>
-                <div className="empty-state"><div className="empty-state-icon">👥</div><h3>No groups yet</h3><p><a href="/autopropel/groups/create" style={{color:'var(--brand)'}}>Create your first group</a></p></div>
+                <div className="empty-state"><div className="empty-state-icon">👥</div><h3>No groups yet</h3><p><Link to="/groups/create" style={{color:'var(--brand)'}}>Create your first group</Link></p></div>
               </td></tr>
             : paged.map(g => (
               <tr key={g.id}>
@@ -547,6 +548,7 @@ function GroupsListView() {
    VIEW: CREATE GROUP
 ═══════════════════════════════════════════════════════ */
 function CreateGroupView() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [saving, setSaving] = useState(false);
@@ -555,14 +557,14 @@ function CreateGroupView() {
     e.preventDefault();
     setSaving(true);
     const r = await fetch('/api/groups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc }) });
-    if (r.ok) { toast('success', 'Group created!'); setTimeout(() => window.location.href = '/autopropel/groups', 800); }
+    if (r.ok) { toast('success', 'Group created!'); setTimeout(() => navigate('/groups'), 800); }
     else { toast('error', 'Failed', 'Could not save group.'); setSaving(false); }
   };
 
   return (
     <div className="page-view">
       <PageHeader title="Create Agent Group" crumb="New Group"
-        actions={<a href="/autopropel/groups" className="btn btn-ghost">← Back</a>} />
+        actions={<Link to="/groups" className="btn btn-ghost">← Back</Link>} />
       <div className="card form-card">
         <div className="card-header"><h2>👥 Group Details</h2></div>
         <form onSubmit={save}>
@@ -579,7 +581,7 @@ function CreateGroupView() {
             </div>
           </div>
           <div className="form-actions">
-            <a href="/autopropel/groups" className="btn btn-ghost">Cancel</a>
+            <Link to="/groups" className="btn btn-ghost">Cancel</Link>
             <button type="submit" className="btn btn-success" disabled={saving}>{saving ? '⏳ Saving…' : '💾 Save Group'}</button>
           </div>
         </form>
@@ -627,7 +629,7 @@ function TestCaseListView() {
   return (
     <div className="page-view">
       <PageHeader title="Test Cases" crumb="All Test Cases"
-        actions={<a href="/autopropel/test-cases/create" className="btn btn-primary">➕ New Test Case</a>} />
+        actions={<Link to="/test-cases/create" className="btn btn-primary">➕ New Test Case</Link>} />
       <TableCard title="Test Case Library" total={filtered.length}
         search={search} onSearch={s => { setSearch(s); setPage(0); }}
         entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
@@ -637,7 +639,7 @@ function TestCaseListView() {
           <tbody>
             {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner"/></td></tr>
             : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}>
-                <div className="empty-state"><div className="empty-state-icon">📝</div><h3>No test cases yet</h3><p><a href="/autopropel/test-cases/create" style={{color:'var(--brand)'}}>Create your first test case</a></p></div>
+                <div className="empty-state"><div className="empty-state-icon">📝</div><h3>No test cases yet</h3><p><Link to="/test-cases/create" style={{color:'var(--brand)'}}>Create your first test case</Link></p></div>
               </td></tr>
             : paged.map(t => (
               <>
@@ -704,6 +706,7 @@ const ACTION_OPTIONS = [
 const LOCATOR_OPTIONS = ['id','name','xpath','css','linkText','partialLinkText','className','tagName'];
 
 function CreateTestCaseView() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [steps, setSteps] = useState([{ actionName: '', locatorType: '', locatorValue: '', testData: '', description: '' }]);
@@ -718,14 +721,14 @@ function CreateTestCaseView() {
     setSaving(true);
     const payload = { name, description: desc, steps: steps.map((s, i) => ({ ...s, stepOrder: i + 1 })) };
     const r = await fetch('/api/test-cases', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (r.ok) { toast('success', 'Test Case created!', `"${name}" saved with ${steps.length} step(s).`); setTimeout(() => window.location.href = '/autopropel/test-cases', 900); }
+    if (r.ok) { toast('success', 'Test Case created!', `"${name}" saved with ${steps.length} step(s).`); setTimeout(() => navigate('/test-cases'), 900); }
     else { toast('error', 'Failed', 'Could not save test case.'); setSaving(false); }
   };
 
   return (
     <div className="page-view">
       <PageHeader title="Create Test Case" crumb="New Test Case"
-        actions={<a href="/autopropel/test-cases" className="btn btn-ghost">← Back</a>} />
+        actions={<Link to="/test-cases" className="btn btn-ghost">← Back</Link>} />
       <div className="card form-card-wide">
         <div className="card-header">
           <div><h2>📝 Test Case Details</h2><p>Define the test scenario and its ordered steps</p></div>
@@ -793,7 +796,7 @@ function CreateTestCaseView() {
           </div>
 
           <div className="form-actions">
-            <a href="/autopropel/test-cases" className="btn btn-ghost">Cancel</a>
+            <Link to="/test-cases" className="btn btn-ghost">Cancel</Link>
             <button type="submit" className="btn btn-success" disabled={saving}>
               {saving ? '⏳ Saving…' : `💾 Save Test Case (${steps.length} steps)`}
             </button>
@@ -840,7 +843,7 @@ function TestCaseGroupListView() {
   return (
     <div className="page-view">
       <PageHeader title="Test Case Groups" crumb="All Groups"
-        actions={<a href="/autopropel/test-case-groups/create" className="btn btn-primary">➕ New Group</a>} />
+        actions={<Link to="/test-case-groups/create" className="btn btn-primary">➕ New Group</Link>} />
       <TableCard title="All Test Case Groups" total={filtered.length}
         search={search} onSearch={s => { setSearch(s); setPage(0); }}
         entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
@@ -850,7 +853,7 @@ function TestCaseGroupListView() {
           <tbody>
             {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner"/></td></tr>
             : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}>
-                <div className="empty-state"><div className="empty-state-icon">📁</div><h3>No groups yet</h3><p><a href="/autopropel/test-case-groups/create" style={{color:'var(--brand)'}}>Create your first group</a></p></div>
+                <div className="empty-state"><div className="empty-state-icon">📁</div><h3>No groups yet</h3><p><Link to="/test-case-groups/create" style={{color:'var(--brand)'}}>Create your first group</Link></p></div>
               </td></tr>
             : paged.map(g => (
               <>
@@ -883,7 +886,7 @@ function TestCaseGroupListView() {
                                   <tr key={idx}>
                                     <td><span className="cell-bold">{item.caseOrder + 1}</span></td>
                                     <td><span className="cell-bold">{item.testCase.name}</span></td>
-                                    <td><span className={`badge ${statusBadge('info')}`}>{(item.steps || []).length} steps</span></td>
+                                    <td><span className="badge badge-info">{(item.steps || []).length} steps</span></td>
                                     <td><span className={`badge ${statusBadge(item.testCase.status)}`}>{item.testCase.status}</span></td>
                                   </tr>
                                 ))}
@@ -943,6 +946,7 @@ function ItemPicker({ items, selected, onToggle, getLabel, getSub, getMeta }) {
    VIEW: CREATE TEST CASE GROUP
 ═══════════════════════════════════════════════════════ */
 function CreateTestCaseGroupView() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [allCases, setAllCases] = useState([]);
@@ -959,14 +963,14 @@ function CreateTestCaseGroupView() {
     e.preventDefault();
     setSaving(true);
     const r = await fetch('/api/test-case-groups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc, testCaseIds: selected }) });
-    if (r.ok) { toast('success', 'Group created!', `"${name}" with ${selected.length} test case(s).`); setTimeout(() => window.location.href = '/autopropel/test-case-groups', 900); }
+    if (r.ok) { toast('success', 'Group created!', `"${name}" with ${selected.length} test case(s).`); setTimeout(() => navigate('/test-case-groups'), 900); }
     else { toast('error', 'Failed', 'Could not save group.'); setSaving(false); }
   };
 
   return (
     <div className="page-view">
       <PageHeader title="Create Test Case Group" crumb="New Group"
-        actions={<a href="/autopropel/test-case-groups" className="btn btn-ghost">← Back</a>} />
+        actions={<Link to="/test-case-groups" className="btn btn-ghost">← Back</Link>} />
       <div className="card form-card">
         <div className="card-header"><div><h2>📁 Group Details</h2><p>Group related test cases together</p></div></div>
         <form onSubmit={save}>
@@ -991,13 +995,13 @@ function CreateTestCaseGroupView() {
                   getMeta={tc => <span className={`badge ${statusBadge(tc.status)}`}>{tc.status}</span>}
                 />
                 {allCases.length === 0 && (
-                  <span className="form-hint">No test cases yet — <a href="/autopropel/test-cases/create" style={{color:'var(--brand)'}}>create one first</a></span>
+                  <span className="form-hint">No test cases yet — <Link to="/test-cases/create" style={{color:'var(--brand)'}}>create one first</Link></span>
                 )}
               </div>
             </div>
           </div>
           <div className="form-actions">
-            <a href="/autopropel/test-case-groups" className="btn btn-ghost">Cancel</a>
+            <Link to="/test-case-groups" className="btn btn-ghost">Cancel</Link>
             <button type="submit" className="btn btn-success" disabled={saving}>
               {saving ? '⏳ Saving…' : `💾 Save Group (${selected.length} cases)`}
             </button>
@@ -1045,7 +1049,7 @@ function TestSuiteListView() {
   return (
     <div className="page-view">
       <PageHeader title="Test Suites" crumb="All Suites"
-        actions={<a href="/autopropel/test-suites/create" className="btn btn-primary">➕ New Suite</a>} />
+        actions={<Link to="/test-suites/create" className="btn btn-primary">➕ New Suite</Link>} />
       <TableCard title="All Test Suites" total={filtered.length}
         search={search} onSearch={s => { setSearch(s); setPage(0); }}
         entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
@@ -1055,7 +1059,7 @@ function TestSuiteListView() {
           <tbody>
             {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner"/></td></tr>
             : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}>
-                <div className="empty-state"><div className="empty-state-icon">📦</div><h3>No test suites yet</h3><p><a href="/autopropel/test-suites/create" style={{color:'var(--brand)'}}>Create your first suite</a></p></div>
+                <div className="empty-state"><div className="empty-state-icon">📦</div><h3>No test suites yet</h3><p><Link to="/test-suites/create" style={{color:'var(--brand)'}}>Create your first suite</Link></p></div>
               </td></tr>
             : paged.map(s => (
               <>
@@ -1118,6 +1122,7 @@ function TestSuiteListView() {
    VIEW: CREATE TEST SUITE
 ═══════════════════════════════════════════════════════ */
 function CreateTestSuiteView() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [browser, setBrowser] = useState('chrome');
@@ -1135,14 +1140,14 @@ function CreateTestSuiteView() {
     e.preventDefault();
     setSaving(true);
     const r = await fetch('/api/test-suites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc, browserType: browser, testCaseGroupIds: selected }) });
-    if (r.ok) { toast('success', 'Suite created!', `"${name}" with ${selected.length} group(s).`); setTimeout(() => window.location.href = '/autopropel/test-suites', 900); }
+    if (r.ok) { toast('success', 'Suite created!', `"${name}" with ${selected.length} group(s).`); setTimeout(() => navigate('/test-suites'), 900); }
     else { toast('error', 'Failed', 'Could not save suite.'); setSaving(false); }
   };
 
   return (
     <div className="page-view">
       <PageHeader title="Create Test Suite" crumb="New Suite"
-        actions={<a href="/autopropel/test-suites" className="btn btn-ghost">← Back</a>} />
+        actions={<Link to="/test-suites" className="btn btn-ghost">← Back</Link>} />
       <div className="card form-card">
         <div className="card-header"><div><h2>🗂️ Suite Details</h2><p>Configure the top-level test suite</p></div></div>
         <form onSubmit={save}>
@@ -1175,13 +1180,13 @@ function CreateTestSuiteView() {
                   getMeta={g => <span className={`badge ${statusBadge(g.status)}`}>{g.status}</span>}
                 />
                 {allGroups.length === 0 && (
-                  <span className="form-hint">No groups yet — <a href="/autopropel/test-case-groups/create" style={{color:'var(--brand)'}}>create one first</a></span>
+                  <span className="form-hint">No groups yet — <Link to="/test-case-groups/create" style={{color:'var(--brand)'}}>create one first</Link></span>
                 )}
               </div>
             </div>
           </div>
           <div className="form-actions">
-            <a href="/autopropel/test-suites" className="btn btn-ghost">Cancel</a>
+            <Link to="/test-suites" className="btn btn-ghost">Cancel</Link>
             <button type="submit" className="btn btn-success" disabled={saving}>
               {saving ? '⏳ Saving…' : `💾 Save Suite (${selected.length} groups)`}
             </button>

@@ -16,11 +16,11 @@
   --sb-w:           260px;
   --sb-bg:          #0c0c18;
   --sb-border:      rgba(255,255,255,0.06);
-  --sb-txt:         #6b7280;
-  --sb-hover-bg:    rgba(255,255,255,0.04);
-  --sb-hover-txt:   #d1d5db;
-  --sb-active-bg:   rgba(124,58,237,0.14);
-  --sb-active-txt:  #c4b5fd;
+  --sb-txt:         #a1a1b5;
+  --sb-hover-bg:    rgba(255,255,255,0.06);
+  --sb-hover-txt:   #f3f4f6;
+  --sb-active-bg:   rgba(124,58,237,0.18);
+  --sb-active-txt:  #ddd6fe;
   --sb-active-bar:  #7c3aed;
 
   --bg:             #f1f0f7;
@@ -175,7 +175,7 @@ input, select, textarea { font-family: inherit; }
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.40);
   padding: 18px 10px 7px;
   display: flex;
   align-items: center;
@@ -277,13 +277,13 @@ input, select, textarea { font-family: inherit; }
 
 .footer-text p {
   font-size: 11.5px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.65);
   line-height: 1.4;
 }
 
 .footer-text span {
   font-size: 10px;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.40);
 }
 
 /* ─────────────────────────────────────────
