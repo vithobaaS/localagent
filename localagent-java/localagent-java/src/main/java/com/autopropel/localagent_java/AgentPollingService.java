@@ -121,6 +121,11 @@ public class AgentPollingService {
                                 ts.locatorName = stepNode.path("locatorType").asText("");
                                 ts.objectDetail = stepNode.path("locatorValue").asText("");
                                 ts.data = stepNode.path("testData").asText("");
+                                
+                                // Fix for Navigate: The cloud UI might store the URL in locatorValue instead of testData
+                                if ("Navigate".equalsIgnoreCase(ts.actionName) && (ts.data == null || ts.data.isBlank())) {
+                                    ts.data = ts.objectDetail;
+                                }
                                 ts.stepDesc = stepNode.path("description").asText("");
                                 ts.screenShot = "After"; // Default
                                 tci.testSteps.add(ts);
