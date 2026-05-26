@@ -14,11 +14,13 @@ public class MvpUiViewController {
         "/autopropel/scheduler/**",
         "/autopropel/groups",
         "/autopropel/groups/**",
-        "/autopropel/stub/**",
-        "/autopropel/test-suite",
-        "/autopropel/test-suite/**",
-        "/autopropel/test-case",
-        "/autopropel/test-case/**"
+        "/autopropel/test-cases",
+        "/autopropel/test-cases/**",
+        "/autopropel/test-case-groups",
+        "/autopropel/test-case-groups/**",
+        "/autopropel/test-suites",
+        "/autopropel/test-suites/**",
+        "/autopropel/stub/**"
     })
     public String dashboardRedirect() {
         return "forward:/autopropel/dashboard/index.html";
