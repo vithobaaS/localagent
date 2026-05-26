@@ -29,6 +29,9 @@ public class Scheduler {
     @Column(nullable = false)
     private String status;
 
+    @Column(name = "test_suite_id")
+    private Long testSuiteId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -76,6 +79,14 @@ public class Scheduler {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getTestSuiteId() {
+        return testSuiteId;
+    }
+
+    public void setTestSuiteId(Long testSuiteId) {
+        this.testSuiteId = testSuiteId;
     }
 
     public LocalDateTime getCreatedAt() {
