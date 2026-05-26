@@ -45,6 +45,7 @@ public class MvpUiController {
     private final TestSuiteGroupMappingRepository testSuiteGroupMappingRepository;
     private final AgentGroupMappingRepository agentGroupMappingRepository;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private final com.autopropel.localagent_cloud.service.S3Service s3Service;
 
     public MvpUiController(
             ExecutionRepository executionRepository,
@@ -60,7 +61,8 @@ public class MvpUiController {
             TestSuiteRepository testSuiteRepository,
             TestSuiteGroupMappingRepository testSuiteGroupMappingRepository,
             AgentGroupMappingRepository agentGroupMappingRepository,
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper,
+            com.autopropel.localagent_cloud.service.S3Service s3Service) {
         this.executionRepository = executionRepository;
         this.stepResultRepository = stepResultRepository;
         this.screenshotRepository = screenshotRepository;
@@ -75,15 +77,75 @@ public class MvpUiController {
         this.testSuiteGroupMappingRepository = testSuiteGroupMappingRepository;
         this.agentGroupMappingRepository = agentGroupMappingRepository;
         this.objectMapper = objectMapper;
+        this.s3Service = s3Service;
     }
 
     // =========================================================================
-    // EXECUTIONS
+    // EXECUTION ENDPOINTS
     // =========================================================================
 
     @GetMapping("/executions")
     public ResponseEntity<List<Execution>> getExecutions() {
-        return ResponseEntity.ok(executionRepository.findAllByOrderByIdDesc());
+        return ResponseEntity.ok(executionRepository.findAll());
+    }
+
+
+
+    @PostMapping("/executions/{id}/results")
+    @Transactional
+    public ResponseEntity<Void> postExecutionResults(
+            @PathVariable("id") Long executionId, 
+            @RequestBody Map<String, Object> result) {
+            
+        executionRepository.findById(executionId).ifPresent(exec -> {
+            exec.setStatus((String) result.getOrDefault("status", "completed"));
+            exec.setFinishedAt(java.time.LocalDateTime.now());
+            executionRepository.save(exec);
+        });
+        
+        // Parse step results and upload screenshots to S3
+        try {
+            java.util.List<Map<String, Object>> testCaseList = (java.util.List<Map<String, Object>>) result.get("testCase");
+            if (testCaseList != null && !testCaseList.isEmpty()) {
+                Map<String, Object> firstIterationMap = testCaseList.get(0);
+                java.util.List<Map<String, Object>> iterations = (java.util.List<Map<String, Object>>) firstIterationMap.get("iteration1");
+                if (iterations != null && !iterations.isEmpty()) {
+                    java.util.List<Map<String, Object>> testSteps = (java.util.List<Map<String, Object>>) iterations.get(0).get("testSteps");
+                    if (testSteps != null) {
+                        for (int i = 0; i < testSteps.size(); i++) {
+                            Map<String, Object> stepData = testSteps.get(i);
+                            
+                            StepResult sr = new StepResult();
+                            sr.setExecutionId(executionId);
+                            sr.setStepIndex(i + 1);
+                            sr.setActionName((String) stepData.getOrDefault("actionName", "unknown"));
+                            sr.setExecutedStatus((Integer) stepData.getOrDefault("executed_status", 0));
+                            sr.setResultStatus((Integer) stepData.getOrDefault("result_status", 0));
+                            sr.setErrorJson((String) stepData.getOrDefault("errorLog", ""));
+                            sr = stepResultRepository.save(sr);
+                            
+                            String base64 = (String) stepData.get("screenshotBase64");
+                            if (base64 != null && !base64.isEmpty()) {
+                                byte[] imageBytes = java.util.Base64.getDecoder().decode(base64);
+                                String fileName = "exec_" + executionId + "_step_" + sr.getId() + "_" + System.currentTimeMillis() + ".png";
+                                String s3Url = s3Service.uploadImage(fileName, imageBytes);
+                                
+                                Screenshot sc = new Screenshot();
+                                sc.setExecutionId(executionId);
+                                sc.setStepResultId(sr.getId());
+                                sc.setFileName(fileName);
+                                sc.setContentType("image/png");
+                                sc.setStoragePath(s3Url);
+                                screenshotRepository.save(sc);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/executions/{id}")
@@ -203,20 +265,7 @@ public class MvpUiController {
         }
     }
 
-    @PostMapping("/executions/{id}/results")
-    @Transactional
-    public ResponseEntity<Void> postExecutionResults(
-            @PathVariable("id") Long executionId, 
-            @RequestBody Map<String, Object> result) {
-            
-        executionRepository.findById(executionId).ifPresent(exec -> {
-            exec.setStatus((String) result.getOrDefault("status", "completed"));
-            exec.setFinishedAt(java.time.LocalDateTime.now());
-            executionRepository.save(exec);
-        });
-        
-        return ResponseEntity.ok().build();
-    }
+
 
     @PostMapping("/executions/{id}/stop")
     @Transactional

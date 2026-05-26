@@ -969,7 +969,7 @@ function ReportModal({ execId, onClose, onLightbox }) {
                     <td>{step.executedStatus === 1 ? <span className="badge badge-success">Yes</span> : <span className="badge badge-neutral">No</span>}</td>
                     <td>{step.executedStatus === 1 ? step.resultStatus === 1 ? <span className="badge badge-success">PASS</span> : <span className="badge badge-danger">FAIL</span> : '—'}</td>
                     <td className="text-sm text-muted">{step.errorJson || '—'}</td>
-                    <td>{ss ? <img src={`/api/screenshots/${ss.fileName}`} className="screenshot-thumb" alt="ss" onClick={() => onLightbox(`/api/screenshots/${ss.fileName}`)} /> : '—'}</td></tr>);
+                    <td>{ss ? <img src={ss.storagePath} className="screenshot-thumb" alt="ss" onClick={() => onLightbox(ss.storagePath)} /> : '—'}</td></tr>);
                 })}</tbody></table></div>
             </div>
           </>)}
