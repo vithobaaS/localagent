@@ -632,8 +632,24 @@ function DashboardView({ onSelectExec }) {
 
                 <div style={{ marginTop: '24px' }}>
                   <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option B: Manual Install (GUI)</p>
-                  <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Download the installer wizard if you prefer a graphical setup.</p>
-                  <button className="btn btn-primary btn-sm">Download {agentOsTab === 'windows' ? '.msi' : agentOsTab === 'mac' ? '.dmg' : '.deb'} Installer</button>
+                  <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '12px' }}>Download the installer wizard. During the first launch, the agent will pop up a configuration window. You will need to paste your unique Agent Token below:</p>
+                  
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--txt-muted)' }}>Your Token:</span>
+                    <code style={{ background: '#0d1117', color: '#58a6ff', padding: '6px 12px', borderRadius: '4px', fontSize: '13px', fontFamily: 'monospace', border: '1px solid var(--border)' }}>
+                      {user?.agentToken || 'Loading...'}
+                    </code>
+                    <button className="btn btn-sm" style={{ background: 'var(--surface)', color: 'var(--txt)', padding: '4px 8px' }} onClick={() => {
+                      navigator.clipboard.writeText(user?.agentToken || '');
+                      window.toast('success', 'Copied', 'Agent Token copied to clipboard');
+                    }}>Copy Token</button>
+                  </div>
+
+                  {agentOsTab === 'windows' ? (
+                    <a href="/agent/AutoPropelAgent-1.0.0.msi" download className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>Download .msi Installer</a>
+                  ) : (
+                    <button className="btn btn-primary btn-sm" disabled>Coming Soon for {agentOsTab === 'mac' ? 'Mac' : 'Linux'}</button>
+                  )}
                 </div>
               </div>
               <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--txt-muted)' }}>
