@@ -533,7 +533,7 @@ function DashboardView({ onSelectExec }) {
   const stopExecution = async (id) => {
     if (!window.confirm("Are you sure you want to stop this execution?")) return;
     try {
-      const res = await fetch(`/api/executions/${id}/stop`, { method: 'POST' });
+      const res = await api(`/api/executions/${id}/stop`, { method: 'POST' });
       if (res.ok) {
         setExecs(execs.map(e => e.id === id ? { ...e, status: 'aborted' } : e));
         window.toast('success', 'Stopped', 'Execution stopped successfully.');
@@ -547,7 +547,7 @@ function DashboardView({ onSelectExec }) {
 
   const rerunExecution = async (id) => {
     try {
-      const res = await fetch(`/api/executions/${id}/rerun`, { method: 'POST' });
+      const res = await api(`/api/executions/${id}/rerun`, { method: 'POST' });
       if (res.ok) {
         window.toast('success', 'Success', 'Re-run triggered successfully.');
         setTimeout(() => window.location.reload(), 1000); // Reload to show new execution
@@ -758,10 +758,10 @@ function formatTime12h(timeStr) {
 function SchedulerListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState(10); const [page, setPage] = useState(0);
-  useEffect(() => { fetch('/api/schedulers').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  useEffect(() => { api('/api/schedulers').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
   const remove = (id) => {
     if (!window.confirm('Delete this scheduler?')) return;
-    fetch(`/api/schedulers/${id}`, { method: 'DELETE' }).then(r => {
+    api(`/api/schedulers/${id}`, { method: 'DELETE' }).then(r => {
       if (r.ok) { setData(p => p.filter(s => s.id !== id)); toast('success', 'Deleted', 'Scheduler removed.'); }
       else toast('error', 'Error', 'Failed to delete.');
     });
@@ -827,12 +827,12 @@ function SchedulerFormView() {
   const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
-    fetch('/api/test-suites').then(r => r.json()).then(setSuites).catch(() => {});
+    api('/api/test-suites').then(r => r.json()).then(setSuites).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (isEdit) {
-      fetch('/api/schedulers').then(r => r.json()).then(all => {
+      api('/api/schedulers').then(r => r.json()).then(all => {
         const s = all.find(x => x.id === +id);
         if (s) {
           setForm({
@@ -898,7 +898,7 @@ function SchedulerFormView() {
     };
     const url = isEdit ? `/api/schedulers/${id}` : '/api/schedulers';
     const method = isEdit ? 'PUT' : 'POST';
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const r = await api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (r.ok) {
       toast('success', isEdit ? 'Updated!' : 'Created!', 'Scheduler saved successfully.');
       setTimeout(() => navigate('/scheduler'), 800);
@@ -1100,8 +1100,8 @@ function SchedulerFormView() {
 function GroupsListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(''); const [entries, setEntries] = useState(10); const [page, setPage] = useState(0);
-  useEffect(() => { fetch('/api/groups').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
-  const remove = (id) => { fetch(`/api/groups/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(g => g.id !== id)); toast('success', 'Deleted'); } else toast('error', 'Error'); }); };
+  useEffect(() => { api('/api/groups').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  const remove = (id) => { api(`/api/groups/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(g => g.id !== id)); toast('success', 'Deleted'); } else toast('error', 'Error'); }); };
   const filtered = data.filter(g => g.name.toLowerCase().includes(search.toLowerCase()) || (g.description || '').toLowerCase().includes(search.toLowerCase()));
   const paged = filtered.slice(page * entries, (page + 1) * entries);
   return (
@@ -1121,7 +1121,7 @@ function GroupsListView() {
 function CreateGroupView() {
   const navigate = useNavigate(); const [name, setName] = useState(''); const [desc, setDesc] = useState(''); const [saving, setSaving] = useState(false);
   const save = async (e) => { e.preventDefault(); setSaving(true);
-    const r = await fetch('/api/groups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc }) });
+    const r = await api('/api/groups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc }) });
     if (r.ok) { toast('success', 'Created!'); setTimeout(() => navigate('/groups'), 800); } else { toast('error', 'Failed'); setSaving(false); }
   };
   return (
@@ -1145,9 +1145,9 @@ function TestCaseListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(''); const [entries, setEntries] = useState(10); const [page, setPage] = useState(0);
   const [expanded, setExpanded] = useState(null); const [expandedSteps, setExpandedSteps] = useState([]);
-  useEffect(() => { fetch('/api/test-cases').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
-  const toggle = (id) => { if (expanded === id) { setExpanded(null); return; } setExpanded(id); fetch(`/api/test-cases/${id}`).then(r => r.json()).then(d => setExpandedSteps(d.steps || [])); };
-  const remove = (id) => { fetch(`/api/test-cases/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(t => t.id !== id)); toast('success', 'Deleted'); } }); };
+  useEffect(() => { api('/api/test-cases').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  const toggle = (id) => { if (expanded === id) { setExpanded(null); return; } setExpanded(id); api(`/api/test-cases/${id}`).then(r => r.json()).then(d => setExpandedSteps(d.steps || [])); };
+  const remove = (id) => { api(`/api/test-cases/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(t => t.id !== id)); toast('success', 'Deleted'); } }); };
   const filtered = data.filter(t => { const q = search.toLowerCase(); return t.name.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q); });
   const paged = filtered.slice(page * entries, (page + 1) * entries);
   return (
@@ -1196,7 +1196,7 @@ function TestCaseFormView() {
 
   useEffect(() => {
     if (isEdit) {
-      fetch(`/api/test-cases/${id}`).then(r => r.json()).then(d => {
+      api(`/api/test-cases/${id}`).then(r => r.json()).then(d => {
         setName(d.testCase.name); setDesc(d.testCase.description || '');
         if (d.steps && d.steps.length > 0) setSteps(d.steps.map(s => ({ actionName: s.actionName || '', locatorType: s.locatorType || '', locatorValue: s.locatorValue || '', testData: s.testData || '', description: s.description || '' })));
         setLoaded(true);
@@ -1213,7 +1213,7 @@ function TestCaseFormView() {
     const payload = { name, description: desc, steps: steps.map((s, i) => ({ ...s, stepOrder: i + 1 })) };
     const url = isEdit ? `/api/test-cases/${id}` : '/api/test-cases';
     const method = isEdit ? 'PUT' : 'POST';
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const r = await api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (r.ok) { toast('success', isEdit ? 'Updated!' : 'Created!', `"${name}" with ${steps.length} step(s).`); setTimeout(() => navigate('/test-cases'), 900); }
     else { toast('error', 'Failed'); setSaving(false); }
   };
@@ -1269,9 +1269,9 @@ function TestCaseGroupListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(''); const [entries, setEntries] = useState(10); const [page, setPage] = useState(0);
   const [expanded, setExpanded] = useState(null); const [expandedCases, setExpandedCases] = useState([]);
-  useEffect(() => { fetch('/api/test-case-groups').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
-  const toggle = (id) => { if (expanded === id) { setExpanded(null); return; } setExpanded(id); fetch(`/api/test-case-groups/${id}`).then(r => r.json()).then(d => setExpandedCases(d.testCases || [])); };
-  const remove = (id) => { fetch(`/api/test-case-groups/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(g => g.id !== id)); toast('success', 'Deleted'); } }); };
+  useEffect(() => { api('/api/test-case-groups').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  const toggle = (id) => { if (expanded === id) { setExpanded(null); return; } setExpanded(id); api(`/api/test-case-groups/${id}`).then(r => r.json()).then(d => setExpandedCases(d.testCases || [])); };
+  const remove = (id) => { api(`/api/test-case-groups/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(g => g.id !== id)); toast('success', 'Deleted'); } }); };
   const filtered = data.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
   const paged = filtered.slice(page * entries, (page + 1) * entries);
   return (
@@ -1315,10 +1315,10 @@ function TestCaseGroupFormView() {
   const [allCases, setAllCases] = useState([]); const [selected, setSelected] = useState([]);
   const [saving, setSaving] = useState(false); const [loaded, setLoaded] = useState(!isEdit);
 
-  useEffect(() => { fetch('/api/test-cases').then(r => r.json()).then(setAllCases).catch(() => {}); }, []);
+  useEffect(() => { api('/api/test-cases').then(r => r.json()).then(setAllCases).catch(() => {}); }, []);
   useEffect(() => {
     if (isEdit) {
-      fetch(`/api/test-case-groups/${id}`).then(r => r.json()).then(d => {
+      api(`/api/test-case-groups/${id}`).then(r => r.json()).then(d => {
         setName(d.group.name); setDesc(d.group.description || '');
         setSelected((d.testCases || []).map(tc => tc.testCase.id));
         setLoaded(true);
@@ -1332,7 +1332,7 @@ function TestCaseGroupFormView() {
     e.preventDefault(); setSaving(true);
     const url = isEdit ? `/api/test-case-groups/${id}` : '/api/test-case-groups';
     const method = isEdit ? 'PUT' : 'POST';
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc, testCaseIds: selected }) });
+    const r = await api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc, testCaseIds: selected }) });
     if (r.ok) { toast('success', isEdit ? 'Updated!' : 'Created!', `"${name}" with ${selected.length} case(s).`); setTimeout(() => navigate('/test-case-groups'), 900); }
     else { toast('error', 'Failed'); setSaving(false); }
   };
@@ -1366,11 +1366,11 @@ function TestSuiteListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(''); const [entries, setEntries] = useState(10); const [page, setPage] = useState(0);
   const [expanded, setExpanded] = useState(null); const [expandedDetail, setExpandedDetail] = useState(null);
-  useEffect(() => { fetch('/api/test-suites').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
-  const toggle = (id) => { if (expanded === id) { setExpanded(null); setExpandedDetail(null); return; } setExpanded(id); setExpandedDetail(null); fetch(`/api/test-suites/${id}`).then(r => r.json()).then(setExpandedDetail); };
-  const remove = (id) => { fetch(`/api/test-suites/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(s => s.id !== id)); toast('success', 'Deleted'); } }); };
+  useEffect(() => { api('/api/test-suites').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  const toggle = (id) => { if (expanded === id) { setExpanded(null); setExpandedDetail(null); return; } setExpanded(id); setExpandedDetail(null); api(`/api/test-suites/${id}`).then(r => r.json()).then(setExpandedDetail); };
+  const remove = (id) => { api(`/api/test-suites/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(s => s.id !== id)); toast('success', 'Deleted'); } }); };
   const runSuite = (id, name) => {
-    fetch(`/api/test-suites/${id}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+    api(`/api/test-suites/${id}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
       .then(r => { if (r.ok) toast('success', 'Suite Queued! 🚀', `"${name}" scheduled for immediate execution.`); else toast('error', 'Failed', 'Could not trigger execution.'); });
   };
   const filtered = data.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
@@ -1422,10 +1422,10 @@ function TestSuiteFormView() {
   const [allGroups, setAllGroups] = useState([]); const [selected, setSelected] = useState([]);
   const [saving, setSaving] = useState(false); const [loaded, setLoaded] = useState(!isEdit);
 
-  useEffect(() => { fetch('/api/test-case-groups').then(r => r.json()).then(setAllGroups).catch(() => {}); }, []);
+  useEffect(() => { api('/api/test-case-groups').then(r => r.json()).then(setAllGroups).catch(() => {}); }, []);
   useEffect(() => {
     if (isEdit) {
-      fetch(`/api/test-suites/${id}`).then(r => r.json()).then(d => {
+      api(`/api/test-suites/${id}`).then(r => r.json()).then(d => {
         setName(d.suite.name); setDesc(d.suite.description || ''); setBrowser(d.suite.browserType || 'chrome');
         setSelected((d.groups || []).map(g => g.group.id));
         setLoaded(true);
@@ -1439,7 +1439,7 @@ function TestSuiteFormView() {
     e.preventDefault(); setSaving(true);
     const url = isEdit ? `/api/test-suites/${id}` : '/api/test-suites';
     const method = isEdit ? 'PUT' : 'POST';
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc, browserType: browser, testCaseGroupIds: selected }) });
+    const r = await api(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description: desc, browserType: browser, testCaseGroupIds: selected }) });
     if (r.ok) { toast('success', isEdit ? 'Updated!' : 'Created!', `"${name}" with ${selected.length} group(s).`); setTimeout(() => navigate('/test-suites'), 900); }
     else { toast('error', 'Failed'); setSaving(false); }
   };
@@ -1475,7 +1475,7 @@ function TestSuiteFormView() {
 ═══════════════════════════════════════════════════════ */
 function ReportModal({ execId, onClose, onLightbox }) {
   const [detail, setDetail] = useState(null); const [loading, setLoading] = useState(true);
-  useEffect(() => { fetch(`/api/executions/${execId}`).then(r => r.json()).then(d => { setDetail(d); setLoading(false); }).catch(() => setLoading(false)); }, [execId]);
+  useEffect(() => { api(`/api/executions/${execId}`).then(r => r.json()).then(d => { setDetail(d); setLoading(false); }).catch(() => setLoading(false)); }, [execId]);
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
   return (
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
