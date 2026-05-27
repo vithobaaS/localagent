@@ -33,8 +33,10 @@ public class SecurityConfig {
                 // Legacy agent endpoints
                 .requestMatchers("/agents/**").permitAll()
                 .requestMatchers("/executions/**").permitAll()
-                // Static frontend
+                // Static frontend and assets
                 .requestMatchers("/autopropel/**", "/", "/index.html").permitAll()
+                .requestMatchers("/assets/**", "/*.js", "/*.css", "/*.json", "/*.png", "/*.svg", "/*.ico").permitAll()
+                .requestMatchers("/*.ps1", "/*.sh", "/agent/**").permitAll()
                 // Everything else requires JWT
                 .anyRequest().authenticated()
             )
