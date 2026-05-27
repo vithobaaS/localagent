@@ -139,8 +139,13 @@ public class MvpUiController {
                             sr.setExecutionId(executionId);
                             sr.setStepIndex(i + 1);
                             sr.setActionName((String) stepData.getOrDefault("actionName", "unknown"));
-                            sr.setExecutedStatus((Integer) stepData.getOrDefault("executed_status", 0));
-                            sr.setResultStatus((Integer) stepData.getOrDefault("result_status", 0));
+                            
+                            Object execStatus = stepData.get("executed_status");
+                            sr.setExecutedStatus(execStatus != null ? (Integer) execStatus : 0);
+                            
+                            Object resStatus = stepData.get("result_status");
+                            sr.setResultStatus(resStatus != null ? (Integer) resStatus : 0);
+                            
                             sr.setErrorJson((String) stepData.getOrDefault("errorLog", ""));
                             sr = stepResultRepository.save(sr);
                             
