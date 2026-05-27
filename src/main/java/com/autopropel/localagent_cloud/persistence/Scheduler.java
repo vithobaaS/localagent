@@ -1,6 +1,8 @@
 package com.autopropel.localagent_cloud.persistence;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,6 +39,30 @@ public class Scheduler {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    // ─── Outlook-style scheduling fields ──────────────────────────────────────
+
+    /** The specific date to run (used for 'once' and as the start date for recurring) */
+    @Column(name = "scheduled_date")
+    private LocalDate scheduledDate;
+
+    /** The time of day to run */
+    @Column(name = "scheduled_time")
+    private LocalTime scheduledTime;
+
+    /** Recurrence pattern: 'once', 'daily', 'weekly', 'monthly' */
+    @Column(name = "recurrence_type")
+    private String recurrenceType;
+
+    /** Comma-separated day abbreviations for weekly recurrence, e.g. "MON,WED,FRI" */
+    @Column(name = "recurrence_days")
+    private String recurrenceDays;
+
+    /** Optional end date for recurring schedules */
+    @Column(name = "recurrence_end_date")
+    private LocalDate recurrenceEndDate;
+
+    // ──────────────────────────────────────────────────────────────────────────
 
     @PrePersist
     protected void onCreate() {
@@ -106,5 +132,45 @@ public class Scheduler {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDate getScheduledDate() {
+        return scheduledDate;
+    }
+
+    public void setScheduledDate(LocalDate scheduledDate) {
+        this.scheduledDate = scheduledDate;
+    }
+
+    public LocalTime getScheduledTime() {
+        return scheduledTime;
+    }
+
+    public void setScheduledTime(LocalTime scheduledTime) {
+        this.scheduledTime = scheduledTime;
+    }
+
+    public String getRecurrenceType() {
+        return recurrenceType;
+    }
+
+    public void setRecurrenceType(String recurrenceType) {
+        this.recurrenceType = recurrenceType;
+    }
+
+    public String getRecurrenceDays() {
+        return recurrenceDays;
+    }
+
+    public void setRecurrenceDays(String recurrenceDays) {
+        this.recurrenceDays = recurrenceDays;
+    }
+
+    public LocalDate getRecurrenceEndDate() {
+        return recurrenceEndDate;
+    }
+
+    public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
+        this.recurrenceEndDate = recurrenceEndDate;
     }
 }

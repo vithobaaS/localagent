@@ -2,6 +2,8 @@ package com.autopropel.localagent_cloud;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -323,7 +325,8 @@ public class MvpUiController {
     }
 
     @PostMapping("/schedulers")
-    public ResponseEntity<Scheduler> createScheduler(@RequestBody Scheduler scheduler) {
+    public ResponseEntity<Scheduler> createScheduler(@RequestBody Map<String, Object> body) {
+        Scheduler scheduler = buildSchedulerFromBody(new Scheduler(), body);
         if (scheduler.getTestSuiteName() == null || scheduler.getTestSuiteName().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
@@ -336,17 +339,23 @@ public class MvpUiController {
         if (scheduler.getStatus() == null || scheduler.getStatus().isBlank()) {
             scheduler.setStatus("active");
         }
+        // Auto-compute cron expression from Outlook-style fields
+        if (scheduler.getRecurrenceType() != null && !scheduler.getRecurrenceType().isBlank()) {
+            String computed = com.autopropel.localagent_cloud.service.CronExecutionEngine.buildCronFromOutlookFields(scheduler);
+            if (computed != null) scheduler.setCronExpression(computed);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(schedulerRepository.save(scheduler));
     }
 
     @PutMapping("/schedulers/{id}")
-    public ResponseEntity<Scheduler> updateScheduler(@PathVariable("id") Long id, @RequestBody Scheduler updated) {
+    public ResponseEntity<Scheduler> updateScheduler(@PathVariable("id") Long id, @RequestBody Map<String, Object> body) {
         return schedulerRepository.findById(id).map(existing -> {
-            if (updated.getTestSuiteName() != null) existing.setTestSuiteName(updated.getTestSuiteName());
-            if (updated.getExecutionType() != null) existing.setExecutionType(updated.getExecutionType());
-            if (updated.getBrowserType() != null) existing.setBrowserType(updated.getBrowserType());
-            if (updated.getStatus() != null) existing.setStatus(updated.getStatus());
-            if (updated.getTestSuiteId() != null) existing.setTestSuiteId(updated.getTestSuiteId());
+            buildSchedulerFromBody(existing, body);
+            // Auto-compute cron expression from Outlook-style fields
+            if (existing.getRecurrenceType() != null && !existing.getRecurrenceType().isBlank()) {
+                String computed = com.autopropel.localagent_cloud.service.CronExecutionEngine.buildCronFromOutlookFields(existing);
+                if (computed != null) existing.setCronExpression(computed);
+            }
             return ResponseEntity.ok(schedulerRepository.save(existing));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -358,6 +367,40 @@ public class MvpUiController {
         }
         schedulerRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Maps a JSON request body (from the Outlook-style scheduler form) onto a Scheduler entity.
+     * Handles both the legacy fields and the new Outlook-style fields.
+     */
+    @SuppressWarnings("unchecked")
+    private Scheduler buildSchedulerFromBody(Scheduler s, Map<String, Object> body) {
+        if (body.containsKey("testSuiteName"))  s.setTestSuiteName((String) body.get("testSuiteName"));
+        if (body.containsKey("executionType"))  s.setExecutionType((String) body.get("executionType"));
+        if (body.containsKey("browserType"))    s.setBrowserType((String) body.get("browserType"));
+        if (body.containsKey("status"))         s.setStatus((String) body.get("status"));
+        if (body.containsKey("cronExpression")) s.setCronExpression((String) body.get("cronExpression"));
+        if (body.containsKey("testSuiteId") && body.get("testSuiteId") != null) {
+            s.setTestSuiteId(((Number) body.get("testSuiteId")).longValue());
+        }
+        // Outlook-style fields
+        if (body.containsKey("recurrenceType"))  s.setRecurrenceType((String) body.get("recurrenceType"));
+        if (body.containsKey("recurrenceDays"))  s.setRecurrenceDays((String) body.get("recurrenceDays"));
+        if (body.containsKey("scheduledDate") && body.get("scheduledDate") != null) {
+            try { s.setScheduledDate(LocalDate.parse((String) body.get("scheduledDate"))); } catch (Exception ignored) {}
+        }
+        if (body.containsKey("scheduledTime") && body.get("scheduledTime") != null) {
+            try { s.setScheduledTime(LocalTime.parse((String) body.get("scheduledTime"))); } catch (Exception ignored) {}
+        }
+        if (body.containsKey("recurrenceEndDate") && body.get("recurrenceEndDate") != null) {
+            String endDateStr = (String) body.get("recurrenceEndDate");
+            if (!endDateStr.isBlank()) {
+                try { s.setRecurrenceEndDate(LocalDate.parse(endDateStr)); } catch (Exception ignored) {}
+            } else {
+                s.setRecurrenceEndDate(null);
+            }
+        }
+        return s;
     }
 
     // =========================================================================
