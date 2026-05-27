@@ -243,6 +243,7 @@ export default function App() {
   const logout = () => {
     localStorage.removeItem('ap_token');
     localStorage.removeItem('ap_user');
+    localStorage.removeItem('onboarding_dismissed');
     setUser(null);
     navigate('/login', { replace: true });
   };
@@ -589,7 +590,7 @@ function DashboardView({ onSelectExec }) {
 
   return (
     <div className="page-view">
-      <PageHeader title="Dashboard" crumb="Overview" />
+      <PageHeader title="Dashboard" crumb="Overview" actions={<button onClick={() => setShowOnboarding(true)} className="btn btn-primary">⬇️ Install Agent</button>} />
 
       {showOnboarding && (
         <div className="modal-backdrop">
