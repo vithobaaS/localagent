@@ -504,6 +504,7 @@ function DashboardView({ onSelectExec }) {
   const [entries, setEntries] = useState(10);
   const [page, setPage] = useState(0);
   const [agentOsTab, setAgentOsTab] = useState('windows');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const { user } = useAuth(); // get user from context
 
   useEffect(() => {
@@ -514,8 +515,16 @@ function DashboardView({ onSelectExec }) {
       setExecs(dExecs || []);
       setAgents(dAgents || []);
       setLoading(false);
+      if ((dAgents || []).length === 0 && !localStorage.getItem('onboarding_dismissed')) {
+        setShowOnboarding(true);
+      }
     }).catch(() => setLoading(false));
   }, []);
+
+  const closeOnboarding = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('onboarding_dismissed', 'true');
+  };
 
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
   const getBrowser = (e) => { try { return (JSON.parse(e.environmentJson || '{}').browserTypeName || 'chrome').toLowerCase(); } catch { return 'chrome'; } };
@@ -581,52 +590,55 @@ function DashboardView({ onSelectExec }) {
     <div className="page-view">
       <PageHeader title="Dashboard" crumb="Overview" />
 
-      {!loading && agents.length === 0 && (
-        <div className="card onboarding-card" style={{ marginBottom: '24px', border: '1px solid var(--brand)' }}>
-          <div className="card-header" style={{ paddingBottom: 0, borderBottom: 'none' }}>
-            <div>
-              <h2 style={{ color: 'var(--brand)', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {showOnboarding && (
+        <div className="modal-backdrop">
+          <div className="modal-box" style={{ maxWidth: '600px' }}>
+            <div className="modal-head">
+              <h2 style={{ color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                 <span>🚀</span> Connect your first agent
               </h2>
-              <p style={{ marginTop: '4px', fontSize: '14px' }}>To start running tests, you need to install the AutoPropel agent on your machine or server.</p>
+              <button className="modal-close-btn" onClick={closeOnboarding}>✕</button>
             </div>
-          </div>
-          <div className="card-body">
-            <div className="tabs" style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
-              {['windows', 'mac', 'linux'].map(os => (
-                <button key={os} 
-                  style={{ padding: '8px 16px', background: 'transparent', border: 'none', borderBottom: agentOsTab === os ? '2px solid var(--brand)' : '2px solid transparent', color: agentOsTab === os ? 'var(--brand)' : 'var(--txt-muted)', cursor: 'pointer', fontWeight: 600, textTransform: 'capitalize' }}
-                  onClick={() => setAgentOsTab(os)}>
-                  {os}
-                </button>
-              ))}
-            </div>
-            
-            <div className="install-content" style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option A: Quick Install (CLI)</p>
-              <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Run this command in your {agentOsTab === 'windows' ? 'PowerShell' : 'terminal'} to automatically download and configure the agent in the background.</p>
-              <div className="code-block" style={{ background: '#0d1117', color: '#c9d1d9', padding: '12px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '12.5px', wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <code>
-                  {agentOsTab === 'windows' 
-                    ? `Invoke-WebRequest -Uri "http://localhost:8080/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken}"` 
-                    : `curl -sL http://localhost:8080/install.sh | bash -s -- --token "${user?.agentToken}"`
-                  }
-                </code>
-                <button className="btn btn-sm" style={{ background: 'var(--surface)', color: 'var(--txt)' }} onClick={() => {
-                  navigator.clipboard.writeText(agentOsTab === 'windows' ? `Invoke-WebRequest -Uri "http://localhost:8080/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken}"` : `curl -sL http://localhost:8080/install.sh | bash -s -- --token "${user?.agentToken}"`);
-                  window.toast('success', 'Copied', 'Command copied to clipboard');
-                }}>Copy</button>
+            <div className="modal-body">
+              <p style={{ marginTop: '4px', fontSize: '14px', marginBottom: '16px' }}>
+                To start running tests, you need to install the AutoPropel agent on your machine or server.
+              </p>
+              <div className="tabs" style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+                {['windows', 'mac', 'linux'].map(os => (
+                  <button key={os} 
+                    style={{ padding: '8px 16px', background: 'transparent', border: 'none', borderBottom: agentOsTab === os ? '2px solid var(--brand)' : '2px solid transparent', color: agentOsTab === os ? 'var(--brand)' : 'var(--txt-muted)', cursor: 'pointer', fontWeight: 600, textTransform: 'capitalize' }}
+                    onClick={() => setAgentOsTab(os)}>
+                    {os}
+                  </button>
+                ))}
               </div>
+              
+              <div className="install-content" style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option A: Quick Install (CLI)</p>
+                <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Run this command in your {agentOsTab === 'windows' ? 'PowerShell' : 'terminal'} to automatically download and configure the agent in the background.</p>
+                <div className="code-block" style={{ background: '#0d1117', color: '#c9d1d9', padding: '12px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '12.5px', wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <code>
+                    {agentOsTab === 'windows' 
+                      ? `Invoke-WebRequest -Uri "http://localhost:8080/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken || 'your-agent-token'}"` 
+                      : `curl -sL http://localhost:8080/install.sh | bash -s -- --token "${user?.agentToken || 'your-agent-token'}"`
+                    }
+                  </code>
+                  <button className="btn btn-sm" style={{ background: 'var(--surface)', color: 'var(--txt)' }} onClick={() => {
+                    navigator.clipboard.writeText(agentOsTab === 'windows' ? `Invoke-WebRequest -Uri "http://localhost:8080/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken || 'your-agent-token'}"` : `curl -sL http://localhost:8080/install.sh | bash -s -- --token "${user?.agentToken || 'your-agent-token'}"`);
+                    window.toast('success', 'Copied', 'Command copied to clipboard');
+                  }}>Copy</button>
+                </div>
 
-              <div style={{ marginTop: '24px' }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option B: Manual Install (GUI)</p>
-                <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Download the installer wizard if you prefer a graphical setup.</p>
-                <button className="btn btn-primary btn-sm">Download {agentOsTab === 'windows' ? '.msi' : agentOsTab === 'mac' ? '.dmg' : '.deb'} Installer</button>
+                <div style={{ marginTop: '24px' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option B: Manual Install (GUI)</p>
+                  <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Download the installer wizard if you prefer a graphical setup.</p>
+                  <button className="btn btn-primary btn-sm">Download {agentOsTab === 'windows' ? '.msi' : agentOsTab === 'mac' ? '.dmg' : '.deb'} Installer</button>
+                </div>
               </div>
-            </div>
-            <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--txt-muted)' }}>
-              <span className="spinner" style={{ width: '12px', height: '12px', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}></span>
-              Waiting for agent to connect...
+              <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--txt-muted)' }}>
+                <span className="spinner" style={{ width: '12px', height: '12px', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}></span>
+                Waiting for agent to connect...
+              </div>
             </div>
           </div>
         </div>
