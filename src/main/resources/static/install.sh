@@ -1,6 +1,6 @@
 #!/bin/bash
 TOKEN=""
-CLOUD_URL="http://localhost:8080"
+CLOUD_URL="http://13.232.42.59"
 INSTALL_DIR="$HOME/.autopropel/agent"
 
 while [[ "$#" -gt 0 ]]; do

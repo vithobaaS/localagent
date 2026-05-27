@@ -23,6 +23,6 @@ public class MvpUiViewController {
         "/autopropel/stub/**"
     })
     public String dashboardRedirect() {
-        return "forward:/autopropel/dashboard/index.html";
+        return "forward:/autopropel/index.html";
     }
 }

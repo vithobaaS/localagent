@@ -3,7 +3,7 @@ param (
     [string]$Token,
     
     [string]$InstallDir = "C:\AutoPropel\Agent",
-    [string]$CloudUrl = "http://localhost:8080"
+    [string]$CloudUrl = "http://13.232.42.59"
 )
 
 Write-Host "🚀 Installing AutoPropel Agent..." -ForegroundColor Cyan

@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: localagent-cloud
     ports:
-      - "9090:9090"
+      - "80:9090"
     environment:
       DB_URL: jdbc:postgresql://localagent-postgres:5432/localagent_cloud
       DB_USER: localagent
