@@ -507,6 +507,8 @@ function DashboardView({ onSelectExec }) {
   const [page, setPage] = useState(0);
   const [agentOsTab, setAgentOsTab] = useState('windows');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [pairingCode, setPairingCode] = useState('');
+  const [pairingLoading, setPairingLoading] = useState(false);
   const { user } = useAuth(); // get user from context
 
   useEffect(() => {
@@ -517,7 +519,7 @@ function DashboardView({ onSelectExec }) {
       setExecs(dExecs || []);
       setAgents(dAgents || []);
       setLoading(false);
-      if ((dAgents || []).length === 0 && !localStorage.getItem('onboarding_dismissed')) {
+      if ((dAgents || []).length === 0 && user && !localStorage.getItem(`onboarding_dismissed_${user.id}`)) {
         setShowOnboarding(true);
       }
     }).catch(() => setLoading(false));
@@ -525,7 +527,35 @@ function DashboardView({ onSelectExec }) {
 
   const closeOnboarding = () => {
     setShowOnboarding(false);
-    localStorage.setItem('onboarding_dismissed', 'true');
+    if (user) {
+      localStorage.setItem(`onboarding_dismissed_${user.id}`, 'true');
+    }
+  };
+
+  const handleVerifyPairing = async () => {
+    if (pairingCode.length !== 6) {
+      window.toast('error', 'Invalid Code', 'Pairing code must be 6 digits');
+      return;
+    }
+    setPairingLoading(true);
+    try {
+      const res = await api('/api/pairing/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: pairingCode })
+      });
+      if (res.ok) {
+        window.toast('success', 'Success', 'Agent paired successfully!');
+        closeOnboarding();
+        api('/api/agents').then(r => r.json()).then(setAgents);
+      } else {
+        const data = await res.json();
+        window.toast('error', 'Failed', data.error || 'Invalid pairing code');
+      }
+    } catch (e) {
+      window.toast('error', 'Error', 'Failed to connect to server');
+    }
+    setPairingLoading(false);
   };
 
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
@@ -615,47 +645,49 @@ function DashboardView({ onSelectExec }) {
                 ))}
               </div>
               
-              <div className="install-content" style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option A: Quick Install (CLI)</p>
-                <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Run this command in your {agentOsTab === 'windows' ? 'PowerShell' : 'terminal'} to automatically download and configure the agent in the background.</p>
-                <div className="code-block" style={{ background: '#0d1117', color: '#c9d1d9', padding: '12px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '12.5px', wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <code>
-                    {agentOsTab === 'windows' 
-                      ? `Invoke-WebRequest -Uri "http://13.232.42.59/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken || 'your-agent-token'}"` 
-                      : `curl -sL http://13.232.42.59/install.sh | bash -s -- --token "${user?.agentToken || 'your-agent-token'}"`
-                    }
-                  </code>
-                  <button className="btn btn-sm" style={{ background: 'var(--surface)', color: 'var(--txt)' }} onClick={() => {
-                    navigator.clipboard.writeText(agentOsTab === 'windows' ? `Invoke-WebRequest -Uri "http://13.232.42.59/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken || 'your-agent-token'}"` : `curl -sL http://13.232.42.59/install.sh | bash -s -- --token "${user?.agentToken || 'your-agent-token'}"`);
-                    window.toast('success', 'Copied', 'Command copied to clipboard');
-                  }}>Copy</button>
-                </div>
+              <div className="install-content" style={{ background: 'var(--surface-2)', padding: '24px', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>1. Install the Agent</h3>
+                <p style={{ fontSize: '14px', color: 'var(--txt-muted)', marginBottom: '16px' }}>
+                  Download and run the installer on your Windows machine.
+                </p>
+                <a href="/agent/AutoPropelAgent-1.0.0.msi" download className="btn btn-primary" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
+                  📦 Download .msi Installer
+                </a>
 
-                <div style={{ marginTop: '24px' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option B: Manual Install (GUI)</p>
-                  <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '12px' }}>Download the installer wizard. During the first launch, the agent will pop up a configuration window. You will need to paste your unique Agent Token below:</p>
-                  
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--txt-muted)' }}>Your Token:</span>
-                    <code style={{ background: '#0d1117', color: '#58a6ff', padding: '6px 12px', borderRadius: '4px', fontSize: '13px', fontFamily: 'monospace', border: '1px solid var(--border)' }}>
-                      {user?.agentToken || 'Loading...'}
-                    </code>
-                    <button className="btn btn-sm" style={{ background: 'var(--surface)', color: 'var(--txt)', padding: '4px 8px' }} onClick={() => {
-                      navigator.clipboard.writeText(user?.agentToken || '');
-                      window.toast('success', 'Copied', 'Agent Token copied to clipboard');
-                    }}>Copy Token</button>
-                  </div>
-
-                  {agentOsTab === 'windows' ? (
-                    <a href="/agent/AutoPropelAgent-1.0.0.msi" download className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>Download .msi Installer</a>
-                  ) : (
-                    <button className="btn btn-primary btn-sm" disabled>Coming Soon for {agentOsTab === 'mac' ? 'Mac' : 'Linux'}</button>
-                  )}
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', borderTop: '1px solid var(--border)', paddingTop: '32px' }}>2. Enter Pairing Code</h3>
+                <p style={{ fontSize: '14px', color: 'var(--txt-muted)', marginBottom: '16px' }}>
+                  When the agent starts, it will display a 6-digit code. Enter it below to securely connect your machine.
+                </p>
+                
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', alignItems: 'center' }}>
+                  <input 
+                    type="text" 
+                    placeholder="123456" 
+                    maxLength={6}
+                    value={pairingCode}
+                    onChange={e => setPairingCode(e.target.value.replace(/\D/g, ''))}
+                    style={{ 
+                      fontSize: '24px', 
+                      letterSpacing: '8px', 
+                      textAlign: 'center', 
+                      width: '200px', 
+                      padding: '12px', 
+                      borderRadius: '8px', 
+                      border: '2px solid var(--border)',
+                      background: 'var(--surface)',
+                      color: 'var(--txt)'
+                    }} 
+                  />
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={handleVerifyPairing}
+                    disabled={pairingLoading || pairingCode.length !== 6}
+                    style={{ padding: '16px 24px', fontSize: '16px' }}
+                  >
+                    {pairingLoading ? 'Verifying...' : 'Connect'}
+                  </button>
                 </div>
               </div>
-              <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--txt-muted)' }}>
-                <span className="spinner" style={{ width: '12px', height: '12px', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}></span>
-                Waiting for agent to connect...
               </div>
             </div>
           </div>

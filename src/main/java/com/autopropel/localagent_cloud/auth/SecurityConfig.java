@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/agents/*/jobs/next").permitAll()
                 .requestMatchers("/api/agents/register").permitAll()
                 .requestMatchers("/api/agents/*/heartbeat").permitAll()
+                .requestMatchers("/api/agents/pairing/**").permitAll()
                 .requestMatchers("/api/executions/*/results").permitAll()
                 // Legacy agent endpoints
                 .requestMatchers("/agents/**").permitAll()
