@@ -688,7 +688,6 @@ function DashboardView({ onSelectExec }) {
                   </button>
                 </div>
               </div>
-              </div>
             </div>
           </div>
         </div>
