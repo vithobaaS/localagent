@@ -15,6 +15,9 @@ public class Agent {
     @Id
     private String id;
 
+    @Column(name = "org_id")
+    private Long orgId;
+
     @Column(nullable = false)
     private String name;
 
@@ -86,4 +89,7 @@ public class Agent {
     public void setCapabilitiesJson(String capabilitiesJson) {
         this.capabilitiesJson = capabilitiesJson;
     }
+
+    public Long getOrgId() { return orgId; }
+    public void setOrgId(Long orgId) { this.orgId = orgId; }
 }

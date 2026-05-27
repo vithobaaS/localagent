@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -37,6 +38,7 @@ public class MvpUiController {
     private final StepResultRepository stepResultRepository;
     private final ScreenshotRepository screenshotRepository;
     private final AgentRepository agentRepository;
+    private final AgentTokenRepository agentTokenRepository;
     private final SchedulerRepository schedulerRepository;
     private final GroupRepository groupRepository;
     private final TestCaseRepository testCaseRepository;
@@ -54,6 +56,7 @@ public class MvpUiController {
             StepResultRepository stepResultRepository,
             ScreenshotRepository screenshotRepository,
             AgentRepository agentRepository,
+            AgentTokenRepository agentTokenRepository,
             SchedulerRepository schedulerRepository,
             GroupRepository groupRepository,
             TestCaseRepository testCaseRepository,
@@ -69,6 +72,7 @@ public class MvpUiController {
         this.stepResultRepository = stepResultRepository;
         this.screenshotRepository = screenshotRepository;
         this.agentRepository = agentRepository;
+        this.agentTokenRepository = agentTokenRepository;
         this.schedulerRepository = schedulerRepository;
         this.groupRepository = groupRepository;
         this.testCaseRepository = testCaseRepository;
@@ -82,13 +86,23 @@ public class MvpUiController {
         this.s3Service = s3Service;
     }
 
+    /** Extracts the org_id from the JWT (set as a request attribute by JwtAuthFilter) */
+    private Long orgId(HttpServletRequest req) {
+        Object o = req.getAttribute("orgId");
+        return o != null ? ((Number) o).longValue() : null;
+    }
+
     // =========================================================================
     // EXECUTION ENDPOINTS
     // =========================================================================
 
     @GetMapping("/executions")
-    public ResponseEntity<List<Execution>> getExecutions() {
-        return ResponseEntity.ok(executionRepository.findAll());
+    public ResponseEntity<List<Execution>> getExecutions(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<Execution> list = org != null
+                ? executionRepository.findAll().stream().filter(e -> org.equals(e.getOrgId())).toList()
+                : executionRepository.findAll();
+        return ResponseEntity.ok(list);
     }
 
 
@@ -174,20 +188,36 @@ public class MvpUiController {
     // =========================================================================
 
     @GetMapping("/agents")
-    public ResponseEntity<List<Agent>> getAgents() {
-        return ResponseEntity.ok(agentRepository.findAll());
+    public ResponseEntity<List<Agent>> getAgents(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<Agent> list = org != null
+                ? agentRepository.findAll().stream().filter(a -> org.equals(a.getOrgId())).toList()
+                : agentRepository.findAll();
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/agents/register")
     @Transactional
     public ResponseEntity<Map<String, Object>> registerAgent(@RequestBody Map<String, Object> body) {
         String agentId = (String) body.get("id");
+        String agentTokenStr = (String) body.get("agentToken");
+        
         if (agentId == null || agentId.isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Missing agent id"));
+        }
+        if (agentTokenStr == null || agentTokenStr.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Missing agentToken"));
+        }
+
+        // Look up token to find orgId
+        AgentToken token = agentTokenRepository.findByToken(agentTokenStr).orElse(null);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid agentToken"));
         }
 
         Agent agent = agentRepository.findById(agentId).orElse(new Agent());
         agent.setId(agentId);
+        agent.setOrgId(token.getOrgId());
         agent.setName((String) body.getOrDefault("name", agentId));
         agent.setOs((String) body.get("os"));
         agent.setAgentVersion((String) body.get("agentVersion"));
@@ -320,13 +350,18 @@ public class MvpUiController {
     // =========================================================================
 
     @GetMapping("/schedulers")
-    public ResponseEntity<List<Scheduler>> getSchedulers() {
-        return ResponseEntity.ok(schedulerRepository.findAll());
+    public ResponseEntity<List<Scheduler>> getSchedulers(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<Scheduler> list = org != null
+                ? schedulerRepository.findAll().stream().filter(s -> org.equals(s.getOrgId())).toList()
+                : schedulerRepository.findAll();
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/schedulers")
-    public ResponseEntity<Scheduler> createScheduler(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Scheduler> createScheduler(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         Scheduler scheduler = buildSchedulerFromBody(new Scheduler(), body);
+        scheduler.setOrgId(orgId(req));
         if (scheduler.getTestSuiteName() == null || scheduler.getTestSuiteName().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
@@ -408,15 +443,20 @@ public class MvpUiController {
     // =========================================================================
 
     @GetMapping("/groups")
-    public ResponseEntity<List<Group>> getGroups() {
-        return ResponseEntity.ok(groupRepository.findAll());
+    public ResponseEntity<List<Group>> getGroups(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<Group> list = org != null
+                ? groupRepository.findAll().stream().filter(g -> org.equals(g.getOrgId())).toList()
+                : groupRepository.findAll();
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/groups")
-    public ResponseEntity<Group> createGroup(@RequestBody Group group) {
+    public ResponseEntity<Group> createGroup(@RequestBody Group group, HttpServletRequest req) {
         if (group.getName() == null || group.getName().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
+        group.setOrgId(orgId(req));
         return ResponseEntity.status(HttpStatus.CREATED).body(groupRepository.save(group));
     }
 
@@ -488,8 +528,12 @@ public class MvpUiController {
     // =========================================================================
 
     @GetMapping("/test-cases")
-    public ResponseEntity<List<TestCase>> getTestCases() {
-        return ResponseEntity.ok(testCaseRepository.findAllByOrderByIdDesc());
+    public ResponseEntity<List<TestCase>> getTestCases(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<TestCase> list = org != null
+                ? testCaseRepository.findAllByOrderByIdDesc().stream().filter(t -> org.equals(t.getOrgId())).toList()
+                : testCaseRepository.findAllByOrderByIdDesc();
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/test-cases/{id}")
@@ -505,7 +549,7 @@ public class MvpUiController {
 
     @PostMapping("/test-cases")
     @Transactional
-    public ResponseEntity<Map<String, Object>> createTestCase(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Map<String, Object>> createTestCase(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String name = (String) body.get("name");
         if (name == null || name.isBlank()) {
             return ResponseEntity.badRequest().build();
@@ -515,6 +559,7 @@ public class MvpUiController {
         tc.setName(name);
         tc.setDescription((String) body.get("description"));
         tc.setStatus(body.getOrDefault("status", "active").toString());
+        tc.setOrgId(orgId(req));
         tc = testCaseRepository.save(tc);
 
         // Save inline steps
@@ -590,8 +635,12 @@ public class MvpUiController {
     // =========================================================================
 
     @GetMapping("/test-case-groups")
-    public ResponseEntity<List<TestCaseGroup>> getTestCaseGroups() {
-        return ResponseEntity.ok(testCaseGroupRepository.findAllByOrderByIdDesc());
+    public ResponseEntity<List<TestCaseGroup>> getTestCaseGroups(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<TestCaseGroup> list = org != null
+                ? testCaseGroupRepository.findAllByOrderByIdDesc().stream().filter(g -> org.equals(g.getOrgId())).toList()
+                : testCaseGroupRepository.findAllByOrderByIdDesc();
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/test-case-groups/{id}")
@@ -618,7 +667,7 @@ public class MvpUiController {
     @PostMapping("/test-case-groups")
     @Transactional
     @SuppressWarnings("unchecked")
-    public ResponseEntity<Map<String, Object>> createTestCaseGroup(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Map<String, Object>> createTestCaseGroup(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String name = (String) body.get("name");
         if (name == null || name.isBlank()) {
             return ResponseEntity.badRequest().build();
@@ -628,6 +677,7 @@ public class MvpUiController {
         group.setName(name);
         group.setDescription((String) body.get("description"));
         group.setStatus(body.getOrDefault("status", "active").toString());
+        group.setOrgId(orgId(req));
         group = testCaseGroupRepository.save(group);
 
         // Assign test cases if provided
@@ -695,8 +745,12 @@ public class MvpUiController {
     // =========================================================================
 
     @GetMapping("/test-suites")
-    public ResponseEntity<List<TestSuite>> getTestSuites() {
-        return ResponseEntity.ok(testSuiteRepository.findAllByOrderByIdDesc());
+    public ResponseEntity<List<TestSuite>> getTestSuites(HttpServletRequest req) {
+        Long org = orgId(req);
+        List<TestSuite> list = org != null
+                ? testSuiteRepository.findAllByOrderByIdDesc().stream().filter(s -> org.equals(s.getOrgId())).toList()
+                : testSuiteRepository.findAllByOrderByIdDesc();
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/test-suites/{id}")
@@ -738,7 +792,7 @@ public class MvpUiController {
     @PostMapping("/test-suites")
     @Transactional
     @SuppressWarnings("unchecked")
-    public ResponseEntity<Map<String, Object>> createTestSuite(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<Map<String, Object>> createTestSuite(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String name = (String) body.get("name");
         if (name == null || name.isBlank()) {
             return ResponseEntity.badRequest().build();
@@ -749,6 +803,7 @@ public class MvpUiController {
         suite.setDescription((String) body.get("description"));
         suite.setBrowserType(body.getOrDefault("browserType", "chrome").toString());
         suite.setStatus(body.getOrDefault("status", "active").toString());
+        suite.setOrgId(orgId(req));
         suite = testSuiteRepository.save(suite);
 
         // Assign groups if provided

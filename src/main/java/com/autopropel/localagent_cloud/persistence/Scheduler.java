@@ -19,6 +19,9 @@ public class Scheduler {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "org_id")
+    private Long orgId;
+
     @Column(name = "test_suite_name", nullable = false)
     private String testSuiteName;
 
@@ -173,4 +176,7 @@ public class Scheduler {
     public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
         this.recurrenceEndDate = recurrenceEndDate;
     }
+
+    public Long getOrgId() { return orgId; }
+    public void setOrgId(Long orgId) { this.orgId = orgId; }
 }

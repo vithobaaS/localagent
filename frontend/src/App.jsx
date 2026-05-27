@@ -1,6 +1,29 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { Routes, Route, Navigate, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import './App.css';
+
+/* ═══════════════════════════════════════════════════════
+   AUTH CONTEXT & JWT HELPERS
+═══════════════════════════════════════════════════════ */
+const AuthContext = createContext(null);
+function useAuth() { return useContext(AuthContext); }
+
+function getToken() { return localStorage.getItem('ap_token'); }
+function getUser()  { try { return JSON.parse(localStorage.getItem('ap_user') || 'null'); } catch { return null; } }
+
+// Central API fetch — injects JWT on every request
+async function api(path, opts = {}) {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(path, { ...opts, headers });
+  if (res.status === 401) {
+    localStorage.removeItem('ap_token');
+    localStorage.removeItem('ap_user');
+    window.location.href = '/autopropel/dashboard/#/login';
+  }
+  return res;
+}
 
 /* ═══════════════════════════════════════════════════════
    TOAST SYSTEM
@@ -66,6 +89,133 @@ const statusBadge = (s) => {
 };
 
 /* ═══════════════════════════════════════════════════════
+   AUTH PAGES: LOGIN & REGISTER
+═══════════════════════════════════════════════════════ */
+function LoginPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const submit = async (e) => {
+    e.preventDefault(); setLoading(true); setError('');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Login failed'); setLoading(false); return; }
+      localStorage.setItem('ap_token', data.token);
+      localStorage.setItem('ap_user', JSON.stringify(data));
+      navigate('/dashboard', { replace: true });
+    } catch { setError('Network error. Please try again.'); setLoading(false); }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="logo-icon">⚡</div>
+          <div className="auth-brand">Auto<span>Propel</span></div>
+        </div>
+        <h1 className="auth-title">Welcome back</h1>
+        <p className="auth-sub">Sign in to your AutoPropel account</p>
+        {error && <div className="auth-error">⚠️ {error}</div>}
+        <form onSubmit={submit} className="auth-form">
+          <div className="form-group">
+            <label className="form-label">Email address</label>
+            <input id="login-email" type="email" className="form-input" placeholder="you@company.com"
+              value={form.email} onChange={e => set('email', e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input id="login-password" type="password" className="form-input" placeholder="••••••••"
+              value={form.password} onChange={e => set('password', e.target.value)} required />
+          </div>
+          <button type="submit" id="login-submit" className="btn btn-primary auth-btn" disabled={loading}>
+            {loading ? '⏳ Signing in…' : '🚀 Sign In'}
+          </button>
+        </form>
+        <p className="auth-footer">Don't have an account? <Link to="/register">Start free trial</Link></p>
+      </div>
+    </div>
+  );
+}
+
+function RegisterPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', orgName: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const submit = async (e) => {
+    e.preventDefault(); setLoading(true); setError('');
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Registration failed'); setLoading(false); return; }
+      localStorage.setItem('ap_token', data.token);
+      localStorage.setItem('ap_user', JSON.stringify(data));
+      toast('success', 'Welcome!', 'Your account has been created.');
+      navigate('/dashboard', { replace: true });
+    } catch { setError('Network error. Please try again.'); setLoading(false); }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="logo-icon">⚡</div>
+          <div className="auth-brand">Auto<span>Propel</span></div>
+        </div>
+        <h1 className="auth-title">Start your free trial</h1>
+        <p className="auth-sub">No credit card required • Cancel anytime</p>
+        {error && <div className="auth-error">⚠️ {error}</div>}
+        <form onSubmit={submit} className="auth-form">
+          <div className="form-group">
+            <label className="form-label">Full Name</label>
+            <input id="reg-name" type="text" className="form-input" placeholder="Jane Smith"
+              value={form.fullName} onChange={e => set('fullName', e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Work Email</label>
+            <input id="reg-email" type="email" className="form-input" placeholder="you@company.com"
+              value={form.email} onChange={e => set('email', e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Organisation Name</label>
+            <input id="reg-org" type="text" className="form-input" placeholder="Your company"
+              value={form.orgName} onChange={e => set('orgName', e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input id="reg-password" type="password" className="form-input" placeholder="Min 8 characters"
+              value={form.password} onChange={e => set('password', e.target.value)} required minLength={8} />
+          </div>
+          <button type="submit" id="reg-submit" className="btn btn-primary auth-btn" disabled={loading}>
+            {loading ? '⏳ Creating account…' : '✨ Create Free Account'}
+          </button>
+        </form>
+        <p className="auth-footer">Already have an account? <Link to="/login">Sign in</Link></p>
+      </div>
+    </div>
+  );
+}
+
+function PrivateRoute({ children }) {
+  const token = getToken();
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+/* ═══════════════════════════════════════════════════════
    SIDEBAR NAV ITEM
 ═══════════════════════════════════════════════════════ */
 function NavItem({ to, icon, label, active }) {
@@ -84,11 +234,34 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [execId, setExecId] = useState(null);
   const [lightbox, setLightbox] = useState(null);
+  const [user, setUser] = useState(getUser);
   const location = useLocation();
   const path = location.pathname;
   const is = (p) => path === p;
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem('ap_token');
+    localStorage.removeItem('ap_user');
+    setUser(null);
+    navigate('/login', { replace: true });
+  };
+
+  // Public routes — don't show the shell
+  if (path === '/login' || path === '/register') {
+    return (
+      <AuthContext.Provider value={{ user, setUser }}>
+        <Routes>
+          <Route path="/login"    element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Routes>
+        <ToastContainer />
+      </AuthContext.Provider>
+    );
+  }
 
   return (
+    <AuthContext.Provider value={{ user, setUser, logout }}>
     <div className="app-layout">
       {sidebarOpen && (
         <aside className="sidebar">
@@ -121,8 +294,8 @@ export default function App() {
             <div className="sidebar-footer-inner">
               <div className="footer-dot" />
               <div className="footer-text">
-                <p>AutoPropel Cloud</p>
-                <span>v1.0 Beta — All systems operational</span>
+                <p>{user?.orgName || 'AutoPropel Cloud'}</p>
+                <span>{user?.plan ? `Plan: ${user.plan}` : 'v1.0 Beta — All systems operational'}</span>
               </div>
             </div>
           </div>
@@ -136,31 +309,39 @@ export default function App() {
             <button className="header-icon-btn"><span>✉️</span><span className="header-badge">4</span></button>
             <button className="header-icon-btn"><span>🔔</span><span className="header-badge warn">10</span></button>
             <div className="header-divider" />
-            <div className="header-avatar">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80" alt="User" />
-            </div>
+            {user && (
+              <div className="header-user-pill">
+                <div className="header-avatar">
+                  <span>{(user.fullName || user.email || 'U')[0].toUpperCase()}</span>
+                </div>
+                <span className="header-user-name">{user.fullName || user.email}</span>
+                <button className="header-logout-btn" onClick={logout} title="Sign out">⎋</button>
+              </div>
+            )}
           </div>
         </header>
 
         <div className="page-container">
           <Routes>
-            <Route path="/"                        element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard"               element={<DashboardView onSelectExec={setExecId} />} />
-            <Route path="/scheduler"               element={<SchedulerListView />} />
-            <Route path="/scheduler/create"        element={<SchedulerFormView />} />
-            <Route path="/scheduler/edit/:id"      element={<SchedulerFormView />} />
-            <Route path="/groups"                  element={<GroupsListView />} />
-            <Route path="/groups/create"           element={<CreateGroupView />} />
-            <Route path="/test-cases"              element={<TestCaseListView />} />
-            <Route path="/test-cases/create"       element={<TestCaseFormView />} />
-            <Route path="/test-cases/edit/:id"     element={<TestCaseFormView />} />
-            <Route path="/test-case-groups"        element={<TestCaseGroupListView />} />
-            <Route path="/test-case-groups/create" element={<TestCaseGroupFormView />} />
-            <Route path="/test-case-groups/edit/:id" element={<TestCaseGroupFormView />} />
-            <Route path="/test-suites"             element={<TestSuiteListView />} />
-            <Route path="/test-suites/create"      element={<TestSuiteFormView />} />
-            <Route path="/test-suites/edit/:id"    element={<TestSuiteFormView />} />
-            <Route path="*"                        element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login"    element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
+            <Route path="/dashboard"               element={<PrivateRoute><DashboardView onSelectExec={setExecId} /></PrivateRoute>} />
+            <Route path="/scheduler"               element={<PrivateRoute><SchedulerListView /></PrivateRoute>} />
+            <Route path="/scheduler/create"        element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
+            <Route path="/scheduler/edit/:id"      element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
+            <Route path="/groups"                  element={<PrivateRoute><GroupsListView /></PrivateRoute>} />
+            <Route path="/groups/create"           element={<PrivateRoute><CreateGroupView /></PrivateRoute>} />
+            <Route path="/test-cases"              element={<PrivateRoute><TestCaseListView /></PrivateRoute>} />
+            <Route path="/test-cases/create"       element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
+            <Route path="/test-cases/edit/:id"     element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
+            <Route path="/test-case-groups"        element={<PrivateRoute><TestCaseGroupListView /></PrivateRoute>} />
+            <Route path="/test-case-groups/create" element={<PrivateRoute><TestCaseGroupFormView /></PrivateRoute>} />
+            <Route path="/test-case-groups/edit/:id" element={<PrivateRoute><TestCaseGroupFormView /></PrivateRoute>} />
+            <Route path="/test-suites"             element={<PrivateRoute><TestSuiteListView /></PrivateRoute>} />
+            <Route path="/test-suites/create"      element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
+            <Route path="/test-suites/edit/:id"    element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
+            <Route path="*"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
           </Routes>
         </div>
       </main>
@@ -174,6 +355,7 @@ export default function App() {
       )}
       <ToastContainer />
     </div>
+    </AuthContext.Provider>
   );
 }
 
@@ -316,13 +498,23 @@ function BarChart({ data }) {
 ═══════════════════════════════════════════════════════ */
 function DashboardView({ onSelectExec }) {
   const [execs, setExecs] = useState([]);
+  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [entries, setEntries] = useState(10);
   const [page, setPage] = useState(0);
+  const [agentOsTab, setAgentOsTab] = useState('windows');
+  const { user } = useAuth(); // get user from context
 
   useEffect(() => {
-    fetch('/api/executions').then(r => r.json()).then(d => { setExecs(d); setLoading(false); }).catch(() => setLoading(false));
+    Promise.all([
+      api('/api/executions').then(r => r.json()),
+      api('/api/agents').then(r => r.json())
+    ]).then(([dExecs, dAgents]) => {
+      setExecs(dExecs || []);
+      setAgents(dAgents || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
@@ -388,6 +580,57 @@ function DashboardView({ onSelectExec }) {
   return (
     <div className="page-view">
       <PageHeader title="Dashboard" crumb="Overview" />
+
+      {!loading && agents.length === 0 && (
+        <div className="card onboarding-card" style={{ marginBottom: '24px', border: '1px solid var(--brand)' }}>
+          <div className="card-header" style={{ paddingBottom: 0, borderBottom: 'none' }}>
+            <div>
+              <h2 style={{ color: 'var(--brand)', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🚀</span> Connect your first agent
+              </h2>
+              <p style={{ marginTop: '4px', fontSize: '14px' }}>To start running tests, you need to install the AutoPropel agent on your machine or server.</p>
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="tabs" style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+              {['windows', 'mac', 'linux'].map(os => (
+                <button key={os} 
+                  style={{ padding: '8px 16px', background: 'transparent', border: 'none', borderBottom: agentOsTab === os ? '2px solid var(--brand)' : '2px solid transparent', color: agentOsTab === os ? 'var(--brand)' : 'var(--txt-muted)', cursor: 'pointer', fontWeight: 600, textTransform: 'capitalize' }}
+                  onClick={() => setAgentOsTab(os)}>
+                  {os}
+                </button>
+              ))}
+            </div>
+            
+            <div className="install-content" style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option A: Quick Install (CLI)</p>
+              <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Run this command in your {agentOsTab === 'windows' ? 'PowerShell' : 'terminal'} to automatically download and configure the agent in the background.</p>
+              <div className="code-block" style={{ background: '#0d1117', color: '#c9d1d9', padding: '12px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '12.5px', wordBreak: 'break-all', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <code>
+                  {agentOsTab === 'windows' 
+                    ? `Invoke-WebRequest -Uri "http://localhost:8080/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken}"` 
+                    : `curl -sL http://localhost:8080/install.sh | bash -s -- --token "${user?.agentToken}"`
+                  }
+                </code>
+                <button className="btn btn-sm" style={{ background: 'var(--surface)', color: 'var(--txt)' }} onClick={() => {
+                  navigator.clipboard.writeText(agentOsTab === 'windows' ? `Invoke-WebRequest -Uri "http://localhost:8080/install.ps1" -OutFile "install.ps1"; .\\install.ps1 -Token "${user?.agentToken}"` : `curl -sL http://localhost:8080/install.sh | bash -s -- --token "${user?.agentToken}"`);
+                  window.toast('success', 'Copied', 'Command copied to clipboard');
+                }}>Copy</button>
+              </div>
+
+              <div style={{ marginTop: '24px' }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Option B: Manual Install (GUI)</p>
+                <p style={{ fontSize: '12px', color: 'var(--txt-muted)', marginBottom: '8px' }}>Download the installer wizard if you prefer a graphical setup.</p>
+                <button className="btn btn-primary btn-sm">Download {agentOsTab === 'windows' ? '.msi' : agentOsTab === 'mac' ? '.dmg' : '.deb'} Installer</button>
+              </div>
+            </div>
+            <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--txt-muted)' }}>
+              <span className="spinner" style={{ width: '12px', height: '12px', display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}></span>
+              Waiting for agent to connect...
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="stats-grid">
         {[

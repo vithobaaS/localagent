@@ -17,6 +17,9 @@ public class Execution {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "org_id")
+    private Long orgId;
+
     @Column(nullable = false)
     private String status; // QUEUED, RUNNING, SUCCESS, FAILED
 
@@ -73,4 +76,7 @@ public class Execution {
     public void setEnvironmentJson(String environmentJson) {
         this.environmentJson = environmentJson;
     }
+
+    public Long getOrgId() { return orgId; }
+    public void setOrgId(Long orgId) { this.orgId = orgId; }
 }
