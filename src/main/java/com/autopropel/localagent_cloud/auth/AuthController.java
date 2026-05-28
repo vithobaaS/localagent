@@ -87,7 +87,10 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", "Email and password required"));
         }
         AppUser user = userRepository.findByEmail(email).orElse(null);
-        if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No such user. Please create an account."));
+        }
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
         }
         Organisation org = orgRepository.findById(user.getOrgId()).orElseThrow();
