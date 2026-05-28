@@ -558,7 +558,7 @@ function DashboardView({ onSelectExec }) {
     setPairingLoading(false);
   };
 
-  const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
+  const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.orgExecutionId || e.id}`; } catch { return `Run #${e.orgExecutionId || e.id}`; } };
   const getBrowser = (e) => { try { return (JSON.parse(e.environmentJson || '{}').browserTypeName || 'chrome').toLowerCase(); } catch { return 'chrome'; } };
 
   const stopExecution = async (id) => {
@@ -739,7 +739,7 @@ function DashboardView({ onSelectExec }) {
             : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}><div className="empty-state"><div className="empty-state-icon">📭</div><h3>No executions found</h3><p>Run a test suite to see results here.</p></div></td></tr>
             : paged.map(e => (
               <tr key={e.id}>
-                <td><span className="cell-bold">#{e.id}</span></td>
+                <td><span className="cell-bold">#{e.orgExecutionId || e.id}</span></td>
                 <td><span className="cell-bold">{getName(e)}</span></td>
                 <td><span className={`badge ${statusBadge(getBrowser(e))}`}>{getBrowser(e)}</span></td>
                 <td><span className="text-muted text-sm">{fmt(e.createdAt)}</span></td>
@@ -1524,7 +1524,7 @@ function TestSuiteFormView() {
 function ReportModal({ execId, onClose, onLightbox }) {
   const [detail, setDetail] = useState(null); const [loading, setLoading] = useState(true);
   useEffect(() => { api(`/api/executions/${execId}`).then(r => r.json()).then(d => { setDetail(d); setLoading(false); }).catch(() => setLoading(false)); }, [execId]);
-  const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.id}`; } catch { return `Run #${e.id}`; } };
+  const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.orgExecutionId || e.id}`; } catch { return `Run #${e.orgExecutionId || e.id}`; } };
   return (
     <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">

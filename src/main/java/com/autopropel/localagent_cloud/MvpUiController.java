@@ -277,6 +277,10 @@ public class MvpUiController {
         // Create an Execution record
         Execution execution = new Execution();
         execution.setOrgId(agentOrgId);
+        
+        long count = agentOrgId != null ? executionRepository.countByOrgId(agentOrgId) : 0;
+        execution.setOrgExecutionId(count + 1);
+
         execution.setEnvironmentJson("{\"referenceId\":\"" + job.getTestSuiteName() + "\",\"browserTypeName\":\"" + job.getBrowserType() + "\"}");
         execution.setStatus("running");
         execution.setCreatedAt(java.time.LocalDateTime.now());

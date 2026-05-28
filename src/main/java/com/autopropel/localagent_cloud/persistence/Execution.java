@@ -20,6 +20,9 @@ public class Execution {
     @Column(name = "org_id")
     private Long orgId;
 
+    @Column(name = "org_execution_id")
+    private Long orgExecutionId;
+
     @Column(nullable = false)
     private String status; // QUEUED, RUNNING, SUCCESS, FAILED
 
@@ -79,4 +82,7 @@ public class Execution {
 
     public Long getOrgId() { return orgId; }
     public void setOrgId(Long orgId) { this.orgId = orgId; }
+
+    public Long getOrgExecutionId() { return orgExecutionId; }
+    public void setOrgExecutionId(Long orgExecutionId) { this.orgExecutionId = orgExecutionId; }
 }

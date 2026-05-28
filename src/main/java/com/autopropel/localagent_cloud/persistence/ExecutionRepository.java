@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExecutionRepository extends JpaRepository<Execution, Long> {
     List<Execution> findAllByOrderByIdDesc();
+    long countByOrgId(Long orgId);
 }
 
