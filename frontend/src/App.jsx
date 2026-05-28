@@ -93,6 +93,7 @@ const statusBadge = (s) => {
 ═══════════════════════════════════════════════════════ */
 function LoginPage() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -110,7 +111,8 @@ function LoginPage() {
       if (!res.ok) { setError(data.error || 'Login failed'); setLoading(false); return; }
       localStorage.setItem('ap_token', data.token);
       localStorage.setItem('ap_user', JSON.stringify(data));
-      navigate('/dashboard', { replace: true });
+      setUser(data);
+      window.location.href = '/dashboard';
     } catch { setError('Network error. Please try again.'); setLoading(false); }
   };
 
@@ -147,6 +149,7 @@ function LoginPage() {
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [form, setForm] = useState({ fullName: '', email: '', password: '', orgName: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -164,8 +167,9 @@ function RegisterPage() {
       if (!res.ok) { setError(data.error || 'Registration failed'); setLoading(false); return; }
       localStorage.setItem('ap_token', data.token);
       localStorage.setItem('ap_user', JSON.stringify(data));
+      setUser(data);
       toast('success', 'Welcome!', 'Your account has been created.');
-      navigate('/dashboard', { replace: true });
+      setTimeout(() => { window.location.href = '/dashboard'; }, 500);
     } catch { setError('Network error. Please try again.'); setLoading(false); }
   };
 
@@ -283,7 +287,7 @@ export default function App() {
     localStorage.removeItem('ap_user');
     localStorage.removeItem('onboarding_dismissed');
     setUser(null);
-    navigate('/login', { replace: true });
+    window.location.href = '/login';
   };
 
   // Public routes — don't show the shell
@@ -346,9 +350,6 @@ export default function App() {
         <header className="top-header">
           <button className="menu-toggle" onClick={() => setSidebarOpen(o => !o)}>☰</button>
           <div className="header-right">
-            <button className="header-icon-btn"><span>✉️</span><span className="header-badge">4</span></button>
-            <button className="header-icon-btn"><span>🔔</span><span className="header-badge warn">10</span></button>
-            <div className="header-divider" />
             {user && (
               <div className="header-user-pill" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="header-avatar">
