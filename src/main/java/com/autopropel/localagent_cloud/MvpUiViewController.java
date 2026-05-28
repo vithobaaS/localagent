@@ -9,6 +9,8 @@ public class MvpUiViewController {
     @GetMapping({
         "/autopropel",
         "/autopropel/",
+        "/autopropel/login",
+        "/autopropel/register",
         "/autopropel/dashboard",
         "/autopropel/scheduler",
         "/autopropel/scheduler/**",
