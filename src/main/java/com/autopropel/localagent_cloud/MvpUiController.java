@@ -265,8 +265,13 @@ public class MvpUiController {
         job.setStatus("processing");
         schedulerRepository.save(job);
 
+        // Lookup the agent to get its orgId
+        Agent agent = agentRepository.findById(agentId).orElse(null);
+        Long agentOrgId = agent != null ? agent.getOrgId() : null;
+
         // Create an Execution record
         Execution execution = new Execution();
+        execution.setOrgId(agentOrgId);
         execution.setEnvironmentJson("{\"referenceId\":\"" + job.getTestSuiteName() + "\",\"browserTypeName\":\"" + job.getBrowserType() + "\"}");
         execution.setStatus("running");
         execution.setCreatedAt(java.time.LocalDateTime.now());
