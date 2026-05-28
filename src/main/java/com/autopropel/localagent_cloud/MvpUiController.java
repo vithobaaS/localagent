@@ -271,8 +271,7 @@ public class MvpUiController {
         job.setStatus("processing");
         schedulerRepository.save(job);
 
-        // Lookup the agent to get its orgId
-        Agent agent = agentRepository.findById(agentId).orElse(null);
+        // Get orgId from the previously loaded agent
         Long agentOrgId = agent != null ? agent.getOrgId() : null;
 
         // Create an Execution record
