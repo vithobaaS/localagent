@@ -153,6 +153,7 @@ public class MvpUiController {
                             if (base64 != null && !base64.isEmpty()) {
                                 byte[] imageBytes = java.util.Base64.getDecoder().decode(base64);
                                 String fileName = "exec_" + executionId + "_step_" + sr.getId() + "_" + System.currentTimeMillis() + ".png";
+                                
                                 String s3Url = s3Service.uploadImage(fileName, imageBytes);
                                 
                                 Screenshot sc = new Screenshot();
@@ -172,6 +173,8 @@ public class MvpUiController {
         }
         return ResponseEntity.ok().build();
     }
+
+
 
     @GetMapping("/executions/{id}")
     public ResponseEntity<Map<String, Object>> getExecutionDetail(@PathVariable("id") Long id) {
