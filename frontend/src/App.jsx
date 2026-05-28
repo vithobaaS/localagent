@@ -112,7 +112,8 @@ function LoginPage() {
       localStorage.setItem('ap_token', data.token);
       localStorage.setItem('ap_user', JSON.stringify(data));
       setUser(data);
-      window.location.href = '/dashboard';
+      navigate('/dashboard', { replace: true });
+      setTimeout(() => window.location.reload(), 50);
     } catch { setError('Network error. Please try again.'); setLoading(false); }
   };
 
@@ -169,7 +170,8 @@ function RegisterPage() {
       localStorage.setItem('ap_user', JSON.stringify(data));
       setUser(data);
       toast('success', 'Welcome!', 'Your account has been created.');
-      setTimeout(() => { window.location.href = '/dashboard'; }, 500);
+      navigate('/dashboard', { replace: true });
+      setTimeout(() => window.location.reload(), 500);
     } catch { setError('Network error. Please try again.'); setLoading(false); }
   };
 
@@ -287,7 +289,8 @@ export default function App() {
     localStorage.removeItem('ap_user');
     localStorage.removeItem('onboarding_dismissed');
     setUser(null);
-    window.location.href = '/login';
+    navigate('/login', { replace: true });
+    setTimeout(() => window.location.reload(), 50);
   };
 
   // Public routes — don't show the shell
