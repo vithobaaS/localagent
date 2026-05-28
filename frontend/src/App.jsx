@@ -235,6 +235,7 @@ export default function App() {
   const [execId, setExecId] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const [user, setUser] = useState(getUser);
+  const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
   const path = location.pathname;
   const is = (p) => path === p;
@@ -312,12 +313,17 @@ export default function App() {
             <button className="header-icon-btn"><span>🔔</span><span className="header-badge warn">10</span></button>
             <div className="header-divider" />
             {user && (
-              <div className="header-user-pill">
+              <div className="header-user-pill" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="header-avatar">
                   <span>{(user.fullName || user.email || 'U')[0].toUpperCase()}</span>
                 </div>
                 <span className="header-user-name">{user.fullName || user.email}</span>
-                <button className="header-logout-btn" onClick={logout} title="Sign out">⎋</button>
+                {profileOpen && (
+                  <div className="profile-dropdown">
+                    <button className="profile-dropdown-item" onClick={() => toast('info', 'Settings', 'Settings coming soon!')}>⚙️ Settings</button>
+                    <button className="profile-dropdown-item text-danger" onClick={logout}>⎋ Sign Out</button>
+                  </div>
+                )}
               </div>
             )}
           </div>
