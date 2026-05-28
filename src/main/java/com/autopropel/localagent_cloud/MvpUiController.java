@@ -249,6 +249,12 @@ public class MvpUiController {
     @GetMapping("/agents/{id}/jobs/next")
     @Transactional
     public ResponseEntity<Map<String, Object>> getNextJob(@PathVariable("id") String agentId) {
+        // Must be a registered agent to grab a job
+        Agent agent = agentRepository.findById(agentId).orElse(null);
+        if (agent == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         // Find any active scheduler with executionType "now" (instant run)
         List<Scheduler> activeJobs = schedulerRepository.findAll().stream()
                 .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
