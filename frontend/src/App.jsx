@@ -534,7 +534,7 @@ function DashboardView({ onSelectExec }) {
 
   const handleVerifyPairing = async () => {
     if (pairingCode.length !== 6) {
-      window.toast('error', 'Invalid Code', 'Pairing code must be 6 digits');
+      toast('error', 'Invalid Code', 'Pairing code must be 6 digits');
       return;
     }
     setPairingLoading(true);
@@ -545,15 +545,15 @@ function DashboardView({ onSelectExec }) {
         body: JSON.stringify({ code: pairingCode })
       });
       if (res.ok) {
-        window.toast('success', 'Success', 'Agent paired successfully!');
+        toast('success', 'Success', 'Agent paired successfully!');
         closeOnboarding();
         api('/api/agents').then(r => r.json()).then(setAgents);
       } else {
         const data = await res.json();
-        window.toast('error', 'Failed', data.error || 'Invalid pairing code');
+        toast('error', 'Failed', data.error || 'Invalid pairing code');
       }
     } catch (e) {
-      window.toast('error', 'Error', 'Failed to connect to server');
+      toast('error', 'Error', 'Failed to connect to server');
     }
     setPairingLoading(false);
   };
@@ -567,12 +567,12 @@ function DashboardView({ onSelectExec }) {
       const res = await api(`/api/executions/${id}/stop`, { method: 'POST' });
       if (res.ok) {
         setExecs(execs.map(e => e.id === id ? { ...e, status: 'aborted' } : e));
-        window.toast('success', 'Stopped', 'Execution stopped successfully.');
+        toast('success', 'Stopped', 'Execution stopped successfully.');
       } else {
-        window.toast('error', 'Error', 'Failed to stop execution.');
+        toast('error', 'Error', 'Failed to stop execution.');
       }
     } catch {
-      window.toast('error', 'Error', 'Error connecting to server.');
+      toast('error', 'Error', 'Error connecting to server.');
     }
   };
 
@@ -580,13 +580,13 @@ function DashboardView({ onSelectExec }) {
     try {
       const res = await api(`/api/executions/${id}/rerun`, { method: 'POST' });
       if (res.ok) {
-        window.toast('success', 'Success', 'Re-run triggered successfully.');
+        toast('success', 'Success', 'Re-run triggered successfully.');
         setTimeout(() => window.location.reload(), 1000); // Reload to show new execution
       } else {
-        window.toast('error', 'Error', 'Failed to re-run execution.');
+        toast('error', 'Error', 'Failed to re-run execution.');
       }
     } catch {
-      window.toast('error', 'Error', 'Error connecting to server.');
+      toast('error', 'Error', 'Error connecting to server.');
     }
   };
 
