@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: autopropel/backend:latest
+    container_name: autopropel-backend
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # If you have a local postgres DB running, uncomment and configure:
+      # - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/autopropel
+      # - SPRING_DATASOURCE_USERNAME=postgres
+      # - SPRING_DATASOURCE_PASSWORD=postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: autopropel/frontend:latest
+    container_name: autopropel-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
