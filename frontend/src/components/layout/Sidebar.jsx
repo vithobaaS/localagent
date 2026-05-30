@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 
 function NavItem({ to, icon, label, active }) {
   return (
@@ -10,6 +12,7 @@ function NavItem({ to, icon, label, active }) {
 }
 
 export default function Sidebar({ user, sidebarOpen, path }) {
+  const { setShowOnboarding } = useContext(AuthContext);
   const is = (p) => path === p;
 
   if (!sidebarOpen) return null;
@@ -40,6 +43,11 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <div className="nav-section">Agents</div>
         <NavItem to="/groups/create"        icon="👥" label="Create Group"      active={is('/groups/create')} />
         <NavItem to="/groups"               icon="🖥️" label="Agent Groups"      active={is('/groups')} />
+        <div className="nav-section">Downloads</div>
+        <button className="nav-item" onClick={() => setShowOnboarding(true)} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}>
+          <span className="nav-icon-wrap">⬇️</span>
+          Install Agent
+        </button>
       </nav>
       <div className="sidebar-footer">
         <div className="sidebar-footer-inner">
