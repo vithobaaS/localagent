@@ -48,6 +48,8 @@ export default function Sidebar({ user, sidebarOpen, path }) {
           <span className="nav-icon-wrap">⬇️</span>
           Install Agent
         </button>
+        <div className="nav-section">Organization</div>
+        <NavItem to="/settings"             icon="⚙️" label="Settings"          active={is('/settings')} />
       </nav>
       <div className="sidebar-footer">
         <div className="sidebar-footer-inner">

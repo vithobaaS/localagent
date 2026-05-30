@@ -145,4 +145,73 @@ public class AuthController {
                 "id", token.getId()
         ));
     }
+    /** GET /api/auth/users — list all users in the organization */
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<AppUser>> getOrgUsers(jakarta.servlet.http.HttpServletRequest req) {
+        Long orgId = (Long) req.getAttribute("orgId");
+        if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(userRepository.findByOrgId(orgId));
+    }
+
+    /** POST /api/auth/users/invite — invite/create a user in the org */
+    @PostMapping("/users/invite")
+    public ResponseEntity<Map<String, Object>> inviteUser(
+            @RequestBody Map<String, String> body,
+            jakarta.servlet.http.HttpServletRequest req) {
+        Long orgId = (Long) req.getAttribute("orgId");
+        if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        String email = body.get("email");
+        String role = body.getOrDefault("role", "user");
+        String fullName = body.getOrDefault("fullName", "");
+        
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already registered"));
+        }
+        
+        AppUser user = new AppUser();
+        user.setOrgId(orgId);
+        user.setEmail(email);
+        user.setFullName(fullName);
+        user.setRole(role);
+        
+        // Random password for invited users, they can reset it later
+        user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        user = userRepository.save(user);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+            "id", user.getId(),
+            "email", user.getEmail(),
+            "role", user.getRole(),
+            "fullName", user.getFullName() != null ? user.getFullName() : ""
+        ));
+    }
+
+    /** GET /api/auth/agent-tokens — list all agent tokens in the org */
+    @GetMapping("/agent-tokens")
+    public ResponseEntity<java.util.List<AgentToken>> getOrgAgentTokens(jakarta.servlet.http.HttpServletRequest req) {
+        Long orgId = (Long) req.getAttribute("orgId");
+        if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(agentTokenRepository.findByOrgId(orgId));
+    }
+
+    @DeleteMapping("/agent-tokens/{id}")
+    public ResponseEntity<Void> deleteAgentToken(
+            @PathVariable Long id,
+            jakarta.servlet.http.HttpServletRequest req) {
+        Long orgId = (Long) req.getAttribute("orgId");
+        if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        return agentTokenRepository.findById(id).map(token -> {
+            if (token.getOrgId().equals(orgId)) {
+                agentTokenRepository.delete(token);
+                return ResponseEntity.ok().<Void>build();
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).<Void>build();
+            }
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

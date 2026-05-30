@@ -10,6 +10,7 @@ import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import { InstallAgentModal } from './components/modals/InstallAgentModal';
 import { ExecutionReportModal } from './components/modals/ExecutionReportModal';
+import { PairAgentModal } from './components/modals/PairAgentModal';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -25,6 +26,7 @@ import SchedulerListView from './pages/scheduler/SchedulerListView';
 import SchedulerFormView from './pages/scheduler/SchedulerFormView';
 import GroupsListView from './pages/agents/GroupsListView';
 import CreateGroupView from './pages/agents/CreateGroupView';
+import SettingsView from './pages/settings/SettingsView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -33,6 +35,7 @@ export default function App() {
   const [user, setUser] = useState(getUser);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showPairing, setShowPairing] = useState(false);
 
   const location = useLocation();
   const path = location.pathname;
@@ -80,6 +83,7 @@ export default function App() {
           setProfileOpen={setProfileOpen}
           setSidebarOpen={setSidebarOpen}
           setShowOnboarding={setShowOnboarding}
+          setShowPairing={setShowPairing}
           logout={logout}
         />
 
@@ -103,12 +107,14 @@ export default function App() {
             <Route path="/test-suites"             element={<PrivateRoute><TestSuiteListView /></PrivateRoute>} />
             <Route path="/test-suites/create"      element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
             <Route path="/test-suites/edit/:id"    element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
+            <Route path="/settings"                element={<PrivateRoute><SettingsView /></PrivateRoute>} />
             <Route path="*"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
           </Routes>
         </div>
       </main>
 
       {showOnboarding && <InstallAgentModal onClose={closeOnboarding} />}
+      {showPairing && <PairAgentModal onClose={() => setShowPairing(false)} />}
 
       {execId && <ExecutionReportModal execId={execId} onClose={() => setExecId(null)} onLightbox={setLightbox} />}
       {lightbox && (
