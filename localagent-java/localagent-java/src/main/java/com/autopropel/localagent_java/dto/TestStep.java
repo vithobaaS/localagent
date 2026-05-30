@@ -16,6 +16,6 @@ public class TestStep {
     public String screenshotBase64;
 
     // We will mutate these statuses during execution
-    public Integer executed_status;
-    public Integer result_status;
+    public Integer executed_status = 0;
+    public Integer result_status = 0;
 }

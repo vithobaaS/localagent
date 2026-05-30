@@ -6,4 +6,5 @@ public class AgentRegisterDto {
     public String os;
     public String agentVersion;
     public String capabilitiesJson;
+    public String agentToken;
 }

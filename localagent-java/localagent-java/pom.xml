@@ -58,4 +58,50 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>native-installer</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>jpackage-msi</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>jpackage</executable>
+									<environmentVariables>
+										<PATH>${project.basedir}/../../wix-toolset${path.separator}${env.PATH}</PATH>
+									</environmentVariables>
+									<arguments>
+										<argument>--type</argument>
+										<argument>msi</argument>
+										<argument>--name</argument>
+										<argument>AutopilotAgent</argument>
+										<argument>--input</argument>
+										<argument>${project.build.directory}</argument>
+										<argument>--main-jar</argument>
+										<argument>${project.build.finalName}.jar</argument>
+										<argument>--app-version</argument>
+										<argument>1.0.0</argument>
+										<argument>--win-console</argument>
+										<argument>--win-dir-chooser</argument>
+										<argument>--win-shortcut</argument>
+										<argument>--win-menu</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>
