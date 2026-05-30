@@ -1,11 +1,11 @@
 package com.autopropel.localagent_cloud.auth;
 
-import com.autopropel.localagent_cloud.persistence.AgentToken;
-import com.autopropel.localagent_cloud.persistence.AgentTokenRepository;
-import com.autopropel.localagent_cloud.persistence.AppUser;
-import com.autopropel.localagent_cloud.persistence.AppUserRepository;
-import com.autopropel.localagent_cloud.persistence.DevicePairing;
-import com.autopropel.localagent_cloud.persistence.DevicePairingRepository;
+import com.autopropel.localagent_cloud.model.AgentToken;
+import com.autopropel.localagent_cloud.repository.AgentTokenRepository;
+import com.autopropel.localagent_cloud.model.AppUser;
+import com.autopropel.localagent_cloud.repository.AppUserRepository;
+import com.autopropel.localagent_cloud.model.DevicePairing;
+import com.autopropel.localagent_cloud.repository.DevicePairingRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

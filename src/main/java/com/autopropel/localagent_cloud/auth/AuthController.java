@@ -1,5 +1,6 @@
 package com.autopropel.localagent_cloud.auth;
-import com.autopropel.localagent_cloud.persistence.*;
+import com.autopropel.localagent_cloud.model.*;
+import com.autopropel.localagent_cloud.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;

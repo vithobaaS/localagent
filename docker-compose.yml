@@ -12,6 +12,22 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - localagent-network
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: localagent-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@autopropel.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - localagent-network
+    depends_on:
+      - localagent-postgres
     restart: unless-stopped
 
   localagent-cloud:

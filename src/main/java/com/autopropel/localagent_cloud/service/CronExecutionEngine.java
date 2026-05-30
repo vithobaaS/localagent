@@ -1,7 +1,7 @@
 package com.autopropel.localagent_cloud.service;
 
-import com.autopropel.localagent_cloud.persistence.Scheduler;
-import com.autopropel.localagent_cloud.persistence.SchedulerRepository;
+import com.autopropel.localagent_cloud.model.Scheduler;
+import com.autopropel.localagent_cloud.repository.SchedulerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

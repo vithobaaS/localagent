@@ -11,7 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-import com.autopropel.localagent_cloud.persistence.AppUserRepository;
+import com.autopropel.localagent_cloud.repository.AppUserRepository;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {

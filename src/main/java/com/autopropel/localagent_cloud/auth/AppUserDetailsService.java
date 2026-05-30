@@ -1,6 +1,6 @@
 package com.autopropel.localagent_cloud.auth;
-import com.autopropel.localagent_cloud.persistence.AppUser;
-import com.autopropel.localagent_cloud.persistence.AppUserRepository;
+import com.autopropel.localagent_cloud.model.AppUser;
+import com.autopropel.localagent_cloud.repository.AppUserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
