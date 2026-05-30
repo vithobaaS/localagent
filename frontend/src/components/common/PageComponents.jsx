@@ -73,3 +73,14 @@ export function ItemPicker({ items, selected, onToggle, getLabel, getSub, getMet
     </div>
   );
 }
+
+export function Card({ title, children, style }) {
+  return (
+    <div className="card" style={style}>
+      {title && <div className="card-header"><h2>{title}</h2></div>}
+      <div className="card-body" style={{ padding: '24px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
