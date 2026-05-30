@@ -61,7 +61,7 @@ export function InstallAgentModal({ onClose }) {
             <p style={{ fontSize: '14px', color: 'var(--txt-muted)', marginBottom: '16px' }}>
               Download and run the installer on your Windows machine.
             </p>
-            <a href="/agent/AutoPropelAgent-1.0.0.msi" download className="btn btn-primary" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
+            <a href="/agent/AutopilotAgent-1.0.0.msi" download className="btn btn-primary" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: '32px' }}>
               📦 Download .msi Installer
             </a>
 
