@@ -29,19 +29,19 @@ function SearchableActionSelect({ value, onChange }) {
         required 
       />
       {open && filtered.length > 0 && (
-        <ul style={{ position: 'absolute', zIndex: 100, width: '100%', maxHeight: '200px', overflowY: 'auto', background: '#1e293b', border: '1px solid #334155', borderRadius: '4px', margin: 0, padding: 0, listStyle: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
+        <ul style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '4px', zIndex: 100, width: '100%', maxHeight: '250px', overflowY: 'auto', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', margin: 0, padding: 0, listStyle: 'none', boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.1)' }}>
           {filtered.slice(0, 50).map(a => (
             <li 
               key={a} 
               onMouseDown={() => { setSearch(a); onChange(a); setOpen(false); }} 
-              style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #334155' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#334155'}
+              style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', color: '#0f172a', fontWeight: 500 }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               {a}
             </li>
           ))}
-          {filtered.length > 50 && <li style={{ padding: '8px 12px', color: '#94a3b8', fontStyle: 'italic', fontSize: '0.8rem' }}>...and {filtered.length - 50} more. Keep typing.</li>}
+          {filtered.length > 50 && <li style={{ padding: '10px 14px', color: '#64748b', fontStyle: 'italic', fontSize: '0.85rem' }}>...and {filtered.length - 50} more. Keep typing.</li>}
         </ul>
       )}
     </div>
