@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.autopropel.localagent_cloud.dto.RunRequest;
 import com.autopropel.localagent_cloud.dto.RunResult;
-import com.autopropel.localagent_cloud.persistence.Agent;
+import com.autopropel.localagent_cloud.model.Agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
