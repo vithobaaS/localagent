@@ -77,15 +77,21 @@ public class TestCaseGroupService {
         group.setOrgId(orgId);
         group = testCaseGroupRepository.save(group);
 
-        List<Number> testCaseIds = (List<Number>) body.get("testCaseIds");
-        if (testCaseIds != null) {
+        List<Number> testCaseIdsRaw = (List<Number>) body.get("testCaseIds");
+        List<Number> testCaseIds = null;
+        if (testCaseIdsRaw != null) {
             int order = 0;
-            for (Number tcId : testCaseIds) {
-                TestCaseGroupMapping mapping = new TestCaseGroupMapping();
-                mapping.setTestCaseGroupId(group.getId());
-                mapping.setTestCaseId(tcId.longValue());
-                mapping.setCaseOrder(order++);
-                testCaseGroupMappingRepository.save(mapping);
+            testCaseIds = new ArrayList<>();
+            java.util.Set<Long> uniqueIds = new java.util.LinkedHashSet<>();
+            for (Number tcId : testCaseIdsRaw) {
+                if (uniqueIds.add(tcId.longValue())) {
+                    testCaseIds.add(tcId);
+                    TestCaseGroupMapping mapping = new TestCaseGroupMapping();
+                    mapping.setTestCaseGroupId(group.getId());
+                    mapping.setTestCaseId(tcId.longValue());
+                    mapping.setCaseOrder(order++);
+                    testCaseGroupMappingRepository.save(mapping);
+                }
             }
         }
 
@@ -107,12 +113,15 @@ public class TestCaseGroupService {
                 testCaseGroupMappingRepository.deleteByTestCaseGroupId(id);
                 List<Number> testCaseIds = (List<Number>) body.get("testCaseIds");
                 int order = 0;
+                java.util.Set<Long> uniqueIds = new java.util.LinkedHashSet<>();
                 for (Number tcId : testCaseIds) {
-                    TestCaseGroupMapping mapping = new TestCaseGroupMapping();
-                    mapping.setTestCaseGroupId(id);
-                    mapping.setTestCaseId(tcId.longValue());
-                    mapping.setCaseOrder(order++);
-                    testCaseGroupMappingRepository.save(mapping);
+                    if (uniqueIds.add(tcId.longValue())) {
+                        TestCaseGroupMapping mapping = new TestCaseGroupMapping();
+                        mapping.setTestCaseGroupId(id);
+                        mapping.setTestCaseId(tcId.longValue());
+                        mapping.setCaseOrder(order++);
+                        testCaseGroupMappingRepository.save(mapping);
+                    }
                 }
             }
 
