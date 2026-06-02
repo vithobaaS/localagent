@@ -82,9 +82,31 @@ export default function TestCaseFormView() {
 
   return (
     <div className="page-view">
-      <PageHeader title={isEdit ? 'Edit Test Case' : 'Create Test Case'} actions={<Link to="/test-cases" className="btn btn-ghost">← Back</Link>} />
+      <PageHeader title={isEdit ? 'Edit Test Case' : 'Create Test Case'} actions={
+        <>
+          <Link
+            to={isEdit ? `/test-cases/studio/edit/${id}` : '/test-cases/studio/create'}
+            className="btn btn-primary"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', border: 'none', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            🎨 Open in Studio
+          </Link>
+          <Link to="/test-cases" className="btn btn-ghost">← Back</Link>
+        </>
+      } />
       <div className="card form-card-wide">
-        <div className="card-header"><div><h2>📝 {isEdit ? 'Edit' : 'New'} Test Case</h2><p>Define the test scenario and its ordered steps</p></div></div>
+        <div className="card-header">
+          <div>
+            <h2>📝 {isEdit ? 'Edit' : 'New'} Test Case</h2>
+            <p>Define the test scenario and its ordered steps, or use the visual drag-and-drop Studio.</p>
+          </div>
+          <Link
+            to={isEdit ? `/test-cases/studio/edit/${id}` : '/test-cases/studio/create'}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 18px', background:'linear-gradient(135deg,#7c3aed,#5b21b6)', borderRadius:10, color:'#fff', textDecoration:'none', fontSize:'0.84rem', fontWeight:600, boxShadow:'0 2px 10px rgba(124,58,237,0.35)', flexShrink:0 }}
+          >
+            🎨 Open Studio
+          </Link>
+        </div>
         <form onSubmit={save}>
           <div className="form-section"><div className="form-section-title">Basic Info</div><div className="form-grid">
             <div className="form-group"><label className="form-label">Test Case Name <span className="req">*</span></label><input className="form-input" placeholder="e.g. Login with valid credentials" value={name} onChange={e => setName(e.target.value)} required /></div>
