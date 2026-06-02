@@ -137,7 +137,7 @@ function ActionSidebar({ onAddStep }) {
 }
 
 // ─── Step Card ───────────────────────────────────────────────────────────────
-function StepCard({ step, index, selected, onSelect, onDelete, onDragStart, onDragOver, onDrop, isDragOver }) {
+function StepCard({ step, index, selected, onSelect, onDelete, onDragStart, onDragEnd, onDragOver, onDrop, isDragOver }) {
   const meta = getActionMeta(step.actionName);
   const detail = [step.locatorType, step.locatorValue, step.testData].filter(Boolean).join(' › ');
 
@@ -149,6 +149,7 @@ function StepCard({ step, index, selected, onSelect, onDelete, onDragStart, onDr
       onDragStart={e => onDragStart(e, index)}
       onDragOver={e => { e.preventDefault(); onDragOver(index); }}
       onDrop={e => onDrop(e, index)}
+      onDragEnd={onDragEnd}
     >
       <span className="step-drag-handle" title="Drag to reorder">⠿</span>
       <div className="step-order-badge">{index + 1}</div>
@@ -358,16 +359,34 @@ export default function TestStudioView() {
   const handleCardDragStart = (e, fromIndex) => {
     dragCardIndex.current = fromIndex;
     e.dataTransfer.effectAllowed = 'move';
-    // clear sidebar action so we know it's a reorder drag
+    // Use a special marker so canvas drop can distinguish from sidebar drags
+    e.dataTransfer.setData('reorder', 'true');
     e.dataTransfer.setData('actionName', '');
+  };
+
+  const handleCardDragEnd = () => {
+    dragCardIndex.current = null;
+    setDragOverIndex(null);
   };
 
   const handleCardDragOver = (toIndex) => setDragOverIndex(toIndex);
 
   const handleCardDrop = (e, toIndex) => {
     e.stopPropagation();
+    setDragOverIndex(null);
+
+    // If dragged from the sidebar, add a new step (don't reorder)
+    const actionName = e.dataTransfer.getData('actionName');
+    const isReorder = e.dataTransfer.getData('reorder') === 'true';
+    if (actionName && !isReorder) {
+      addStep(actionName);
+      setIsDragOver(false);
+      return;
+    }
+
+    // Reorder existing cards
     const fromIndex = dragCardIndex.current;
-    if (fromIndex === null || fromIndex === toIndex) { setDragOverIndex(null); return; }
+    if (fromIndex === null || fromIndex === toIndex) return;
     setSteps(p => {
       const arr = [...p];
       const [moved] = arr.splice(fromIndex, 1);
@@ -375,7 +394,6 @@ export default function TestStudioView() {
       return arr;
     });
     dragCardIndex.current = null;
-    setDragOverIndex(null);
   };
 
   // ── Save ──────────────────────────────────────────────────────────────────
@@ -474,6 +492,7 @@ export default function TestStudioView() {
                   onSelect={setSelectedId}
                   onDelete={deleteStep}
                   onDragStart={handleCardDragStart}
+                  onDragEnd={handleCardDragEnd}
                   onDragOver={handleCardDragOver}
                   onDrop={handleCardDrop}
                 />
