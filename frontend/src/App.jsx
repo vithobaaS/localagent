@@ -18,6 +18,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import DashboardView from './pages/dashboard/DashboardView';
 import TestCaseListView from './pages/testcase/TestCaseListView';
 import TestCaseFormView from './pages/testcase/TestCaseFormView';
+import TestStudioView from './pages/testcase/TestStudioView';
 import TestCaseGroupListView from './pages/testcasegroup/TestCaseGroupListView';
 import TestCaseGroupFormView from './pages/testcasegroup/TestCaseGroupFormView';
 import TestSuiteListView from './pages/testsuite/TestSuiteListView';
@@ -101,6 +102,8 @@ export default function App() {
             <Route path="/test-cases"              element={<PrivateRoute><TestCaseListView /></PrivateRoute>} />
             <Route path="/test-cases/create"       element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
             <Route path="/test-cases/edit/:id"     element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
+            <Route path="/test-cases/studio/create"    element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
+            <Route path="/test-cases/studio/edit/:id"  element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
             <Route path="/test-case-groups"        element={<PrivateRoute><TestCaseGroupListView /></PrivateRoute>} />
             <Route path="/test-case-groups/create" element={<PrivateRoute><TestCaseGroupFormView /></PrivateRoute>} />
             <Route path="/test-case-groups/edit/:id" element={<PrivateRoute><TestCaseGroupFormView /></PrivateRoute>} />

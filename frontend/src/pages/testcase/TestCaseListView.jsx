@@ -20,7 +20,12 @@ export default function TestCaseListView() {
 
   return (
     <div className="page-view">
-      <PageHeader title="Test Cases" actions={<Link to="/test-cases/create" className="btn btn-primary">➕ New Test Case</Link>} />
+      <PageHeader title="Test Cases" actions={
+        <>
+          <Link to="/test-cases/studio/create" className="btn btn-primary" style={{background:'linear-gradient(135deg,#7c3aed,#6d28d9)',border:'none'}}>🎨 Open Studio</Link>
+          <Link to="/test-cases/create" className="btn btn-ghost">➕ Quick Create</Link>
+        </>
+      } />
       <TableCard title="Test Case Library" total={filtered.length} search={search} onSearch={s => { setSearch(s); setPage(0); }} entries={entries} onEntries={n => { setEntries(n); setPage(0); }} page={page} onPage={setPage}>
         <table className="data-table"><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody>{loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner"/></td></tr>
@@ -29,11 +34,12 @@ export default function TestCaseListView() {
               <tr key={t.id} className={expanded === t.id ? 'row-expanded' : ''}>
                 <td><span className="cell-bold">#{t.id}</span></td><td><span className="cell-bold">{t.name}</span></td><td className="text-muted text-sm">{t.description || '—'}</td>
                 <td><span className={`badge ${statusBadge(t.status)}`}>{t.status}</span></td><td className="text-muted text-sm">{fmt(t.createdAt)}</td>
-                <td><div className="action-row">
-                  <button className="act-btn view" onClick={() => toggle(t.id)}>{expanded === t.id ? '▲' : '👁️'}</button>
-                  <Link to={`/test-cases/edit/${t.id}`} className="act-btn view" title="Edit">✏️</Link>
-                  <button className="act-btn delete" onClick={() => remove(t.id)}>🗑️</button>
-                </div></td>
+                 <td><div className="action-row">
+                   <button className="act-btn view" onClick={() => toggle(t.id)}>{expanded === t.id ? '▲' : '👁️'}</button>
+                   <Link to={`/test-cases/studio/edit/${t.id}`} className="act-btn view" title="Edit in Studio" style={{background:'rgba(124,58,237,0.1)',color:'#7c3aed'}}>🎨</Link>
+                   <Link to={`/test-cases/edit/${t.id}`} className="act-btn view" title="Quick Edit">✏️</Link>
+                   <button className="act-btn delete" onClick={() => remove(t.id)}>🗑️</button>
+                 </div></td>
               </tr>
               {expanded === t.id && <tr key={`${t.id}-exp`} className="expand-panel"><td colSpan={6}><div className="expand-panel-inner">
                 <div className="expand-panel-title">🔬 Test Steps ({expandedSteps.length})</div>
