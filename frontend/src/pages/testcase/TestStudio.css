@@ -229,25 +229,44 @@ html, body, #root {
 .action-block {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 7px 10px;
+  gap: 0;
   margin-bottom: 2px;
-  background: #f9fafb;
   border: 1px solid #f0f2f5;
   border-radius: 7px;
-  cursor: grab;
   transition: all 0.15s;
-  user-select: none;
+  overflow: hidden;
+  background: #f9fafb;
 }
 
 .action-block:hover {
   background: #f0ebff;
   border-color: #c4b5fd;
-  transform: translateX(2px);
   box-shadow: 0 1px 4px rgba(124,58,237,0.1);
 }
 
-.action-block:active { cursor: grabbing; }
+/* Drag handle — the ⠿ grip icon, only this is draggable */
+.action-block-drag-handle {
+  padding: 8px 6px 8px 8px;
+  color: #d1d5db;
+  cursor: grab;
+  font-size: 1rem;
+  flex-shrink: 0;
+  user-select: none;
+  transition: color 0.15s;
+}
+.action-block:hover .action-block-drag-handle { color: #9ca3af; }
+.action-block-drag-handle:active { cursor: grabbing; }
+
+/* Clickable body — NOT draggable, fires onPointerDown to add step */
+.action-block-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 7px 10px 7px 4px;
+  cursor: pointer;
+}
+.action-block-body:hover .action-block-name { color: #7c3aed; }
 
 .action-block-icon {
   width: 26px;

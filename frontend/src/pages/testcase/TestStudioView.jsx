@@ -110,23 +110,28 @@ function ActionSidebar({ onAddStep }) {
         <div className="sidebar-category" key={cat.label}>
           <div className="sidebar-category-label">{cat.label}</div>
           {cat.actions.slice(0, search ? 50 : undefined).map(action => (
-            <div
-              key={action}
-              className="action-block"
-              draggable
-              onDragStart={e => handleDragStart(e, action)}
-              onClick={() => onAddStep(action)}
-              title={`Click or drag to add "${action}"`}
-            >
-              <div className={`action-block-icon ${cat.color}`}>{cat.emoji}</div>
-              <span className="action-block-name">{action}</span>
-              {cat.tag && (
-                <span className="action-block-tag" style={cat.tagStyle}>{cat.tag}</span>
-              )}
+            <div key={action} className="action-block">
+              <span
+                className="action-block-drag-handle"
+                draggable
+                onDragStart={e => handleDragStart(e, action)}
+                title="Drag onto canvas"
+              >⠿</span>
+              <div
+                className="action-block-body"
+                onPointerDown={() => onAddStep(action)}
+                title={`Click to add "${action}"`}
+              >
+                <div className={`action-block-icon ${cat.color}`}>{cat.emoji}</div>
+                <span className="action-block-name">{action}</span>
+                {cat.tag && (
+                  <span className="action-block-tag" style={cat.tagStyle}>{cat.tag}</span>
+                )}
+              </div>
             </div>
           ))}
           {search && cat.actions.length > 50 && (
-            <div style={{ padding:'4px 12px 8px', fontSize:'0.72rem', color:'#44445a' }}>
+            <div style={{ padding:'4px 12px 8px', fontSize:'0.72rem', color:'#adb5bd' }}>
               +{cat.actions.length - 50} more. Refine your search.
             </div>
           )}
