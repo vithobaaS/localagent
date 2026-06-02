@@ -152,7 +152,7 @@ public class TestSuiteService {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    public ResponseEntity<Map<String, Object>> run(Long id, Map<String, Object> body) {
+    public ResponseEntity<Map<String, Object>> run(Long id, Map<String, Object> body, Long orgId) {
         return testSuiteRepository.findById(id).map(suite -> {
             String browser = "chrome";
             if (body != null && body.containsKey("browserType")) {
@@ -167,6 +167,7 @@ public class TestSuiteService {
             scheduler.setExecutionType("now");
             scheduler.setBrowserType(browser);
             scheduler.setStatus("active");
+            scheduler.setOrgId(orgId);
             scheduler = schedulerRepository.save(scheduler);
 
             Map<String, Object> result = new HashMap<>();

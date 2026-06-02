@@ -51,8 +51,9 @@ public class TestSuiteController {
     @PostMapping("/{id}/run")
     public ResponseEntity<Map<String, Object>> runTestSuite(
             @PathVariable("id") Long id,
-            @RequestBody(required = false) Map<String, Object> body) {
-        return testSuiteService.run(id, body);
+            @RequestBody(required = false) Map<String, Object> body,
+            HttpServletRequest req) {
+        return testSuiteService.run(id, body, orgId(req));
     }
 
     @DeleteMapping("/{id}")

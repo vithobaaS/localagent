@@ -20,6 +20,8 @@ import com.autopropel.localagent_cloud.repository.TestCaseGroupMappingRepository
 import com.autopropel.localagent_cloud.repository.TestStepRepository;
 import com.autopropel.localagent_cloud.repository.TestSuiteGroupMappingRepository;
 import com.autopropel.localagent_cloud.repository.TestSuiteRepository;
+import com.autopropel.localagent_cloud.repository.OrganisationRepository;
+import com.autopropel.localagent_cloud.model.Organisation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +46,7 @@ public class AgentService {
     private final TestStepRepository testStepRepository;
     private final ScreenshotRepository screenshotRepository;
     private final StepResultRepository stepResultRepository;
+    private final OrganisationRepository organisationRepository;
     private final ObjectMapper objectMapper;
     private final S3Service s3Service;
 
@@ -57,6 +60,7 @@ public class AgentService {
                         TestStepRepository testStepRepository,
                         ScreenshotRepository screenshotRepository,
                         StepResultRepository stepResultRepository,
+                        OrganisationRepository organisationRepository,
                         ObjectMapper objectMapper,
                         S3Service s3Service) {
         this.agentRepository = agentRepository;
@@ -69,6 +73,7 @@ public class AgentService {
         this.testStepRepository = testStepRepository;
         this.screenshotRepository = screenshotRepository;
         this.stepResultRepository = stepResultRepository;
+        this.organisationRepository = organisationRepository;
         this.objectMapper = objectMapper;
         this.s3Service = s3Service;
     }
@@ -108,8 +113,18 @@ public class AgentService {
 
         agentRepository.save(agent);
 
+        String orgName = "Unknown Organisation";
+        if (token.getOrgId() != null) {
+            Organisation org = organisationRepository.findById(token.getOrgId()).orElse(null);
+            if (org != null) {
+                orgName = org.getName();
+            }
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
+        response.put("orgName", orgName);
+        response.put("tokenLabel", token.getLabel());
         return ResponseEntity.ok(response);
     }
 
@@ -129,8 +144,11 @@ public class AgentService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        Long agentOrgId = agent.getOrgId();
+
         List<Scheduler> activeJobs = schedulerRepository.findAll().stream()
                 .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
+                .filter(s -> agentOrgId == null || agentOrgId.equals(s.getOrgId()))
                 .toList();
 
         if (activeJobs.isEmpty()) {
@@ -140,8 +158,6 @@ public class AgentService {
         Scheduler job = activeJobs.get(0);
         job.setStatus("processing");
         schedulerRepository.save(job);
-
-        Long agentOrgId = agent.getOrgId();
 
         Execution execution = new Execution();
         execution.setOrgId(agentOrgId);
@@ -281,6 +297,7 @@ public class AgentService {
                 scheduler.setExecutionType("now");
                 scheduler.setBrowserType(browser);
                 scheduler.setStatus("active");
+                scheduler.setOrgId(exec.getOrgId());
                 schedulerRepository.save(scheduler);
             } catch (Exception e) {
                 e.printStackTrace();
