@@ -433,8 +433,12 @@ export default function TestStudioView() {
 
       {/* ── Top Bar ── */}
       <div className="studio-topbar">
-        <Link to="/test-cases" className="studio-back-btn">← Back</Link>
-        <span className="studio-topbar-title">Test Studio</span>
+        <div className="studio-topbar-logo">
+          <div className="studio-topbar-logo-icon">⚡</div>
+          <span className="studio-topbar-logo-text">Autopropel</span>
+        </div>
+        <span className="studio-mode-badge">Test Studio</span>
+        <Link to="/test-cases" className="studio-back-btn">← Exit Studio</Link>
         <input
           className="studio-topbar-name"
           placeholder="Test Case Name *"
@@ -449,7 +453,7 @@ export default function TestStudioView() {
           onChange={e => setDesc(e.target.value)}
         />
         <button className="studio-save-btn" onClick={save} disabled={saving}>
-          {saving ? '⏳ Saving…' : `💾 Save  (${steps.length} steps)`}
+          {saving ? '⏳ Saving…' : `💾 Save (${steps.length} steps)`}
         </button>
       </div>
 

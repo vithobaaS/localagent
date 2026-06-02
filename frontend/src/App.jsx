@@ -72,6 +72,19 @@ export default function App() {
     );
   }
 
+  // Studio routes — fullscreen, no sidebar/header shell
+  if (path.startsWith('/test-cases/studio')) {
+    return (
+      <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding }}>
+        <Routes>
+          <Route path="/test-cases/studio/create"   element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
+          <Route path="/test-cases/studio/edit/:id" element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
+        </Routes>
+        <ToastContainer />
+      </AuthContext.Provider>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding }}>
     <div className="app-layout">
