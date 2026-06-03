@@ -10,7 +10,10 @@ const RULES = [
     match: /no such element|unable to locate element|NoSuchElementException/i,
     icon: '🔍',
     title: 'Element Not Found',
-    cause: 'The element could not be located on the page.',
+    cause: (step) => {
+      const el = step?.objectDetail || step?.testData;
+      return el ? `The element "${el}" could not be located on the page.` : 'The element could not be located on the page.';
+    },
     tips: [
       'Double-check your locator (XPath, CSS, ID) — it may be incorrect or outdated.',
       'The element might not have loaded yet — consider adding a Wait step before this action.',
@@ -23,7 +26,10 @@ const RULES = [
     match: /element click intercepted|ElementClickInterceptedException|element is not clickable/i,
     icon: '🚫',
     title: 'Click Intercepted',
-    cause: 'Another element (like a modal, overlay, or cookie banner) is covering the target element.',
+    cause: (step) => {
+      const el = step?.objectDetail || step?.testData;
+      return el ? `Another element (like a modal or cookie banner) is covering the target "${el}".` : 'Another element (like a modal, overlay, or cookie banner) is covering the target element.';
+    },
     tips: [
       'A popup, cookie consent banner, or loading overlay may be blocking the click.',
       'Add a step to close any popups before clicking this element.',
@@ -35,7 +41,10 @@ const RULES = [
     match: /TimeoutException|timed out|timeout waiting/i,
     icon: '⏱️',
     title: 'Timeout Waiting for Element',
-    cause: 'The page or element took too long to respond.',
+    cause: (step) => {
+      const el = step?.objectDetail || step?.testData;
+      return el ? `The page timed out while waiting for "${el}".` : 'The page or element took too long to respond.';
+    },
     tips: [
       'The target element did not appear within the expected time.',
       'The page may be slow to load — check if the site is accessible.',
@@ -48,7 +57,10 @@ const RULES = [
     match: /StaleElementReferenceException|stale element/i,
     icon: '🔄',
     title: 'Stale Element Reference',
-    cause: 'The element was found but the page changed before the action could be performed on it.',
+    cause: (step) => {
+      const el = step?.objectDetail || step?.testData;
+      return el ? `The element "${el}" was found, but the page changed before the action could be performed.` : 'The element was found but the page changed before the action could be performed on it.';
+    },
     tips: [
       'The page may have refreshed or a dynamic re-render happened between finding and clicking the element.',
       'This often happens with Single Page Applications (React, Vue, Angular).',
@@ -155,10 +167,11 @@ export function diagnose(rawError, step = {}) {
   for (const rule of RULES) {
     if (rule.match.test(rawError)) {
       const locatorHint = buildLocatorHint(step);
+      const dynamicCause = typeof rule.cause === 'function' ? rule.cause(step) : rule.cause;
       return {
         icon: rule.icon,
         title: rule.title,
-        cause: rule.cause,
+        cause: dynamicCause,
         tips: rule.tips,
         locatorHint,
         raw: rawError,
