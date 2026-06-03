@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { fmt, statusBadge } from '../../utils/helpers';
+import { diagnose } from '../../utils/errorDiagnostics';
 import './ExecutionDetails.css';
 
 function PageHeader({ title, crumb, actions }) {
@@ -18,6 +19,47 @@ function PageHeader({ title, crumb, actions }) {
         </div>
       </div>
       {actions && <div className="page-header-actions">{actions}</div>}
+    </div>
+  );
+}
+
+function ErrorDiagnosticPanel({ rawError, step }) {
+  const [expanded, setExpanded] = useState(false);
+  const diag = diagnose(rawError, step);
+  if (!diag) return null;
+
+  return (
+    <div className="error-diagnostic-panel">
+      <div className="diag-header">
+        <span className="diag-icon">{diag.icon}</span>
+        <div className="diag-title-group">
+          <span className="diag-title">{diag.title}</span>
+          <span className="diag-cause">{diag.cause}</span>
+        </div>
+      </div>
+
+      {diag.locatorHint && (
+        <div className="diag-locator-hint">
+          <span className="diag-locator-label">🎯 Target:</span>
+          <code>{diag.locatorHint}</code>
+        </div>
+      )}
+
+      <div className="diag-tips">
+        <div className="diag-tips-label">💡 Possible Causes &amp; Fixes</div>
+        <ul className="diag-tips-list">
+          {diag.tips.map((tip, i) => (
+            <li key={i}>{tip}</li>
+          ))}
+        </ul>
+      </div>
+
+      <button className="diag-raw-toggle" onClick={() => setExpanded(p => !p)}>
+        {expanded ? '▲ Hide' : '▼ Show'} raw error message
+      </button>
+      {expanded && (
+        <pre className="diag-raw-error">{diag.raw}</pre>
+      )}
     </div>
   );
 }
@@ -81,11 +123,15 @@ export default function ExecutionDetailsView() {
     return `${s}s`;
   };
 
+  const failedCount = steps.filter(s => s.resultStatus === 2 || (s.errorJson && s.errorJson !== '')).length;
+  const passedCount = steps.filter(s => s.resultStatus === 1 && s.executedStatus === 1).length;
+  const skippedCount = steps.length - failedCount - passedCount;
+
   return (
     <div className="page-view execution-details-page">
-      <PageHeader 
-        title={`Execution #${execution.orgExecutionId || execution.id}`} 
-        crumb={getName(execution)} 
+      <PageHeader
+        title={`Execution #${execution.orgExecutionId || execution.id}`}
+        crumb={getName(execution)}
       />
 
       {/* Meta Bar */}
@@ -113,8 +159,34 @@ export default function ExecutionDetailsView() {
             <span className="stat-lbl">Steps</span>
             <span className="stat-val">{steps.length}</span>
           </div>
+          {failedCount > 0 && (
+            <div className="meta-stat">
+              <span className="stat-lbl">Failed</span>
+              <span className="stat-val" style={{ color: '#ef4444' }}>{failedCount}</span>
+            </div>
+          )}
+          {passedCount > 0 && (
+            <div className="meta-stat">
+              <span className="stat-lbl">Passed</span>
+              <span className="stat-val" style={{ color: '#22c55e' }}>{passedCount}</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Failed Steps Summary Banner */}
+      {isFailed && failedCount > 0 && (
+        <div className="exec-failure-summary">
+          <span className="failure-summary-icon">🔴</span>
+          <div>
+            <strong>Execution Failed</strong>
+            <span> — {failedCount} step{failedCount > 1 ? 's' : ''} failed
+              {skippedCount > 0 ? `, ${skippedCount} step${skippedCount > 1 ? 's' : ''} skipped` : ''}.
+              &nbsp;See the timeline below for detailed error analysis.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Timeline */}
       <div className="timeline-container">
@@ -126,7 +198,8 @@ export default function ExecutionDetailsView() {
             {steps.map((step, idx) => {
               const ss = screenshots.find(sc => sc.stepResultId === step.id);
               const stepFailed = step.resultStatus === 2 || step.executedStatus === 2 || (step.errorJson && step.errorJson !== '');
-              const stepPassed = step.resultStatus === 1 && step.executedStatus === 1;
+              const stepSkipped = !stepFailed && (step.executedStatus !== 1);
+              const stepPassed = !stepFailed && !stepSkipped;
               const stepStatusIcon = stepFailed ? '🔴' : stepPassed ? '🟢' : '⚪';
 
               return (
@@ -137,27 +210,27 @@ export default function ExecutionDetailsView() {
                     <div className="step-header">
                       <span className="step-index">Step {step.stepIndex || idx + 1}</span>
                       <span className="action-tag">{step.actionName}</span>
-                      <span className="step-locator text-muted">
-                        {step.locatorName && `${step.locatorName}: `} 
-                        {step.objectDetail || step.testData || '—'}
-                      </span>
-                      {step.testData && step.testData !== step.objectDetail && (
-                         <span className="step-data text-muted"> | Data: {step.testData}</span>
+                      {step.locatorName && (
+                        <span className="step-locator text-muted">
+                          {step.locatorName}: {step.objectDetail || '—'}
+                        </span>
                       )}
+                      {step.testData && step.testData !== step.objectDetail && (
+                        <span className="step-data text-muted">→ {step.testData}</span>
+                      )}
+                      {stepSkipped && <span className="skipped-tag">⏭ Skipped (previous step failed)</span>}
                     </div>
-                    
-                    {/* Error Banner */}
-                    {stepFailed && step.errorJson && step.errorJson.trim() !== '' && (
-                      <div className="step-error-banner">
-                        <strong>⚠️ Error Analysis:</strong> {step.errorJson}
-                      </div>
+
+                    {/* Smart Error Diagnostic Panel */}
+                    {stepFailed && step.errorJson && (
+                      <ErrorDiagnosticPanel rawError={step.errorJson} step={step} />
                     )}
 
                     {/* Screenshot */}
                     {ss && (
                       <div className="step-screenshot" onClick={() => setLightbox(ss.storagePath)}>
                         <img src={ss.storagePath} alt={`Step ${step.stepIndex}`} />
-                        <div className="screenshot-overlay">🔍 View Screenshot</div>
+                        <div className="screenshot-overlay">🔍 View Full Screenshot</div>
                       </div>
                     )}
                   </div>
