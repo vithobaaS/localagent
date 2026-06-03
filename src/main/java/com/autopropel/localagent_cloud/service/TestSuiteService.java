@@ -91,6 +91,7 @@ public class TestSuiteService {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @Transactional
     @SuppressWarnings("unchecked")
     public ResponseEntity<Map<String, Object>> create(Map<String, Object> body, Long orgId) {
         String name = (String) body.get("name");
@@ -124,6 +125,7 @@ public class TestSuiteService {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    @Transactional
     @SuppressWarnings("unchecked")
     public ResponseEntity<Map<String, Object>> update(Long id, Map<String, Object> body) {
         return testSuiteRepository.findById(id).map(existing -> {
@@ -135,6 +137,7 @@ public class TestSuiteService {
 
             if (body.containsKey("testCaseGroupIds")) {
                 testSuiteGroupMappingRepository.deleteByTestSuiteId(id);
+                testSuiteGroupMappingRepository.flush();
                 List<Number> groupIds = (List<Number>) body.get("testCaseGroupIds");
                 int order = 0;
                 for (Number gId : groupIds) {
