@@ -9,7 +9,6 @@ import { PrivateRoute } from './components/common/PrivateRoute';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import { InstallAgentModal } from './components/modals/InstallAgentModal';
-import { ExecutionReportModal } from './components/modals/ExecutionReportModal';
 import { PairAgentModal } from './components/modals/PairAgentModal';
 
 import LandingPage from './pages/LandingPage';
@@ -25,13 +24,13 @@ import TestSuiteListView from './pages/testsuite/TestSuiteListView';
 import TestSuiteFormView from './pages/testsuite/TestSuiteFormView';
 import SchedulerListView from './pages/scheduler/SchedulerListView';
 import SchedulerFormView from './pages/scheduler/SchedulerFormView';
+import ExecutionDetailsView from './pages/execution/ExecutionDetailsView';
 import GroupsListView from './pages/agents/GroupsListView';
 import CreateGroupView from './pages/agents/CreateGroupView';
 import SettingsView from './pages/settings/SettingsView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [execId, setExecId] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const [user, setUser] = useState(getUser);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -106,10 +105,11 @@ export default function App() {
             <Route path="/login"    element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
-            <Route path="/dashboard"               element={<PrivateRoute><DashboardView onSelectExec={setExecId} /></PrivateRoute>} />
+            <Route path="/dashboard"               element={<PrivateRoute><DashboardView /></PrivateRoute>} />
             <Route path="/scheduler"               element={<PrivateRoute><SchedulerListView /></PrivateRoute>} />
             <Route path="/scheduler/create"        element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
             <Route path="/scheduler/edit/:id"      element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
+            <Route path="/executions/:id"          element={<PrivateRoute><ExecutionDetailsView /></PrivateRoute>} />
             <Route path="/groups"                  element={<PrivateRoute><GroupsListView /></PrivateRoute>} />
             <Route path="/groups/create"           element={<PrivateRoute><CreateGroupView /></PrivateRoute>} />
             <Route path="/test-cases"              element={<PrivateRoute><TestCaseListView /></PrivateRoute>} />
@@ -132,7 +132,6 @@ export default function App() {
       {showOnboarding && <InstallAgentModal onClose={closeOnboarding} />}
       {showPairing && <PairAgentModal onClose={() => setShowPairing(false)} />}
 
-      {execId && <ExecutionReportModal execId={execId} onClose={() => setExecId(null)} onLightbox={setLightbox} />}
       {lightbox && (
         <div className="lightbox" onClick={() => setLightbox(null)}>
           <div className="lightbox-close" onClick={() => setLightbox(null)}>✕</div>

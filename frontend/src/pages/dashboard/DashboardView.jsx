@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
 import { fmt, fmtShort, statusBadge } from '../../utils/helpers';
@@ -111,7 +111,7 @@ function BarChart({ data }) {
 /* ───────────────────────────────────────
    DASHBOARD VIEW
 ─────────────────────────────────────── */
-export default function DashboardView({ onSelectExec }) {
+export default function DashboardView() {
   const [execs, setExecs] = useState([]);
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,6 +119,7 @@ export default function DashboardView({ onSelectExec }) {
   const [entries, setEntries] = useState(10);
   const [page, setPage] = useState(0);
   const { user, setShowOnboarding } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([
@@ -256,7 +257,7 @@ export default function DashboardView({ onSelectExec }) {
                     {(e.status !== 'running' && e.status !== 'queued') && (
                       <button className="act-btn view" title="Re-run Execution" style={{color: '#059669'}} onClick={() => rerunExecution(e.id)}>▶️</button>
                     )}
-                    <button className="act-btn view" title="View Report" onClick={() => onSelectExec(e.id)}>👁️</button>
+                    <button className="act-btn view" title="View Report" onClick={() => navigate(`/executions/${e.id}`)}>👁️</button>
                   </div>
                 </td>
               </tr>
