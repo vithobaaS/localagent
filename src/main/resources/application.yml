@@ -1,5 +1,8 @@
 server:
   port: 9090
+  tomcat:
+    max-http-form-post-size: 52428800  # 50MB
+    max-swallow-size: 52428800         # 50MB
 
 spring:
   application:
@@ -25,6 +28,10 @@ spring:
     show-sql: false
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 # JWT Configuration
 autopropel:
