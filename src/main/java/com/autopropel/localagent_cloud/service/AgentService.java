@@ -205,17 +205,31 @@ public class AgentService {
 
     @Transactional
     public ResponseEntity<Void> postResults(Long executionId, Map<String, Object> result) {
-        executionRepository.findById(executionId).ifPresent(exec -> {
-            exec.setStatus((String) result.getOrDefault("status", "completed"));
-            exec.setFinishedAt(java.time.LocalDateTime.now());
-            executionRepository.save(exec);
-        });
-
         try {
             Map<String, Object> runResult = result;
             if (result.containsKey("result")) {
                 runResult = (Map<String, Object>) result.get("result");
             }
+
+            // Correctly parse the overall result_status sent by the Java Agent
+            String finalStatus = "completed";
+            if (runResult.containsKey("result_status")) {
+                Object rs = runResult.get("result_status");
+                if (rs instanceof Number && ((Number) rs).intValue() == 0) {
+                    finalStatus = "failed";
+                }
+            } else if (result.containsKey("status")) {
+                finalStatus = (String) result.get("status");
+            }
+            
+            final String statusToSave = finalStatus;
+            
+            executionRepository.findById(executionId).ifPresent(exec -> {
+                exec.setStatus(statusToSave);
+                exec.setFinishedAt(java.time.LocalDateTime.now());
+                executionRepository.save(exec);
+            });
+
             java.util.List<Map<String, Object>> testCaseList = (java.util.List<Map<String, Object>>) runResult.get("testCase");
             if (testCaseList != null && !testCaseList.isEmpty()) {
                 Map<String, Object> firstIterationMap = testCaseList.get(0);
