@@ -212,11 +212,12 @@ function Configurator({ step, onChange }) {
 
         <hr className="ts-divider" />
 
-        <div className="ts-field">
-          <label className="ts-field-label">{step.stepType === 'VERIFY' ? 'Test Data / Fallback' : 'Test Data'}</label>
-          <input className="ts-input" value={step.testData} onChange={e => onChange('testData', e.target.value)} placeholder="admin@test.com" />
-        </div>
-
+        {step.stepType !== 'VERIFY' && (
+          <div className="ts-field">
+            <label className="ts-field-label">Test Data</label>
+            <input className="ts-input" value={step.testData} onChange={e => onChange('testData', e.target.value)} placeholder="admin@test.com" />
+          </div>
+        )}
         {step.stepType === 'VERIFY' && (
           <div className="ts-field">
             <label className="ts-field-label" style={{ color: '#10b981' }}>✅ Expected Value *</label>
