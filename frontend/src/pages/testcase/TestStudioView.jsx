@@ -27,7 +27,7 @@ function getActionMeta(actionName) {
 }
 
 function makeStep(actionName = '') {
-  return { _id: Math.random().toString(36).slice(2), actionName, locatorType:'', locatorValue:'', testData:'', description:'' };
+  return { _id: Math.random().toString(36).slice(2), actionName, stepType: 'ACTION', locatorType:'', locatorValue:'', testData:'', expectedValue:'', description:'' };
 }
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
@@ -100,6 +100,7 @@ function ActionBlock({ action, cat, onAdd }) {
 function StepCard({ step, index, selected, onSelect, onDelete, dragHandlers }) {
   const meta = getActionMeta(step.actionName);
   const detail = [step.locatorType, step.locatorValue, step.testData].filter(Boolean).join(' › ');
+  const isVerify = step.stepType === 'VERIFY';
 
   return (
     <div
@@ -115,8 +116,12 @@ function StepCard({ step, index, selected, onSelect, onDelete, dragHandlers }) {
       <div className="ts-step-num">{index + 1}</div>
       <div className={`ts-step-icon ${meta.color}`}>{meta.emoji}</div>
       <div className="ts-step-info">
-        <div className="ts-step-action">{step.actionName || <em style={{color:'#9ca3af'}}>No action</em>}</div>
+        <div className="ts-step-action">
+          {isVerify && <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#d1fae5', color: '#065f46', marginRight: 6 }}>VERIFY</span>}
+          {step.actionName || <em style={{color:'#9ca3af'}}>No action</em>}
+        </div>
         {detail && <div className="ts-step-detail">{detail}</div>}
+        {isVerify && step.expectedValue && <div className="ts-step-detail" style={{ color: '#10b981' }}>Expected: {step.expectedValue}</div>}
       </div>
       <button className="ts-step-delete" onClick={e => { e.stopPropagation(); onDelete(step._id); }} title="Delete">✕</button>
     </div>
@@ -153,6 +158,22 @@ function Configurator({ step, onChange }) {
         <div className="ts-config-title">{meta.emoji} {step.actionName || 'New Step'}</div>
       </div>
       <div className="ts-config-body">
+
+        {/* Step Type Toggle */}
+        <div className="ts-field">
+          <label className="ts-field-label">Step Type</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['ACTION', 'VERIFY'].map(t => (
+              <button key={t} onClick={() => onChange('stepType', t)}
+                style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1.5px solid', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem', transition: 'all 0.15s',
+                  background: step.stepType === t ? (t === 'VERIFY' ? '#d1fae5' : 'var(--brand)') : 'transparent',
+                  color: step.stepType === t ? (t === 'VERIFY' ? '#065f46' : '#fff') : 'var(--txt-muted)',
+                  borderColor: step.stepType === t ? (t === 'VERIFY' ? '#10b981' : 'var(--brand)') : 'var(--border)' }}>
+                {t === 'ACTION' ? '⚡ ACTION' : '✅ VERIFY'}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="ts-field">
           <label className="ts-field-label">Action *</label>
@@ -192,9 +213,21 @@ function Configurator({ step, onChange }) {
         <hr className="ts-divider" />
 
         <div className="ts-field">
-          <label className="ts-field-label">Test Data</label>
+          <label className="ts-field-label">{step.stepType === 'VERIFY' ? 'Test Data / Fallback' : 'Test Data'}</label>
           <input className="ts-input" value={step.testData} onChange={e => onChange('testData', e.target.value)} placeholder="admin@test.com" />
         </div>
+
+        {step.stepType === 'VERIFY' && (
+          <div className="ts-field">
+            <label className="ts-field-label" style={{ color: '#10b981' }}>✅ Expected Value *</label>
+            <input className="ts-input" style={{ borderColor: '#10b981', outline: 'none' }}
+              value={step.expectedValue || ''}
+              onChange={e => onChange('expectedValue', e.target.value)}
+              placeholder="Expected text, URL fragment, or title..."
+            />
+            <div style={{ fontSize: '0.72rem', color: '#6b7280', marginTop: 4 }}>The agent will compare the actual value against this at runtime.</div>
+          </div>
+        )}
 
         <div className="ts-field">
           <label className="ts-field-label">Description</label>
@@ -232,9 +265,11 @@ export default function TestStudioView() {
         setSteps(d.steps.map(s => ({
           _id: Math.random().toString(36).slice(2),
           actionName: s.actionName || '',
+          stepType: s.stepType || 'ACTION',
           locatorType: s.locatorType || '',
           locatorValue: s.locatorValue || '',
           testData: s.testData || '',
+          expectedValue: s.expectedValue || '',
           description: s.description || '',
         })));
       }
@@ -300,7 +335,7 @@ export default function TestStudioView() {
   const save = async () => {
     if (!name.trim()) { toast('error', 'Validation', 'Test Case name is required.'); return; }
     setSaving(true);
-    const payload = { name, description: desc, steps: steps.map((s,i) => ({ ...s, stepOrder: i+1 })) };
+    const payload = { name, description: desc, steps: steps.map((s,i) => ({ ...s, stepOrder: i+1, stepType: s.stepType || 'ACTION', expectedValue: s.expectedValue || null })) };
     const r = await api(isEdit ? `/api/test-cases/${id}` : '/api/test-cases', {
       method: isEdit ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },

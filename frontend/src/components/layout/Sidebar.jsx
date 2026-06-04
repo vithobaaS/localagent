@@ -28,27 +28,26 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       <nav className="sidebar-nav">
         <div className="nav-section">Overview</div>
         <NavItem to="/dashboard"            icon="📊" label="Dashboard"         active={is('/dashboard')} />
-        <div className="nav-section">Scheduler</div>
-        <NavItem to="/scheduler/create"     icon="➕" label="Create Scheduler"  active={is('/scheduler/create')} />
-        <NavItem to="/scheduler"            icon="📅" label="All Schedulers"    active={is('/scheduler')} />
-        <div className="nav-section">Test Suite</div>
-        <NavItem to="/test-suites/create"   icon="🗂️" label="Create Suite"      active={is('/test-suites/create')} />
-        <NavItem to="/test-suites"          icon="📦" label="Suite List"         active={is('/test-suites')} />
-        <div className="nav-section">Test Case Group</div>
-        <NavItem to="/test-case-groups/create" icon="📁" label="Create Group"   active={is('/test-case-groups/create')} />
-        <NavItem to="/test-case-groups"     icon="📂" label="Group List"         active={is('/test-case-groups')} />
-        <div className="nav-section">Test Case</div>
-        <NavItem to="/test-cases/create"    icon="📝" label="Create Test Case"  active={is('/test-cases/create')} />
-        <NavItem to="/test-cases"           icon="🔍" label="Test Case List"     active={is('/test-cases')} />
+
+        <div className="nav-section">Executions</div>
+        <NavItem to="/scheduler"            icon="📅" label="Scheduled Jobs"    active={is('/scheduler')} />
+        <NavItem to="/scheduler/create"     icon="➕" label="New Schedule"      active={is('/scheduler/create')} />
+
+        <div className="nav-section">Test Management</div>
+        <NavItem to="/test-suites"          icon="📦" label="Test Suites"       active={is('/test-suites')} />
+        <NavItem to="/test-case-groups"     icon="📂" label="Test Groups"       active={is('/test-case-groups')} />
+        <NavItem to="/test-cases"           icon="🔍" label="Test Cases"        active={is('/test-cases')} />
+        <NavItem to="/variables"            icon="🔧" label="Variables"         active={is('/variables')} />
+        <NavItem to="/environments"         icon="🌍" label="Environments"      active={is('/environments')} />
+
         <div className="nav-section">Agents</div>
-        <NavItem to="/groups/create"        icon="👥" label="Create Group"      active={is('/groups/create')} />
         <NavItem to="/groups"               icon="🖥️" label="Agent Groups"      active={is('/groups')} />
-        <div className="nav-section">Downloads</div>
         <button className="nav-item" onClick={() => setShowOnboarding(true)} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}>
           <span className="nav-icon-wrap">⬇️</span>
           Install Agent
         </button>
-        <div className="nav-section">Organization</div>
+
+        <div className="nav-section">Administration</div>
         <NavItem to="/settings"             icon="⚙️" label="Settings"          active={is('/settings')} />
       </nav>
       <div className="sidebar-footer">

@@ -33,6 +33,12 @@ public class StepResult {
     @Column(name = "error_json", columnDefinition = "text")
     private String errorJson;
 
+    @Column(name = "actual_value", columnDefinition = "text")
+    private String actualValue;
+
+    @Column(name = "step_type")
+    private String stepType = "ACTION";
+
     public Long getId() {
         return id;
     }
@@ -87,5 +93,21 @@ public class StepResult {
 
     public void setErrorJson(String errorJson) {
         this.errorJson = errorJson;
+    }
+
+    public String getActualValue() {
+        return actualValue;
+    }
+
+    public void setActualValue(String actualValue) {
+        this.actualValue = actualValue;
+    }
+
+    public String getStepType() {
+        return stepType;
+    }
+
+    public void setStepType(String stepType) {
+        this.stepType = stepType;
     }
 }

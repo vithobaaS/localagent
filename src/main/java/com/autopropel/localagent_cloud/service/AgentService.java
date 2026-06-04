@@ -244,6 +244,7 @@ public class AgentService {
                             sr.setExecutionId(executionId);
                             sr.setStepIndex(i + 1);
                             sr.setActionName((String) stepData.getOrDefault("actionName", "unknown"));
+                            sr.setStepType((String) stepData.getOrDefault("stepType", "ACTION"));
 
                             Object execStatus = stepData.get("executed_status");
                             sr.setExecutedStatus(execStatus != null ? (Integer) execStatus : 0);
@@ -252,6 +253,7 @@ public class AgentService {
                             sr.setResultStatus(resStatus != null ? (Integer) resStatus : 0);
 
                             sr.setErrorJson((String) stepData.getOrDefault("errorLog", ""));
+                            sr.setActualValue((String) stepData.get("actualValue"));
                             sr = stepResultRepository.save(sr);
 
                             String base64 = (String) stepData.get("screenshotBase64");

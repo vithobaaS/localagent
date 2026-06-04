@@ -28,6 +28,8 @@ import ExecutionDetailsView from './pages/execution/ExecutionDetailsView';
 import GroupsListView from './pages/agents/GroupsListView';
 import CreateGroupView from './pages/agents/CreateGroupView';
 import SettingsView from './pages/settings/SettingsView';
+import VariablesView from './pages/variables/VariablesView';
+import EnvironmentsView from './pages/environments/EnvironmentsView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -124,6 +126,8 @@ export default function App() {
             <Route path="/test-suites/create"      element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
             <Route path="/test-suites/edit/:id"    element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
             <Route path="/settings"                element={<PrivateRoute><SettingsView /></PrivateRoute>} />
+            <Route path="/variables"               element={<PrivateRoute><VariablesView /></PrivateRoute>} />
+            <Route path="/environments"            element={<PrivateRoute><EnvironmentsView /></PrivateRoute>} />
             <Route path="*"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
           </Routes>
         </div>

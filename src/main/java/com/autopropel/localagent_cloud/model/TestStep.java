@@ -35,6 +35,12 @@ public class TestStep {
     @Column(name = "test_data")
     private String testData;
 
+    @Column(name = "step_type", nullable = false)
+    private String stepType = "ACTION"; // ACTION or VERIFY
+
+    @Column(name = "expected_value", columnDefinition = "text")
+    private String expectedValue;
+
     private String description;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -69,6 +75,12 @@ public class TestStep {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getStepType() { return stepType; }
+    public void setStepType(String stepType) { this.stepType = stepType; }
+
+    public String getExpectedValue() { return expectedValue; }
+    public void setExpectedValue(String expectedValue) { this.expectedValue = expectedValue; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
