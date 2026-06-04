@@ -110,6 +110,8 @@ public class TestCaseService {
                 step.setLocatorType((String) s.get("locatorType"));
                 step.setLocatorValue((String) s.get("locatorValue"));
                 step.setTestData((String) s.get("testData"));
+                step.setStepType((String) s.getOrDefault("stepType", "ACTION"));
+                step.setExpectedValue((String) s.get("expectedValue"));
                 step.setDescription((String) s.get("description"));
                 saved.add(testStepRepository.save(step));
                 order++;
