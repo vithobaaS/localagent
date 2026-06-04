@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface ExecutionRepository extends JpaRepository<Execution, Long> {
     List<Execution> findAllByOrderByIdDesc();
     long countByOrgId(Long orgId);
+    List<Execution> findByStatusAndCreatedAtBefore(String status, java.time.LocalDateTime cutoff);
 }
