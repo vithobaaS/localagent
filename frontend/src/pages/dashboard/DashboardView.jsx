@@ -167,7 +167,8 @@ export default function DashboardView() {
     }
   };
 
-  const filtered = execs.filter(e => { const q = search.toLowerCase(); return getName(e).toLowerCase().includes(q) || e.status.toLowerCase().includes(q) || String(e.id).includes(q); });
+  const sortedExecs = [...execs].sort((a, b) => b.id - a.id);
+  const filtered = sortedExecs.filter(e => { const q = search.toLowerCase(); return getName(e).toLowerCase().includes(q) || e.status.toLowerCase().includes(q) || String(e.id).includes(q); });
   const paged = filtered.slice(page * entries, (page + 1) * entries);
 
   const total = execs.length;
