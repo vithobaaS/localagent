@@ -23,6 +23,9 @@ public class Execution {
     @Column(name = "org_execution_id")
     private Long orgExecutionId;
 
+    @Column(name = "environment_id")
+    private Long environmentId;
+
     @Column(nullable = false)
     private String status; // QUEUED, RUNNING, SUCCESS, FAILED
 
@@ -85,4 +88,7 @@ public class Execution {
 
     public Long getOrgExecutionId() { return orgExecutionId; }
     public void setOrgExecutionId(Long orgExecutionId) { this.orgExecutionId = orgExecutionId; }
+
+    public Long getEnvironmentId() { return environmentId; }
+    public void setEnvironmentId(Long environmentId) { this.environmentId = environmentId; }
 }

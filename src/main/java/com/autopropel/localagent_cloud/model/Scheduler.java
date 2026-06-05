@@ -40,6 +40,9 @@ public class Scheduler {
     @Column(name = "test_suite_id")
     private Long testSuiteId;
 
+    @Column(name = "environment_id")
+    private Long environmentId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -179,4 +182,7 @@ public class Scheduler {
 
     public Long getOrgId() { return orgId; }
     public void setOrgId(Long orgId) { this.orgId = orgId; }
+
+    public Long getEnvironmentId() { return environmentId; }
+    public void setEnvironmentId(Long environmentId) { this.environmentId = environmentId; }
 }

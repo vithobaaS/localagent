@@ -25,6 +25,7 @@ export default function SchedulerFormView() {
   const [suites, setSuites] = useState([]);
   const [form, setForm] = useState({
     testSuiteId: '',
+    environmentId: '',
     executionType: '',
     browserType: '',
     status: 'active',
@@ -34,6 +35,7 @@ export default function SchedulerFormView() {
     recurrenceDays: [],
     recurrenceEndDate: '',
   });
+  const [envs, setEnvs] = useState([]);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(!isEdit);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -42,6 +44,7 @@ export default function SchedulerFormView() {
 
   useEffect(() => {
     api('/api/test-suites').then(r => r.json()).then(setSuites).catch(() => {});
+    api('/api/environments').then(r => r.json()).then(d => setEnvs(d || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -51,6 +54,7 @@ export default function SchedulerFormView() {
         if (s) {
           setForm({
             testSuiteId: s.testSuiteId || '',
+            environmentId: s.environmentId || '',
             executionType: s.executionType || '',
             browserType: s.browserType || '',
             status: s.status || 'active',
@@ -100,6 +104,7 @@ export default function SchedulerFormView() {
     const suite = suites.find(s => String(s.id) === String(form.testSuiteId));
     const payload = {
       testSuiteId: form.testSuiteId ? +form.testSuiteId : null,
+      environmentId: form.environmentId ? +form.environmentId : null,
       testSuiteName: suite?.name || '',
       executionType: form.executionType,
       browserType: form.browserType,
@@ -142,6 +147,13 @@ export default function SchedulerFormView() {
                 <select id="sched-suite" className="form-select" value={form.testSuiteId} onChange={e => set('testSuiteId', e.target.value)} required>
                   <option value="">Select a test suite…</option>
                   {suites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Environment</label>
+                <select id="sched-env" className="form-select" value={form.environmentId} onChange={e => set('environmentId', e.target.value)}>
+                  <option value="">Default (No Environment)</option>
+                  {envs.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
               </div>
               <div className="form-group">

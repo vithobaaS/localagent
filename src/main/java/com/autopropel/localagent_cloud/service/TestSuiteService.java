@@ -171,6 +171,11 @@ public class TestSuiteService {
             scheduler.setBrowserType(browser);
             scheduler.setStatus("active");
             scheduler.setOrgId(orgId);
+            
+            if (body != null && body.containsKey("environmentId")) {
+                scheduler.setEnvironmentId(((Number) body.get("environmentId")).longValue());
+            }
+            
             scheduler = schedulerRepository.save(scheduler);
 
             Map<String, Object> result = new HashMap<>();

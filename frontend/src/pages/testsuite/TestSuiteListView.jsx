@@ -9,14 +9,29 @@ export default function TestSuiteListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(''); const [entries, setEntries] = useState(10); const [page, setPage] = useState(0);
   const [expanded, setExpanded] = useState(null); const [expandedDetail, setExpandedDetail] = useState(null);
+  
+  const [envs, setEnvs] = useState([]);
+  const [runModalSuite, setRunModalSuite] = useState(null);
+  const [selectedEnvId, setSelectedEnvId] = useState('');
 
-  useEffect(() => { api('/api/test-suites').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  useEffect(() => { 
+    api('/api/test-suites').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); 
+    api('/api/environments').then(r => r.json()).then(d => setEnvs(d || []));
+  }, []);
 
   const toggle = (id) => { if (expanded === id) { setExpanded(null); setExpandedDetail(null); return; } setExpanded(id); setExpandedDetail(null); api(`/api/test-suites/${id}`).then(r => r.json()).then(setExpandedDetail); };
   const remove = (id) => { api(`/api/test-suites/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(s => s.id !== id)); toast('success', 'Deleted'); } }); };
-  const runSuite = (id, name) => {
-    api(`/api/test-suites/${id}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
-      .then(r => { if (r.ok) toast('success', 'Suite Queued! 🚀', `"${name}" scheduled for immediate execution.`); else toast('error', 'Failed', 'Could not trigger execution.'); });
+  
+  const confirmRunSuite = () => {
+    if (!runModalSuite) return;
+    const body = selectedEnvId ? JSON.stringify({ environmentId: Number(selectedEnvId) }) : '{}';
+    api(`/api/test-suites/${runModalSuite.id}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+      .then(r => { 
+        if (r.ok) toast('success', 'Suite Queued! 🚀', `"${runModalSuite.name}" scheduled for immediate execution.`); 
+        else toast('error', 'Failed', 'Could not trigger execution.'); 
+        setRunModalSuite(null);
+        setSelectedEnvId('');
+      });
   };
 
   const filtered = data.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
@@ -36,7 +51,7 @@ export default function TestSuiteListView() {
                 <td><span className={`badge ${statusBadge(s.status)}`}>{s.status}</span></td>
                 <td className="text-muted text-sm">{fmt(s.createdAt)}</td>
                 <td><div className="action-row">
-                  <button className="act-btn view" style={{background:'var(--green-bg)',borderColor:'var(--green)',color:'var(--green)'}} title="Run Now" onClick={() => runSuite(s.id, s.name)}>▶️</button>
+                  <button className="act-btn view" style={{background:'var(--green-bg)',borderColor:'var(--green)',color:'var(--green)'}} title="Run Now" onClick={() => setRunModalSuite(s)}>▶️</button>
                   <button className="act-btn view" onClick={() => toggle(s.id)}>{expanded === s.id ? '▲' : '👁️'}</button>
                   <Link to={`/test-suites/edit/${s.id}`} className="act-btn view" title="Edit">✏️</Link>
                   <button className="act-btn delete" onClick={() => remove(s.id)}>🗑️</button>
@@ -56,6 +71,33 @@ export default function TestSuiteListView() {
             </>))}</tbody>
         </table>
       </TableCard>
+
+      {/* Run Suite Modal */}
+      {runModalSuite && (
+        <div className="modal-overlay" onClick={() => setRunModalSuite(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <div className="modal-header">
+              <h2>🚀 Run Test Suite</h2>
+              <button className="modal-close" onClick={() => setRunModalSuite(null)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <p>You are about to run <strong>{runModalSuite.name}</strong>.</p>
+              <div>
+                <label className="field-label">Target Environment</label>
+                <select className="field-input" value={selectedEnvId} onChange={e => setSelectedEnvId(e.target.value)}>
+                  <option value="">Default (No Environment)</option>
+                  {envs.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
+                <div className="field-hint">Select an environment to inject its scoped variables.</div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setRunModalSuite(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={confirmRunSuite}>▶️ Run Now</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

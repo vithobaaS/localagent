@@ -83,6 +83,9 @@ public class SchedulerService {
         if (body.containsKey("testSuiteId") && body.get("testSuiteId") != null) {
             s.setTestSuiteId(((Number) body.get("testSuiteId")).longValue());
         }
+        if (body.containsKey("environmentId") && body.get("environmentId") != null) {
+            s.setEnvironmentId(((Number) body.get("environmentId")).longValue());
+        }
         // Outlook-style fields
         if (body.containsKey("recurrenceType"))  s.setRecurrenceType((String) body.get("recurrenceType"));
         if (body.containsKey("recurrenceDays"))  s.setRecurrenceDays((String) body.get("recurrenceDays"));

@@ -164,6 +164,7 @@ public class AgentService {
 
         long count = agentOrgId != null ? executionRepository.countByOrgId(agentOrgId) : 0;
         execution.setOrgExecutionId(count + 1);
+        execution.setEnvironmentId(job.getEnvironmentId());
 
         execution.setEnvironmentJson("{\"referenceId\":\"" + job.getTestSuiteName() + "\",\"browserTypeName\":\"" + job.getBrowserType() + "\"}");
         execution.setStatus("running");

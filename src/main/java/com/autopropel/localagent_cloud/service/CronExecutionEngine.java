@@ -186,6 +186,8 @@ public class CronExecutionEngine {
         job.setBrowserType(original.getBrowserType());
         job.setExecutionType("now");
         job.setStatus("active");
+        job.setOrgId(original.getOrgId());
+        job.setEnvironmentId(original.getEnvironmentId());
         schedulerRepository.save(job);
         logger.info("Queued test suite '{}' for execution via local agent polling", job.getTestSuiteName());
     }
