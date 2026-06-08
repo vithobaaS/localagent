@@ -202,13 +202,13 @@ public class AgentService {
         if (agentOrgId != null) {
             List<Variable> globalVars = variableRepository.findByOrgIdAndScope(agentOrgId, "GLOBAL");
             for (Variable v : globalVars) {
-                executionVariables.put(v.getVarKey(), v.getVarValue());
+                executionVariables.put(v.getKeyName(), v.getValue());
             }
 
             if (job.getEnvironmentId() != null) {
                 List<Variable> envVars = variableRepository.findByOrgIdAndScopeAndScopeId(agentOrgId, "ENVIRONMENT", job.getEnvironmentId());
                 for (Variable v : envVars) {
-                    executionVariables.put(v.getVarKey(), v.getVarValue()); // overrides global
+                    executionVariables.put(v.getKeyName(), v.getValue()); // overrides global
                 }
             }
         }
