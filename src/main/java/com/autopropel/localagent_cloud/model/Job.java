@@ -22,6 +22,12 @@ public class Job {
     @Column(name = "agent_id")
     private String agentId;
 
+    @Column(name = "browser_type")
+    private String browserType;
+
+    @Column(name = "browser_version")
+    private String browserVersion;
+
     @Column(nullable = false)
     private String status; // QUEUED, ASSIGNED, COMPLETED, TIMEOUT
 
@@ -77,5 +83,21 @@ public class Job {
 
     public void setPayloadJson(String payloadJson) {
         this.payloadJson = payloadJson;
+    }
+
+    public String getBrowserType() {
+        return browserType;
+    }
+
+    public void setBrowserType(String browserType) {
+        this.browserType = browserType;
+    }
+
+    public String getBrowserVersion() {
+        return browserVersion;
+    }
+
+    public void setBrowserVersion(String browserVersion) {
+        this.browserVersion = browserVersion;
     }
 }

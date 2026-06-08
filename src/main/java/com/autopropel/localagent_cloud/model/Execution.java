@@ -26,6 +26,15 @@ public class Execution {
     @Column(name = "environment_id")
     private Long environmentId;
 
+    @Column(name = "target_group_id")
+    private Long targetGroupId;
+
+    @Column(name = "browser_type")
+    private String browserType;
+
+    @Column(name = "browser_version")
+    private String browserVersion;
+
     @Column(nullable = false)
     private String status; // QUEUED, RUNNING, SUCCESS, FAILED
 
@@ -91,4 +100,13 @@ public class Execution {
 
     public Long getEnvironmentId() { return environmentId; }
     public void setEnvironmentId(Long environmentId) { this.environmentId = environmentId; }
+
+    public Long getTargetGroupId() { return targetGroupId; }
+    public void setTargetGroupId(Long targetGroupId) { this.targetGroupId = targetGroupId; }
+
+    public String getBrowserType() { return browserType; }
+    public void setBrowserType(String browserType) { this.browserType = browserType; }
+
+    public String getBrowserVersion() { return browserVersion; }
+    public void setBrowserVersion(String browserVersion) { this.browserVersion = browserVersion; }
 }

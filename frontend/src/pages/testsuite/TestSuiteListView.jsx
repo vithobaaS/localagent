@@ -11,12 +11,16 @@ export default function TestSuiteListView() {
   const [expanded, setExpanded] = useState(null); const [expandedDetail, setExpandedDetail] = useState(null);
   
   const [envs, setEnvs] = useState([]);
+  const [pools, setPools] = useState([]);
   const [runModalSuite, setRunModalSuite] = useState(null);
   const [selectedEnvId, setSelectedEnvId] = useState('');
+  const [selectedPoolId, setSelectedPoolId] = useState('');
+  const [selectedBrowserVersion, setSelectedBrowserVersion] = useState('');
 
   useEffect(() => { 
     api('/api/test-suites').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false)); 
     api('/api/environments').then(r => r.json()).then(d => setEnvs(d || []));
+    api('/api/groups').then(r => r.json()).then(d => setPools(d || []));
   }, []);
 
   const toggle = (id) => { if (expanded === id) { setExpanded(null); setExpandedDetail(null); return; } setExpanded(id); setExpandedDetail(null); api(`/api/test-suites/${id}`).then(r => r.json()).then(setExpandedDetail); };
@@ -24,13 +28,19 @@ export default function TestSuiteListView() {
   
   const confirmRunSuite = () => {
     if (!runModalSuite) return;
-    const body = selectedEnvId ? JSON.stringify({ environmentId: Number(selectedEnvId) }) : '{}';
-    api(`/api/test-suites/${runModalSuite.id}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+    const reqBody = {};
+    if (selectedEnvId) reqBody.environmentId = Number(selectedEnvId);
+    if (selectedPoolId) reqBody.targetGroupId = Number(selectedPoolId);
+    if (selectedBrowserVersion) reqBody.browserVersion = selectedBrowserVersion;
+    
+    api(`/api/test-suites/${runModalSuite.id}/run`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reqBody) })
       .then(r => { 
         if (r.ok) toast('success', 'Suite Queued! 🚀', `"${runModalSuite.name}" scheduled for immediate execution.`); 
         else toast('error', 'Failed', 'Could not trigger execution.'); 
         setRunModalSuite(null);
         setSelectedEnvId('');
+        setSelectedPoolId('');
+        setSelectedBrowserVersion('');
       });
   };
 
@@ -89,6 +99,19 @@ export default function TestSuiteListView() {
                   {envs.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
                 <div className="field-hint">Select an environment to inject its scoped variables.</div>
+              </div>
+              <div>
+                <label className="field-label">Agent Pool</label>
+                <select className="field-input" value={selectedPoolId} onChange={e => setSelectedPoolId(e.target.value)}>
+                  <option value="">Default (Any Available Agent)</option>
+                  {pools.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <div className="field-hint">Route this execution to a specific network or OS pool.</div>
+              </div>
+              <div>
+                <label className="field-label">Browser Version (Optional)</label>
+                <input type="text" className="field-input" placeholder="e.g. 137" value={selectedBrowserVersion} onChange={e => setSelectedBrowserVersion(e.target.value)} />
+                <div className="field-hint">Require a specific major browser version for this run.</div>
               </div>
             </div>
             <div className="modal-footer">

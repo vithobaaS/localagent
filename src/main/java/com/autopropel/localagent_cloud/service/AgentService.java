@@ -22,6 +22,7 @@ import com.autopropel.localagent_cloud.repository.TestSuiteGroupMappingRepositor
 import com.autopropel.localagent_cloud.repository.TestSuiteRepository;
 import com.autopropel.localagent_cloud.repository.VariableRepository;
 import com.autopropel.localagent_cloud.repository.OrganisationRepository;
+import com.autopropel.localagent_cloud.repository.AgentGroupMappingRepository;
 import com.autopropel.localagent_cloud.model.Organisation;
 import com.autopropel.localagent_cloud.model.Variable;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,7 @@ public class AgentService {
     private final StepResultRepository stepResultRepository;
     private final OrganisationRepository organisationRepository;
     private final VariableRepository variableRepository;
+    private final AgentGroupMappingRepository agentGroupMappingRepository;
     private final ObjectMapper objectMapper;
     private final S3Service s3Service;
 
@@ -65,6 +67,7 @@ public class AgentService {
                         StepResultRepository stepResultRepository,
                         OrganisationRepository organisationRepository,
                         VariableRepository variableRepository,
+                        AgentGroupMappingRepository agentGroupMappingRepository,
                         ObjectMapper objectMapper,
                         S3Service s3Service) {
         this.agentRepository = agentRepository;
@@ -79,6 +82,7 @@ public class AgentService {
         this.stepResultRepository = stepResultRepository;
         this.organisationRepository = organisationRepository;
         this.variableRepository = variableRepository;
+        this.agentGroupMappingRepository = agentGroupMappingRepository;
         this.objectMapper = objectMapper;
         this.s3Service = s3Service;
     }
@@ -151,9 +155,32 @@ public class AgentService {
 
         Long agentOrgId = agent.getOrgId();
 
+        List<Long> agentGroupIds = agentGroupMappingRepository.findByAgentId(agentId).stream()
+                .map(com.autopropel.localagent_cloud.model.AgentGroupMapping::getGroupId)
+                .toList();
+
+        String agentBrowserVersion = "";
+        try {
+            if (agent.getCapabilitiesJson() != null) {
+                Map<String, Object> caps = objectMapper.readValue(agent.getCapabilitiesJson(), Map.class);
+                if (caps.containsKey("browserVersion")) {
+                    agentBrowserVersion = (String) caps.get("browserVersion");
+                }
+            }
+        } catch (Exception e) {}
+        final String finalAgentBrowserVer = agentBrowserVersion;
+
         List<Scheduler> activeJobs = schedulerRepository.findAll().stream()
                 .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
                 .filter(s -> agentOrgId == null || agentOrgId.equals(s.getOrgId()))
+                .filter(s -> s.getTargetGroupId() == null || agentGroupIds.contains(s.getTargetGroupId()))
+                .filter(s -> {
+                    if (s.getBrowserVersion() == null || s.getBrowserVersion().isBlank()) return true;
+                    if (finalAgentBrowserVer.isBlank()) return false;
+                    String reqMajor = s.getBrowserVersion().split("\\.")[0];
+                    String agentMajor = finalAgentBrowserVer.split("\\.")[0];
+                    return reqMajor.equals(agentMajor);
+                })
                 .toList();
 
         if (activeJobs.isEmpty()) {
@@ -170,6 +197,9 @@ public class AgentService {
         long count = agentOrgId != null ? executionRepository.countByOrgId(agentOrgId) : 0;
         execution.setOrgExecutionId(count + 1);
         execution.setEnvironmentId(job.getEnvironmentId());
+        execution.setTargetGroupId(job.getTargetGroupId());
+        execution.setBrowserType(job.getBrowserType());
+        execution.setBrowserVersion(job.getBrowserVersion());
 
         execution.setEnvironmentJson("{\"referenceId\":\"" + job.getTestSuiteName() + "\",\"browserTypeName\":\"" + job.getBrowserType() + "\"}");
         execution.setStatus("running");

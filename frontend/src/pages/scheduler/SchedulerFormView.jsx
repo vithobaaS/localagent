@@ -26,8 +26,10 @@ export default function SchedulerFormView() {
   const [form, setForm] = useState({
     testSuiteId: '',
     environmentId: '',
+    targetGroupId: '',
     executionType: '',
     browserType: '',
+    browserVersion: '',
     status: 'active',
     recurrenceType: 'once',
     scheduledDate: '',
@@ -36,6 +38,7 @@ export default function SchedulerFormView() {
     recurrenceEndDate: '',
   });
   const [envs, setEnvs] = useState([]);
+  const [pools, setPools] = useState([]);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(!isEdit);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -45,6 +48,7 @@ export default function SchedulerFormView() {
   useEffect(() => {
     api('/api/test-suites').then(r => r.json()).then(setSuites).catch(() => {});
     api('/api/environments').then(r => r.json()).then(d => setEnvs(d || [])).catch(() => {});
+    api('/api/groups').then(r => r.json()).then(d => setPools(d || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -55,8 +59,10 @@ export default function SchedulerFormView() {
           setForm({
             testSuiteId: s.testSuiteId || '',
             environmentId: s.environmentId || '',
+            targetGroupId: s.targetGroupId || '',
             executionType: s.executionType || '',
             browserType: s.browserType || '',
+            browserVersion: s.browserVersion || '',
             status: s.status || 'active',
             recurrenceType: s.recurrenceType || 'once',
             scheduledDate: s.scheduledDate || '',
@@ -105,9 +111,11 @@ export default function SchedulerFormView() {
     const payload = {
       testSuiteId: form.testSuiteId ? +form.testSuiteId : null,
       environmentId: form.environmentId ? +form.environmentId : null,
+      targetGroupId: form.targetGroupId ? +form.targetGroupId : null,
       testSuiteName: suite?.name || '',
       executionType: form.executionType,
       browserType: form.browserType,
+      browserVersion: form.browserVersion || null,
       status: form.status,
       recurrenceType: form.executionType === 'scheduled' ? form.recurrenceType : null,
       scheduledDate: form.executionType === 'scheduled' && form.scheduledDate ? form.scheduledDate : null,
@@ -163,6 +171,18 @@ export default function SchedulerFormView() {
                   <option value="chrome">🌐 Chrome</option>
                   <option value="firefox">🦊 Firefox</option>
                   <option value="edge">🔷 Edge</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Browser Version</label>
+                <input type="text" id="sched-browser-ver" className="form-input" placeholder="e.g. 137" value={form.browserVersion} onChange={e => set('browserVersion', e.target.value)} />
+                <div className="field-hint" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Require a specific major browser version.</div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Agent Pool</label>
+                <select id="sched-pool" className="form-select" value={form.targetGroupId} onChange={e => set('targetGroupId', e.target.value)}>
+                  <option value="">Default (Any Available Agent)</option>
+                  {pools.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div className="form-group">

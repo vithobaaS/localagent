@@ -46,6 +46,12 @@ public class Scheduler {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "target_group_id")
+    private Long targetGroupId;
+
+    @Column(name = "browser_version")
+    private String browserVersion;
+
     // ─── Outlook-style scheduling fields ──────────────────────────────────────
 
     /** The specific date to run (used for 'once' and as the start date for recurring) */
@@ -185,4 +191,10 @@ public class Scheduler {
 
     public Long getEnvironmentId() { return environmentId; }
     public void setEnvironmentId(Long environmentId) { this.environmentId = environmentId; }
+
+    public Long getTargetGroupId() { return targetGroupId; }
+    public void setTargetGroupId(Long targetGroupId) { this.targetGroupId = targetGroupId; }
+
+    public String getBrowserVersion() { return browserVersion; }
+    public void setBrowserVersion(String browserVersion) { this.browserVersion = browserVersion; }
 }

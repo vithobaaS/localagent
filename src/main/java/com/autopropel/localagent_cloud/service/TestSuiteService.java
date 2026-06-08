@@ -175,6 +175,12 @@ public class TestSuiteService {
             if (body != null && body.containsKey("environmentId")) {
                 scheduler.setEnvironmentId(((Number) body.get("environmentId")).longValue());
             }
+            if (body != null && body.containsKey("targetGroupId")) {
+                scheduler.setTargetGroupId(((Number) body.get("targetGroupId")).longValue());
+            }
+            if (body != null && body.containsKey("browserVersion")) {
+                scheduler.setBrowserVersion((String) body.get("browserVersion"));
+            }
             
             scheduler = schedulerRepository.save(scheduler);
 
