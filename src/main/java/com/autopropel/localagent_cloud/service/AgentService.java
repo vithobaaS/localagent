@@ -20,8 +20,10 @@ import com.autopropel.localagent_cloud.repository.TestCaseGroupMappingRepository
 import com.autopropel.localagent_cloud.repository.TestStepRepository;
 import com.autopropel.localagent_cloud.repository.TestSuiteGroupMappingRepository;
 import com.autopropel.localagent_cloud.repository.TestSuiteRepository;
+import com.autopropel.localagent_cloud.repository.VariableRepository;
 import com.autopropel.localagent_cloud.repository.OrganisationRepository;
 import com.autopropel.localagent_cloud.model.Organisation;
+import com.autopropel.localagent_cloud.model.Variable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +49,7 @@ public class AgentService {
     private final ScreenshotRepository screenshotRepository;
     private final StepResultRepository stepResultRepository;
     private final OrganisationRepository organisationRepository;
+    private final VariableRepository variableRepository;
     private final ObjectMapper objectMapper;
     private final S3Service s3Service;
 
@@ -61,6 +64,7 @@ public class AgentService {
                         ScreenshotRepository screenshotRepository,
                         StepResultRepository stepResultRepository,
                         OrganisationRepository organisationRepository,
+                        VariableRepository variableRepository,
                         ObjectMapper objectMapper,
                         S3Service s3Service) {
         this.agentRepository = agentRepository;
@@ -74,6 +78,7 @@ public class AgentService {
         this.screenshotRepository = screenshotRepository;
         this.stepResultRepository = stepResultRepository;
         this.organisationRepository = organisationRepository;
+        this.variableRepository = variableRepository;
         this.objectMapper = objectMapper;
         this.s3Service = s3Service;
     }
@@ -191,6 +196,23 @@ public class AgentService {
         runRequest.put("executionId", execution.getId());
         runRequest.put("browserType", job.getBrowserType());
         runRequest.put("iterations", iterations);
+
+        // Resolve Variables: GLOBAL and ENVIRONMENT
+        Map<String, String> executionVariables = new HashMap<>();
+        if (agentOrgId != null) {
+            List<Variable> globalVars = variableRepository.findByOrgIdAndScope(agentOrgId, "GLOBAL");
+            for (Variable v : globalVars) {
+                executionVariables.put(v.getVarKey(), v.getVarValue());
+            }
+
+            if (job.getEnvironmentId() != null) {
+                List<Variable> envVars = variableRepository.findByOrgIdAndScopeAndScopeId(agentOrgId, "ENVIRONMENT", job.getEnvironmentId());
+                for (Variable v : envVars) {
+                    executionVariables.put(v.getVarKey(), v.getVarValue()); // overrides global
+                }
+            }
+        }
+        runRequest.put("variables", executionVariables);
 
         try {
             String payloadJson = objectMapper.writeValueAsString(runRequest);

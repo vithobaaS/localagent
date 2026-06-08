@@ -1,0 +1,2 @@
+ALTER TABLE executions ADD COLUMN IF NOT EXISTS environment_id BIGINT;
+ALTER TABLE schedulers ADD COLUMN IF NOT EXISTS environment_id BIGINT;
