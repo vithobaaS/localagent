@@ -11,8 +11,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
 
-    @Query("SELECT j FROM Job j WHERE j.status = 'QUEUED' AND (j.agentId = :agentId OR j.agentId IS NULL) ORDER BY j.id ASC")
-    List<Job> findNextAvailableJobs(@Param("agentId") String agentId, Pageable pageable);
+    @Query("SELECT j FROM Job j WHERE j.status = 'QUEUED' " +
+           "AND (j.agentId = :agentId OR j.agentId IS NULL) " +
+           "AND (j.targetGroupId IS NULL OR j.targetGroupId IN :groupIDs) " +
+           "ORDER BY j.id ASC")
+    List<Job> findNextAvailableJobs(@Param("agentId") String agentId, @Param("groupIDs") List<Long> groupIDs, Pageable pageable);
 
     List<Job> findByExecutionId(Long executionId);
 }

@@ -22,6 +22,12 @@ public class Job {
     @Column(name = "agent_id")
     private String agentId;
 
+    @Column(name = "target_group_id")
+    private Long targetGroupId;
+
+    @Column(name = "test_case_id")
+    private Long testCaseId;
+
     @Column(name = "browser_type")
     private String browserType;
 
@@ -99,5 +105,21 @@ public class Job {
 
     public void setBrowserVersion(String browserVersion) {
         this.browserVersion = browserVersion;
+    }
+
+    public Long getTargetGroupId() {
+        return targetGroupId;
+    }
+
+    public void setTargetGroupId(Long targetGroupId) {
+        this.targetGroupId = targetGroupId;
+    }
+
+    public Long getTestCaseId() {
+        return testCaseId;
+    }
+
+    public void setTestCaseId(Long testCaseId) {
+        this.testCaseId = testCaseId;
     }
 }

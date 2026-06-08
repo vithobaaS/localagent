@@ -23,9 +23,11 @@ import com.autopropel.localagent_cloud.repository.TestSuiteRepository;
 import com.autopropel.localagent_cloud.repository.VariableRepository;
 import com.autopropel.localagent_cloud.repository.OrganisationRepository;
 import com.autopropel.localagent_cloud.repository.AgentGroupMappingRepository;
+import com.autopropel.localagent_cloud.repository.JobRepository;
 import com.autopropel.localagent_cloud.model.Organisation;
 import com.autopropel.localagent_cloud.model.Variable;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,7 @@ public class AgentService {
     private final OrganisationRepository organisationRepository;
     private final VariableRepository variableRepository;
     private final AgentGroupMappingRepository agentGroupMappingRepository;
+    private final JobRepository jobRepository;
     private final ObjectMapper objectMapper;
     private final S3Service s3Service;
 
@@ -68,6 +71,7 @@ public class AgentService {
                         OrganisationRepository organisationRepository,
                         VariableRepository variableRepository,
                         AgentGroupMappingRepository agentGroupMappingRepository,
+                        JobRepository jobRepository,
                         ObjectMapper objectMapper,
                         S3Service s3Service) {
         this.agentRepository = agentRepository;
@@ -83,6 +87,7 @@ public class AgentService {
         this.organisationRepository = organisationRepository;
         this.variableRepository = variableRepository;
         this.agentGroupMappingRepository = agentGroupMappingRepository;
+        this.jobRepository = jobRepository;
         this.objectMapper = objectMapper;
         this.s3Service = s3Service;
     }
@@ -158,6 +163,7 @@ public class AgentService {
         List<Long> agentGroupIds = agentGroupMappingRepository.findByAgentId(agentId).stream()
                 .map(com.autopropel.localagent_cloud.model.AgentGroupMapping::getGroupId)
                 .toList();
+        List<Long> groupIDsForQuery = agentGroupIds.isEmpty() ? List.of(-1L) : agentGroupIds;
 
         String agentBrowserVersion = "";
         try {
@@ -170,6 +176,38 @@ public class AgentService {
         } catch (Exception e) {}
         final String finalAgentBrowserVer = agentBrowserVersion;
 
+        // Phase 1: Try to pick up an existing QUEUED job
+        List<com.autopropel.localagent_cloud.model.Job> candidateJobs = jobRepository.findNextAvailableJobs(agentId, groupIDsForQuery, PageRequest.of(0, 50));
+        com.autopropel.localagent_cloud.model.Job selectedJob = candidateJobs.stream().filter(j -> {
+            if (j.getBrowserVersion() == null || j.getBrowserVersion().isBlank()) return true;
+            if (finalAgentBrowserVer.isBlank()) return false;
+            String reqMajor = j.getBrowserVersion().split("\\.")[0];
+            String agentMajor = finalAgentBrowserVer.split("\\.")[0];
+            return reqMajor.equals(agentMajor);
+        }).findFirst().orElse(null);
+
+        if (selectedJob != null) {
+            selectedJob.setStatus("ASSIGNED");
+            selectedJob.setAgentId(agentId);
+            selectedJob.setLeaseExpiresAt(java.time.LocalDateTime.now().plusMinutes(10));
+            jobRepository.save(selectedJob);
+
+            try {
+                Map<String, Object> runRequest = objectMapper.readValue(selectedJob.getPayloadJson(), Map.class);
+                runRequest.put("jobId", selectedJob.getId()); // Inject jobId for the agent
+
+                Map<String, Object> jobDto = new HashMap<>();
+                jobDto.put("executionId", selectedJob.getExecutionId());
+                jobDto.put("jobId", selectedJob.getId());
+                jobDto.put("payloadJson", objectMapper.writeValueAsString(runRequest));
+                return ResponseEntity.ok(jobDto);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.internalServerError().build();
+            }
+        }
+
+        // Phase 2: Unwrap a Scheduler into multiple QUEUED Jobs
         List<Scheduler> activeJobs = schedulerRepository.findAll().stream()
                 .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
                 .filter(s -> agentOrgId == null || agentOrgId.equals(s.getOrgId()))
@@ -206,27 +244,6 @@ public class AgentService {
         execution.setCreatedAt(java.time.LocalDateTime.now());
         execution = executionRepository.save(execution);
 
-        List<Map<String, Object>> iterations = new ArrayList<>();
-        if (job.getTestSuiteId() != null) {
-            List<TestSuiteGroupMapping> groupMappings = testSuiteGroupMappingRepository.findByTestSuiteIdOrderByGroupOrder(job.getTestSuiteId());
-            for (TestSuiteGroupMapping gm : groupMappings) {
-                List<TestCaseGroupMapping> caseMappings = testCaseGroupMappingRepository.findByTestCaseGroupIdOrderByCaseOrder(gm.getTestCaseGroupId());
-                for (TestCaseGroupMapping cm : caseMappings) {
-                    List<TestStep> steps = testStepRepository.findByTestCaseIdOrderByStepOrder(cm.getTestCaseId());
-
-                    Map<String, Object> iter = new HashMap<>();
-                    iter.put("testCaseId", cm.getTestCaseId());
-                    iter.put("steps", steps);
-                    iterations.add(iter);
-                }
-            }
-        }
-
-        Map<String, Object> runRequest = new HashMap<>();
-        runRequest.put("executionId", execution.getId());
-        runRequest.put("browserType", job.getBrowserType());
-        runRequest.put("iterations", iterations);
-
         // Resolve Variables: GLOBAL and ENVIRONMENT
         Map<String, String> executionVariables = new HashMap<>();
         if (agentOrgId != null) {
@@ -242,18 +259,42 @@ public class AgentService {
                 }
             }
         }
-        runRequest.put("variables", executionVariables);
 
-        try {
-            String payloadJson = objectMapper.writeValueAsString(runRequest);
-            Map<String, Object> jobDto = new HashMap<>();
-            jobDto.put("executionId", execution.getId());
-            jobDto.put("payloadJson", payloadJson);
-            return ResponseEntity.ok(jobDto);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
+        if (job.getTestSuiteId() != null) {
+            List<TestSuiteGroupMapping> groupMappings = testSuiteGroupMappingRepository.findByTestSuiteIdOrderByGroupOrder(job.getTestSuiteId());
+            for (TestSuiteGroupMapping gm : groupMappings) {
+                List<TestCaseGroupMapping> caseMappings = testCaseGroupMappingRepository.findByTestCaseGroupIdOrderByCaseOrder(gm.getTestCaseGroupId());
+                for (TestCaseGroupMapping cm : caseMappings) {
+                    List<TestStep> steps = testStepRepository.findByTestCaseIdOrderByStepOrder(cm.getTestCaseId());
+
+                    Map<String, Object> iter = new HashMap<>();
+                    iter.put("testCaseId", cm.getTestCaseId());
+                    iter.put("steps", steps);
+
+                    Map<String, Object> runRequest = new HashMap<>();
+                    runRequest.put("executionId", execution.getId());
+                    runRequest.put("browserType", job.getBrowserType());
+                    runRequest.put("iterations", List.of(iter)); // ONLY THIS TEST CASE!
+                    runRequest.put("variables", executionVariables);
+
+                    try {
+                        String payloadJson = objectMapper.writeValueAsString(runRequest);
+                        com.autopropel.localagent_cloud.model.Job newJob = new com.autopropel.localagent_cloud.model.Job();
+                        newJob.setExecutionId(execution.getId());
+                        newJob.setTestCaseId(cm.getTestCaseId());
+                        newJob.setTargetGroupId(job.getTargetGroupId());
+                        newJob.setBrowserType(job.getBrowserType());
+                        newJob.setBrowserVersion(job.getBrowserVersion());
+                        newJob.setStatus("QUEUED");
+                        newJob.setPayloadJson(payloadJson);
+                        jobRepository.save(newJob);
+                    } catch (Exception e) {}
+                }
+            }
         }
+
+        // We just created Jobs! Now recurse to pick one up!
+        return getNextJob(agentId);
     }
 
     @Transactional
@@ -277,11 +318,37 @@ public class AgentService {
             
             final String statusToSave = finalStatus;
             
-            executionRepository.findById(executionId).ifPresent(exec -> {
-                exec.setStatus(statusToSave);
-                exec.setFinishedAt(java.time.LocalDateTime.now());
-                executionRepository.save(exec);
-            });
+            Long jobId = null;
+            if (result.containsKey("jobId")) {
+                jobId = ((Number) result.get("jobId")).longValue();
+            }
+
+            if (jobId != null) {
+                jobRepository.findById(jobId).ifPresent(job -> {
+                    job.setStatus(statusToSave);
+                    jobRepository.save(job);
+                });
+                
+                // Check if all jobs are completed
+                List<com.autopropel.localagent_cloud.model.Job> allJobs = jobRepository.findByExecutionId(executionId);
+                boolean allDone = allJobs.stream().allMatch(j -> "completed".equals(j.getStatus()) || "failed".equals(j.getStatus()));
+                boolean anyFailed = allJobs.stream().anyMatch(j -> "failed".equals(j.getStatus()));
+                
+                if (allDone && !allJobs.isEmpty()) {
+                    executionRepository.findById(executionId).ifPresent(exec -> {
+                        exec.setStatus(anyFailed ? "failed" : "completed");
+                        exec.setFinishedAt(java.time.LocalDateTime.now());
+                        executionRepository.save(exec);
+                    });
+                }
+            } else {
+                // Fallback if jobId is not provided
+                executionRepository.findById(executionId).ifPresent(exec -> {
+                    exec.setStatus(statusToSave);
+                    exec.setFinishedAt(java.time.LocalDateTime.now());
+                    executionRepository.save(exec);
+                });
+            }
 
             java.util.List<Map<String, Object>> testCaseList = (java.util.List<Map<String, Object>>) runResult.get("testCase");
             if (testCaseList != null && !testCaseList.isEmpty()) {
