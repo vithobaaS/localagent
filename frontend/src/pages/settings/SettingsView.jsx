@@ -85,6 +85,12 @@ export default function SettingsView() {
       {tab === 'org' && (
         <Card title="Organization Overview">
           <div style={{ display: 'grid', gap: '20px', maxWidth: '600px' }}>
+            <div>
+              <label className="form-label text-muted">Workspace URL</label>
+              <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--brand)' }}>
+                {user?.subdomain ? `https://${user.subdomain}.autopilot.com` : 'https://app.autopilot.com'}
+              </div>
+            </div>
             <div><label className="form-label text-muted">Organization ID</label><div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>#{user?.orgId}</div></div>
             <div><label className="form-label text-muted">Organization Name</label><div style={{ fontSize: '1.2rem' }}>{user?.orgName}</div></div>
             <div>
@@ -101,11 +107,13 @@ export default function SettingsView() {
             <table className="data-table">
               <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
               <tbody>
-                {loading ? <tr><td colSpan={3}>Loading...</td></tr> : users.map(u => (
+                {loading ? <tr className="row-loading"><td colSpan={3}><div className="spinner" /></td></tr> 
+                : users.length === 0 ? <tr className="row-empty"><td colSpan={3}><div className="empty-state"><div className="empty-state-icon">👥</div><h3>No team members</h3><p>Invite colleagues to join your organization.</p></div></td></tr>
+                : users.map(u => (
                   <tr key={u.id}>
                     <td><span className="cell-bold">{u.fullName || '—'}</span></td>
                     <td>{u.email}</td>
-                    <td><span className="badge" style={{ background: u.role === 'admin' ? '#ef444420' : '#3b82f620', color: u.role === 'admin' ? '#f87171' : '#60a5fa', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>{u.role.toUpperCase()}</span></td>
+                    <td><span className="badge" style={{ background: u.role === 'admin' ? '#ef444420' : '#3b82f620', color: u.role === 'admin' ? '#f87171' : '#60a5fa', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{u.role.toUpperCase()}</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -133,15 +141,16 @@ export default function SettingsView() {
             <table className="data-table">
               <thead><tr><th>Label</th><th>Token</th><th>Created</th><th>Actions</th></tr></thead>
               <tbody>
-                {loading ? <tr><td colSpan={4}>Loading...</td></tr> : tokens.map(t => (
+                {loading ? <tr className="row-loading"><td colSpan={4}><div className="spinner" /></td></tr> 
+                : tokens.length === 0 ? <tr className="row-empty"><td colSpan={4}><div className="empty-state"><div className="empty-state-icon">🤖</div><h3>No agent tokens</h3><p>Generate a token to connect your local agents.</p></div></td></tr>
+                : tokens.map(t => (
                   <tr key={t.id}>
                     <td><span className="cell-bold">{t.label}</span></td>
                     <td style={{ fontFamily: 'monospace', color: '#94a3b8' }}>{t.token.substring(0, 10)}...</td>
                     <td className="text-muted text-sm">{fmt(t.createdAt)}</td>
-                    <td><button className="act-btn delete" onClick={() => revokeToken(t.id)}>🗑️ Revoke</button></td>
+                    <td><button className="act-btn kill" style={{ color: '#dc2626' }} onClick={() => revokeToken(t.id)} title="Revoke">🗑️ Revoke</button></td>
                   </tr>
                 ))}
-                {tokens.length === 0 && !loading && <tr><td colSpan={4}>No tokens generated.</td></tr>}
               </tbody>
             </table>
           </Card>

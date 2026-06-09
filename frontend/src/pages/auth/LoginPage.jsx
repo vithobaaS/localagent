@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from '../../components/common/ToastContainer';
@@ -9,7 +9,22 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [orgData, setOrgData] = useState(null);
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  useEffect(() => {
+    const host = window.location.hostname;
+    const isIp = /^[0-9.]+$/.test(host);
+    if (!isIp && host !== 'localhost') {
+      const parts = host.split('.');
+      if (parts.length > 1 && parts[0] !== 'www') {
+        fetch(`/api/public/orgs/by-subdomain/${parts[0]}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(d => { if (d) setOrgData(d); })
+          .catch(() => {});
+      }
+    }
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
@@ -34,10 +49,10 @@ export default function LoginPage() {
       <div className="auth-card">
         <div className="auth-logo">
           <div className="logo-icon">⚡</div>
-          <div className="auth-brand">Auto<span>Propel</span></div>
+          <div className="auth-brand">{orgData ? orgData.name : <>Auto<span>Propel</span></>}</div>
         </div>
         <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-sub">Sign in to your AutoPropel account</p>
+        <p className="auth-sub">{orgData ? `Sign in to your ${orgData.name} workspace` : 'Sign in to your AutoPropel account'}</p>
         {error && <div className="auth-error">⚠️ {error}</div>}
         <form onSubmit={submit} className="auth-form">
           <div className="form-group">

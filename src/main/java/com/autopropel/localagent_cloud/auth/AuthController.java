@@ -49,6 +49,20 @@ public class AuthController {
         Organisation org = new Organisation();
         org.setName(orgName);
         org.setPlan("trial");
+        
+        // Generate subdomain
+        String baseSlug = orgName.toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        if (baseSlug.startsWith("-")) baseSlug = baseSlug.substring(1);
+        if (baseSlug.endsWith("-")) baseSlug = baseSlug.substring(0, baseSlug.length() - 1);
+        if (baseSlug.isBlank()) baseSlug = "org";
+        
+        String slug = baseSlug;
+        int counter = 1;
+        while (orgRepository.findBySubdomain(slug) != null) {
+            slug = baseSlug + "-" + counter;
+            counter++;
+        }
+        org.setSubdomain(slug);
         org = orgRepository.save(org);
 
         // Create user
@@ -74,6 +88,7 @@ public class AuthController {
                 "fullName", user.getFullName() != null ? user.getFullName() : "",
                 "orgId", org.getId(),
                 "orgName", org.getName(),
+                "subdomain", org.getSubdomain(),
                 "plan", org.getPlan(),
                 "agentToken", token.getToken()
         ));
@@ -105,6 +120,7 @@ public class AuthController {
                 "fullName", user.getFullName() != null ? user.getFullName() : "",
                 "orgId", org.getId(),
                 "orgName", org.getName(),
+                "subdomain", org.getSubdomain(),
                 "plan", org.getPlan(),
                 "agentToken", agentToken
         ));
@@ -122,6 +138,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "orgId", orgId,
                 "orgName", org.getName(),
+                "subdomain", org.getSubdomain(),
                 "plan", org.getPlan(),
                 "agentToken", agentToken
         ));
