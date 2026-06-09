@@ -36,13 +36,13 @@ public class ApiKeyController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiKey> createKey(@RequestBody Map<String, String> body, HttpServletRequest req) {
+    public ResponseEntity<?> createKey(@RequestBody Map<String, String> body, HttpServletRequest req) {
         Long orgId = orgId(req);
         if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
         String name = body.get("name");
         if (name == null || name.isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Key name cannot be blank."));
         }
 
         ApiKey key = new ApiKey();

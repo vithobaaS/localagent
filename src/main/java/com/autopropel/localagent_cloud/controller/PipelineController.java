@@ -35,19 +35,26 @@ public class PipelineController {
         Long orgId = orgId(req);
         if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        // Pass empty body for now (no overrides)
-        ResponseEntity<Map<String, Object>> res = testSuiteService.run(id, new HashMap<>(), orgId);
-        
-        if (res.getStatusCode() == HttpStatus.OK || res.getStatusCode() == HttpStatus.CREATED) {
-            Map<String, Object> body = res.getBody();
-            if (body != null && body.containsKey("executionId")) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("executionId", body.get("executionId"));
-                response.put("message", "Test Suite triggered successfully");
-                return ResponseEntity.ok(response);
+        try {
+            // Pass empty body for now (no overrides)
+            ResponseEntity<Map<String, Object>> res = testSuiteService.run(id, new HashMap<>(), orgId);
+            
+            if (res.getStatusCode() == HttpStatus.OK || res.getStatusCode() == HttpStatus.CREATED) {
+                Map<String, Object> body = res.getBody();
+                if (body != null && body.containsKey("executionId")) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("executionId", body.get("executionId"));
+                    response.put("message", "Test Suite triggered successfully");
+                    return ResponseEntity.ok(response);
+                }
             }
+            return ResponseEntity.status(res.getStatusCode()).body(res.getBody());
+        } catch (Exception e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "Failed to trigger Test Suite");
+            err.put("details", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
         }
-        return ResponseEntity.status(res.getStatusCode()).body(res.getBody());
     }
 
     @GetMapping("/executions/{id}/status")
