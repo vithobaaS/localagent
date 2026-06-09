@@ -74,7 +74,7 @@ export default function ApiKeysView() {
               <h3 style={{ fontSize: '0.9rem', marginBottom: 8, color: 'var(--txt-muted)' }}>CI/CD Pipeline Example (cURL)</h3>
               <div style={{ background: '#1e1e1e', padding: 16, borderRadius: 8, overflowX: 'auto', border: '1px solid #333' }}>
                 <code style={{ color: '#d4d4d4', whiteSpace: 'pre' }}>
-                  <span style={{ color: '#569cd6' }}>curl</span> -X POST "https://&lt;your-domain&gt;/api/v1/suites/&lt;SUITE_ID&gt;/trigger" \<br/>
+                  <span style={{ color: '#569cd6' }}>curl</span> -X POST "http://13.232.42.59/api/v1/suites/&lt;SUITE_ID&gt;/trigger" \{"\n"}
                   {"     "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>{newKey}</span>"
                 </code>
               </div>

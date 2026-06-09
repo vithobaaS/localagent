@@ -13,6 +13,7 @@ export default function TestSuiteListView() {
   const [envs, setEnvs] = useState([]);
   const [pools, setPools] = useState([]);
   const [runModalSuite, setRunModalSuite] = useState(null);
+  const [snippetSuite, setSnippetSuite] = useState(null);
   const [selectedEnvId, setSelectedEnvId] = useState('');
   const [selectedPoolId, setSelectedPoolId] = useState('');
   const [selectedBrowserVersion, setSelectedBrowserVersion] = useState('');
@@ -25,6 +26,11 @@ export default function TestSuiteListView() {
 
   const toggle = (id) => { if (expanded === id) { setExpanded(null); setExpandedDetail(null); return; } setExpanded(id); setExpandedDetail(null); api(`/api/test-suites/${id}`).then(r => r.json()).then(setExpandedDetail); };
   const remove = (id) => { api(`/api/test-suites/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(s => s.id !== id)); toast('success', 'Deleted'); } }); };
+  
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast('success', 'Copied to clipboard');
+  };
   
   const confirmRunSuite = () => {
     if (!runModalSuite) return;
@@ -62,6 +68,7 @@ export default function TestSuiteListView() {
                 <td className="text-muted text-sm">{fmt(s.createdAt)}</td>
                 <td><div className="action-row">
                   <button className="act-btn view" style={{background:'var(--green-bg)',borderColor:'var(--green)',color:'var(--green)'}} title="Run Now" onClick={() => setRunModalSuite(s)}>▶️</button>
+                  <button className="act-btn view" title="CI/CD Snippet" onClick={() => setSnippetSuite(s)}>🔌</button>
                   <button className="act-btn view" onClick={() => toggle(s.id)}>{expanded === s.id ? '▲' : '👁️'}</button>
                   <Link to={`/test-suites/edit/${s.id}`} className="act-btn view" title="Edit">✏️</Link>
                   <button className="act-btn delete" onClick={() => remove(s.id)}>🗑️</button>
@@ -117,6 +124,34 @@ export default function TestSuiteListView() {
             <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setRunModalSuite(null)}>Cancel</button>
               <button className="btn btn-primary" onClick={confirmRunSuite}>▶️ Run Now</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CI/CD Snippet Modal */}
+      {snippetSuite && (
+        <div className="modal-overlay" onClick={() => setSnippetSuite(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <div className="modal-header">
+              <h2>🔌 CI/CD Trigger Snippet</h2>
+              <button className="modal-close" onClick={() => setSnippetSuite(null)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <p>Trigger <strong>{snippetSuite.name}</strong> (ID: {snippetSuite.id}) directly from Jenkins, GitHub Actions, or any CI/CD pipeline using the cURL snippet below.</p>
+              <div style={{ background: '#1e1e1e', padding: 16, borderRadius: 8, overflowX: 'auto', border: '1px solid #333' }}>
+                <code style={{ color: '#d4d4d4', whiteSpace: 'pre' }}>
+                  <span style={{ color: '#569cd6' }}>curl</span> -X POST "http://13.232.42.59/api/v1/suites/{snippetSuite.id}/trigger" \{"\n"}
+                  {"     "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPROPEL_API_KEY</span>"
+                </code>
+              </div>
+              <div className="field-hint">Note: You must generate an API key from Administration &gt; API Keys and store it securely in your CI/CD platform as <code>$AUTOPROPEL_API_KEY</code>.</div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-primary" onClick={() => {
+                copyToClipboard(`curl -X POST "http://13.232.42.59/api/v1/suites/${snippetSuite.id}/trigger" -H "Authorization: Bearer $AUTOPROPEL_API_KEY"`);
+                setSnippetSuite(null);
+              }}>📋 Copy Snippet</button>
             </div>
           </div>
         </div>
