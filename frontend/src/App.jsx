@@ -27,6 +27,8 @@ import SchedulerFormView from './pages/scheduler/SchedulerFormView';
 import ExecutionDetailsView from './pages/execution/ExecutionDetailsView';
 import GroupsListView from './pages/agents/GroupsListView';
 import CreateGroupView from './pages/agents/CreateGroupView';
+import GroupDetailsView from './pages/agents/GroupDetailsView';
+import AgentListView from './pages/agents/AgentListView';
 import SettingsView from './pages/settings/SettingsView';
 import VariablesView from './pages/variables/VariablesView';
 import EnvironmentsView from './pages/environments/EnvironmentsView';
@@ -112,8 +114,10 @@ export default function App() {
             <Route path="/scheduler/create"        element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
             <Route path="/scheduler/edit/:id"      element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
             <Route path="/executions/:id"          element={<PrivateRoute><ExecutionDetailsView /></PrivateRoute>} />
+            <Route path="/agents"                  element={<PrivateRoute><AgentListView /></PrivateRoute>} />
             <Route path="/groups"                  element={<PrivateRoute><GroupsListView /></PrivateRoute>} />
             <Route path="/groups/create"           element={<PrivateRoute><CreateGroupView /></PrivateRoute>} />
+            <Route path="/groups/:id"              element={<PrivateRoute><GroupDetailsView /></PrivateRoute>} />
             <Route path="/test-cases"              element={<PrivateRoute><TestCaseListView /></PrivateRoute>} />
             <Route path="/test-cases/create"       element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
             <Route path="/test-cases/edit/:id"     element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />

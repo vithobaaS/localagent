@@ -42,9 +42,8 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <NavItem to="/environments"         icon="🌍" label="Environments"      active={is('/environments')} />
 
         <div className="nav-section">Agents</div>
-        <NavItem to="/groups"               icon="🖥️" label="Agents"            active={is('/groups')} />
-        <NavItem to="/agent-pools"          icon="🏊" label="Pools"             active={is('/agent-pools')} />
-        <NavItem to="/agent-health"         icon="❤️" label="Health"            active={is('/agent-health')} />
+        <NavItem to="/agents"               icon="🖥️" label="Agent Directory"   active={is('/agents')} />
+        <NavItem to="/groups"               icon="🏊" label="Agent Pools"       active={path.startsWith('/groups')} />
         <button className="nav-item" onClick={() => setShowOnboarding(true)} style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}>
           <span className="nav-icon-wrap">⬇️</span>
           Install Agent

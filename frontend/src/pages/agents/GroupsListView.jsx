@@ -18,12 +18,12 @@ export default function GroupsListView() {
 
   return (
     <div className="page-view">
-      <PageHeader title="Agent Groups" actions={<Link to="/groups/create" className="btn btn-primary">➕ New Group</Link>} />
+      <PageHeader title="Agent Pools" actions={<Link to="/groups/create" className="btn btn-primary">➕ New Pool</Link>} />
       <TableCard title="Agent Group Directory" total={filtered.length} search={search} onSearch={s => { setSearch(s); setPage(0); }} entries={entries} onEntries={n => { setEntries(n); setPage(0); }} page={page} onPage={setPage}>
         <table className="data-table"><thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody>{loading ? <tr className="row-loading"><td colSpan={5}><div className="spinner"/></td></tr>
-            : paged.length === 0 ? <tr className="row-empty"><td colSpan={5}><div className="empty-state"><div className="empty-state-icon">👥</div><h3>No groups yet</h3></div></td></tr>
-            : paged.map(g => (<tr key={g.id}><td><span className="cell-bold">#{g.id}</span></td><td><span className="cell-bold">{g.name}</span></td><td className="text-muted">{g.description || '—'}</td><td className="text-muted text-sm">{fmt(g.createdAt)}</td><td><div className="action-row"><button className="act-btn delete" onClick={() => remove(g.id)}>🗑️</button></div></td></tr>))}</tbody>
+            : paged.length === 0 ? <tr className="row-empty"><td colSpan={5}><div className="empty-state"><div className="empty-state-icon">🏊</div><h3>No pools yet</h3></div></td></tr>
+            : paged.map(g => (<tr key={g.id}><td><span className="cell-bold">#{g.id}</span></td><td><span className="cell-bold"><Link to={`/groups/${g.id}`}>{g.name}</Link></span></td><td className="text-muted">{g.description || '—'}</td><td className="text-muted text-sm">{fmt(g.createdAt)}</td><td><div className="action-row"><Link to={`/groups/${g.id}`} className="act-btn view">👁️</Link><button className="act-btn delete" onClick={() => remove(g.id)}>🗑️</button></div></td></tr>))}</tbody>
         </table>
       </TableCard>
     </div>
