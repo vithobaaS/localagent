@@ -27,6 +27,7 @@ export default function ApiKeysView() {
       const data = await r.json();
       toast('success', 'Created', `API Key "${form.name}" generated.`); 
       setNewKey(data.token);
+      setShowForm(false);
       load(); 
     }
     else { toast('error', 'Error', 'Failed to generate API key.'); }
