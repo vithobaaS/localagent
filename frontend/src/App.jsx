@@ -30,6 +30,7 @@ import CreateGroupView from './pages/agents/CreateGroupView';
 import GroupDetailsView from './pages/agents/GroupDetailsView';
 import AgentListView from './pages/agents/AgentListView';
 import SettingsView from './pages/settings/SettingsView';
+import ApiKeysView from './pages/admin/ApiKeysView';
 import VariablesView from './pages/variables/VariablesView';
 import EnvironmentsView from './pages/environments/EnvironmentsView';
 
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="/test-suites/create"      element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
             <Route path="/test-suites/edit/:id"    element={<PrivateRoute><TestSuiteFormView /></PrivateRoute>} />
             <Route path="/settings"                element={<PrivateRoute><SettingsView /></PrivateRoute>} />
+            <Route path="/admin/api-keys"          element={<PrivateRoute><ApiKeysView /></PrivateRoute>} />
             <Route path="/variables"               element={<PrivateRoute><VariablesView /></PrivateRoute>} />
             <Route path="/environments"            element={<PrivateRoute><EnvironmentsView /></PrivateRoute>} />
             <Route path="*"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />

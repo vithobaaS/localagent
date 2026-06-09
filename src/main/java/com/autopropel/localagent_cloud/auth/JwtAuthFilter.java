@@ -17,10 +17,12 @@ import com.autopropel.localagent_cloud.repository.AppUserRepository;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final AppUserRepository userRepository;
+    private final com.autopropel.localagent_cloud.repository.ApiKeyRepository apiKeyRepository;
     
-    public JwtAuthFilter(JwtUtil jwtUtil, AppUserRepository userRepository) { 
+    public JwtAuthFilter(JwtUtil jwtUtil, AppUserRepository userRepository, com.autopropel.localagent_cloud.repository.ApiKeyRepository apiKeyRepository) { 
         this.jwtUtil = jwtUtil; 
         this.userRepository = userRepository;
+        this.apiKeyRepository = apiKeyRepository;
     }
 
     @Override
@@ -44,6 +46,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     );
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
+            } else if (token.startsWith("ap_live_")) {
+                // It's an API Key
+                apiKeyRepository.findByToken(token).ifPresent(key -> {
+                    // Update last used at? We'll do it async or just set it
+                    req.setAttribute("orgId", key.getOrgId());
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            "api-key-" + key.getId(), null,
+                            List.of(new SimpleGrantedAuthority("ROLE_API"))
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                });
             }
         }
         chain.doFilter(req, res);
