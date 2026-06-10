@@ -22,7 +22,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       <div className="sidebar-header">
         <div className="logo">
           <div className="logo-icon">⚡</div>
-          <div className="logo-text">Auto<span>Propel</span></div>
+          <div className="logo-text">Auto<span>Pilot</span></div>
         </div>
       </div>
       <nav className="sidebar-nav">
