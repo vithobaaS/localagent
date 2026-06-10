@@ -57,6 +57,7 @@ public class PipelineController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @GetMapping("/executions/{id}/status")
     public ResponseEntity<Map<String, Object>> getExecutionStatus(
             @PathVariable("id") Long id,

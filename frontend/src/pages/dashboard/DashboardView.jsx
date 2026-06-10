@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
-import { fmt, fmtShort, statusBadge } from '../../utils/helpers';
+import { fmt, statusBadge } from '../../utils/helpers';
 import { toast } from '../../components/common/ToastContainer';
 
 /* ───────────────────────────────────────
@@ -61,7 +61,7 @@ function DonutChart({ data, size = 180 }) {
   const total = data.reduce((a, d) => a + d.value, 0);
   if (total === 0) return <div className="chart-empty">No data yet</div>;
   const r = 70, c = 2 * Math.PI * r;
-  let offset = 0;
+
   return (
     <div className="donut-wrap">
       <svg width={size} height={size} viewBox="0 0 200 200">
@@ -69,8 +69,8 @@ function DonutChart({ data, size = 180 }) {
           const pct = d.value / total;
           const dash = pct * c;
           const gap = c - dash;
-          const o = offset;
-          offset += dash;
+          const prevPct = data.slice(0, i).reduce((sum, item) => sum + item.value, 0) / total;
+          const o = prevPct * c;
           return <circle key={i} cx="100" cy="100" r={r} fill="none" stroke={d.color} strokeWidth="22"
             strokeDasharray={`${dash} ${gap}`} strokeDashoffset={-o}
             style={{ transition: 'stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease' }} />;
@@ -113,7 +113,6 @@ function BarChart({ data }) {
 ─────────────────────────────────────── */
 export default function DashboardView() {
   const [execs, setExecs] = useState([]);
-  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [entries, setEntries] = useState(10);
@@ -127,12 +126,12 @@ export default function DashboardView() {
       api('/api/agents').then(r => r.json())
     ]).then(([dExecs, dAgents]) => {
       setExecs(dExecs || []);
-      setAgents(dAgents || []);
       setLoading(false);
       if ((dAgents || []).length === 0 && user && !localStorage.getItem(`onboarding_dismissed_${user.email}`)) {
         setShowOnboarding(true);
       }
     }).catch(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.orgExecutionId || e.id}`; } catch { return `Run #${e.orgExecutionId || e.id}`; } };

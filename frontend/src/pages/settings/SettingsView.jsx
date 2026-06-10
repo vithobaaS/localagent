@@ -20,11 +20,6 @@ export default function SettingsView() {
   // Token state
   const [tokenLabel, setTokenLabel] = useState('');
 
-  useEffect(() => {
-    if (tab === 'users') fetchUsers();
-    if (tab === 'tokens') fetchTokens();
-  }, [tab]);
-
   const fetchUsers = () => {
     setLoading(true);
     api('/api/auth/users').then(r => r.json()).then(d => { setUsers(d); setLoading(false); }).catch(() => setLoading(false));
@@ -34,6 +29,12 @@ export default function SettingsView() {
     setLoading(true);
     api('/api/auth/agent-tokens').then(r => r.json()).then(d => { setTokens(d); setLoading(false); }).catch(() => setLoading(false));
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (tab === 'users') fetchUsers();
+    if (tab === 'tokens') fetchTokens();
+  }, [tab]);
 
   const handleInvite = async (e) => {
     e.preventDefault();

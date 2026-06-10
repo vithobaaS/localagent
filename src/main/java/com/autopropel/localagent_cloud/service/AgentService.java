@@ -152,6 +152,7 @@ public class AgentService {
     }
 
     @Transactional
+    @SuppressWarnings("unchecked")
     public ResponseEntity<Map<String, Object>> getNextJob(String agentId) {
         Agent agent = agentRepository.findById(agentId).orElse(null);
         if (agent == null) {
@@ -298,6 +299,7 @@ public class AgentService {
     }
 
     @Transactional
+    @SuppressWarnings("unchecked")
     public ResponseEntity<Void> postResults(Long executionId, Map<String, Object> result) {
         try {
             Map<String, Object> runResult = result;

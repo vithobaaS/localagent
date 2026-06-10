@@ -5,7 +5,6 @@ import { fmt, statusBadge } from '../../utils/helpers';
 import { toast } from '../../components/common/ToastContainer';
 import { PageHeader, TableCard } from '../../components/common/PageComponents';
 
-const RECURRENCE_LABELS = { once: 'One-time', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
 const DAY_OPTIONS = [
   { key: 'MON', label: 'Mon' }, { key: 'TUE', label: 'Tue' }, { key: 'WED', label: 'Wed' },
   { key: 'THU', label: 'Thu' }, { key: 'FRI', label: 'Fri' }, { key: 'SAT', label: 'Sat' },

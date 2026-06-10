@@ -27,13 +27,14 @@ export default function GroupDetailsView() {
       
       setAllAgents(agentsRes);
       setAssignedAgents(assignedRes);
-    } catch (e) {
+    } catch {
       toast('error', 'Failed to load group details');
     } finally {
       setLoading(false);
     }
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { loadData(); }, [id]);
 
   const handleAddAgent = async (e) => {
@@ -53,7 +54,7 @@ export default function GroupDetailsView() {
       } else {
         toast('error', 'Failed to add agent to group');
       }
-    } catch (e) {
+    } catch {
       toast('error', 'Network error');
     } finally {
       setAdding(false);
@@ -70,7 +71,7 @@ export default function GroupDetailsView() {
       } else {
         toast('error', 'Failed to remove agent');
       }
-    } catch (e) {
+    } catch {
       toast('error', 'Network error');
     }
   };

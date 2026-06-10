@@ -145,7 +145,8 @@ function Configurator({ step, onChange }) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
 
-  useEffect(() => { setSearch(step?.actionName || ''); }, [step?._id]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setSearch(step?.actionName || ''); }, [step?._id, step?.actionName]);
 
   if (!step) return (
     <div className="ts-config">

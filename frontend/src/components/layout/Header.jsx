@@ -1,4 +1,4 @@
-import { toast } from '../common/ToastContainer';
+
 import { useNavigate } from 'react-router-dom';
 
 export default function Header({ user, profileOpen, setProfileOpen, setSidebarOpen, setShowOnboarding, setShowPairing, logout }) {

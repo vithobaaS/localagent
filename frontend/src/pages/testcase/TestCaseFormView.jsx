@@ -13,6 +13,7 @@ function SearchableActionSelect({ value, onChange }) {
   const [search, setSearch] = useState(value || '');
 
   // Keep search in sync if value changes externally
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setSearch(value || ''); }, [value]);
 
   const filtered = ACTIONS.filter(a => a.toLowerCase().includes(search.toLowerCase()));

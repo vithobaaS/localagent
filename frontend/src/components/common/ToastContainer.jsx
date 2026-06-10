@@ -3,6 +3,7 @@ import { useState } from 'react';
 let _toastId = 0;
 let _setToasts = null;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function toast(type, title, msg) {
   if (!_setToasts) return;
   const id = ++_toastId;
@@ -13,6 +14,7 @@ export function toast(type, title, msg) {
 
 export function ToastContainer() {
   const [toasts, setToasts] = useState([]);
+  // eslint-disable-next-line react-hooks/globals
   _setToasts = setToasts;
   const icons = { success: '✅', error: '❌', info: 'ℹ️' };
   return (

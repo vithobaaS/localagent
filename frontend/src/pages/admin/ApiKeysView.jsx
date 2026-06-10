@@ -16,6 +16,7 @@ export default function ApiKeysView() {
     api('/api/apikeys').then(r => r.json()).then(d => { setKeys(d || []); setLoading(false); });
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setForm({ name: '' }); setNewKey(null); setShowForm(true); };

@@ -27,7 +27,7 @@ export function InstallAgentModal({ onClose }) {
         const data = await res.json();
         toast('error', 'Failed', data.error || 'Invalid pairing code');
       }
-    } catch (e) {
+    } catch {
       toast('error', 'Error', 'Failed to connect to server');
     }
     setPairingLoading(false);

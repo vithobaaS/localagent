@@ -17,6 +17,7 @@ export default function VariablesView() {
     api('/api/variables').then(r => r.json()).then(d => { setVariables(d || []); setLoading(false); });
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setForm({ keyName: '', value: '', scope: 'GLOBAL', isSecret: false }); setEditing(null); setShowForm(true); };

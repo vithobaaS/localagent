@@ -23,6 +23,7 @@ export default function EnvironmentsView() {
   };
   const loadVars = (envId) => api(`/api/environments/${envId}/variables`).then(r => r.json()).then(d => setEnvVars(d || []));
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadEnvs(); }, []);
   useEffect(() => { if (selectedEnv) loadVars(selectedEnv.id); }, [selectedEnv]);
 
