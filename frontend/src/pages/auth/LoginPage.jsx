@@ -52,7 +52,7 @@ export default function LoginPage() {
           <div className="auth-brand">{orgData ? orgData.name : <>Auto<span>Propel</span></>}</div>
         </div>
         <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-sub">{orgData ? `Sign in to your ${orgData.name} workspace` : 'Sign in to your AutoPropel account'}</p>
+        <p className="auth-sub">{orgData ? `Sign in to your ${orgData.name} workspace` : 'Sign in to your AutoPilot account'}</p>
         {error && <div className="auth-error">⚠️ {error}</div>}
         <form onSubmit={submit} className="auth-form">
           <div className="form-group">

@@ -37,7 +37,7 @@ export function PairAgentModal({ onClose }) {
         <button className="modal-close" onClick={onClose}>✕</button>
         <h2 style={{ marginBottom: '8px' }}>Pair Local Agent</h2>
         <p className="text-muted" style={{ marginBottom: '24px', lineHeight: 1.5 }}>
-          Enter the 6-digit code displayed by your AutoPropel Local Agent application to securely link it to your cloud organization.
+          Enter the 6-digit code displayed by your AutoPilot Local Agent application to securely link it to your cloud organization.
         </p>
         
         <form onSubmit={handleSubmit}>

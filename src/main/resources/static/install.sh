@@ -1,7 +1,7 @@
 #!/bin/bash
 TOKEN=""
 CLOUD_URL="http://13.232.42.59"
-INSTALL_DIR="$HOME/.autopropel/agent"
+INSTALL_DIR="$HOME/.autopilot/agent"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -16,15 +16,15 @@ if [ -z "$TOKEN" ]; then
     exit 1
 fi
 
-echo -e "\033[0;36m🚀 Installing AutoPropel Agent...\033[0m"
+echo -e "\033[0;36mðŸš€ Installing AutoPilot Agent...\033[0m"
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-echo -e "\033[0;36m📥 Downloading Agent JAR...\033[0m"
+echo -e "\033[0;36mðŸ“¥ Downloading Agent JAR...\033[0m"
 # In production, this points to the real hosted JAR
 curl -sL "$CLOUD_URL/agent/localagent-java.jar" -o localagent-java.jar
 
-echo -e "\033[0;36m⚙️ Configuring Agent...\033[0m"
+echo -e "\033[0;36mâš™ï¸ Configuring Agent...\033[0m"
 cat > application.yml <<EOL
 localagent:
   cloud-url: $CLOUD_URL
@@ -33,7 +33,7 @@ localagent:
 EOL
 
 echo ""
-echo -e "\033[0;32m✅ Setup Complete!\033[0m"
+echo -e "\033[0;32mâœ… Setup Complete!\033[0m"
 echo "To start the agent in the background (as a daemon), we would register systemd/launchd here."
 echo -e "\033[0;33mFor now, you can start it manually with:\033[0m"
 echo "  cd $INSTALL_DIR"

@@ -2,11 +2,11 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$Token,
     
-    [string]$InstallDir = "C:\AutoPropel\Agent",
+    [string]$InstallDir = "C:\AutoPilot\Agent",
     [string]$CloudUrl = "http://13.232.42.59"
 )
 
-Write-Host "[*] Installing AutoPropel Agent..." -ForegroundColor Cyan
+Write-Host "[*] Installing AutoPilot Agent..." -ForegroundColor Cyan
 New-Item -Path $InstallDir -ItemType Directory -Force | Out-Null
 Set-Location -Path $InstallDir
 

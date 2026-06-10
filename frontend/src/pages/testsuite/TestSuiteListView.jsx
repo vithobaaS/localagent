@@ -142,14 +142,14 @@ export default function TestSuiteListView() {
               <div style={{ background: '#1e1e1e', padding: 16, borderRadius: 8, overflowX: 'auto', border: '1px solid #333' }}>
                 <code style={{ color: '#d4d4d4', whiteSpace: 'pre' }}>
                   <span style={{ color: '#569cd6' }}>curl</span> -X POST "http://13.232.42.59/api/v1/suites/{snippetSuite.id}/trigger" \{"\n"}
-                  {"     "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPROPEL_API_KEY</span>"
+                  {"     "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPILOT_API_KEY</span>"
                 </code>
               </div>
-              <div className="field-hint">Note: You must generate an API key from Administration &gt; API Keys and store it securely in your CI/CD platform as <code>$AUTOPROPEL_API_KEY</code>.</div>
+              <div className="field-hint">Note: You must generate an API key from Administration &gt; API Keys and store it securely in your CI/CD platform as <code>$AUTOPILOT_API_KEY</code>.</div>
             </div>
             <div className="modal-footer">
               <button className="btn btn-primary" onClick={() => {
-                copyToClipboard(`curl -X POST "http://13.232.42.59/api/v1/suites/${snippetSuite.id}/trigger" -H "Authorization: Bearer $AUTOPROPEL_API_KEY"`);
+                copyToClipboard(`curl -X POST "http://13.232.42.59/api/v1/suites/${snippetSuite.id}/trigger" -H "Authorization: Bearer $AUTOPILOT_API_KEY"`);
                 setSnippetSuite(null);
               }}>📋 Copy Snippet</button>
             </div>

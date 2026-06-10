@@ -67,7 +67,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <div className="sidebar-footer-inner">
           <div className="footer-dot" />
           <div className="footer-text">
-            <p>{user?.orgName || 'AutoPropel Cloud'}</p>
+            <p>{user?.orgName || 'AutoPilot Cloud'}</p>
             <span>{user?.plan ? `Plan: ${user.plan}` : 'v1.0 Beta — All systems operational'}</span>
           </div>
         </div>

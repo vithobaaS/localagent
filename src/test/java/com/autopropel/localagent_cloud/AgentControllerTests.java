@@ -1,4 +1,4 @@
-package com.autopropel.localagent_cloud;
+package com.autopilot.localagent_cloud;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -17,9 +17,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.autopropel.localagent_cloud.dto.RunRequest;
-import com.autopropel.localagent_cloud.dto.RunResult;
-import com.autopropel.localagent_cloud.model.Agent;
+import com.autopilot.localagent_cloud.dto.RunRequest;
+import com.autopilot.localagent_cloud.dto.RunResult;
+import com.autopilot.localagent_cloud.model.Agent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest

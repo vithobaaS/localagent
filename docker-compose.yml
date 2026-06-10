@@ -5,15 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: autopropel/backend:latest
-    container_name: autopropel-backend
+    image: autopilot/backend:latest
+    container_name: autopilot-backend
     ports:
       - "9090:9090"
     restart: unless-stopped
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       # If you have a local postgres DB running, uncomment and configure:
-      # - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/autopropel
+      # - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/autopilot
       # - SPRING_DATASOURCE_USERNAME=postgres
       # - SPRING_DATASOURCE_PASSWORD=postgres
 
@@ -21,8 +21,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: autopropel/frontend:latest
-    container_name: autopropel-frontend
+    image: autopilot/frontend:latest
+    container_name: autopilot-frontend
     ports:
       - "80:80"
     restart: unless-stopped

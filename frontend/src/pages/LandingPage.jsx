@@ -24,12 +24,12 @@ export default function LandingPage() {
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start your free trial 🚀</Link>
         </div>
         <div style={{ marginTop: '64px' }}>
-          <img src="/autopropel/screenshot.png" alt="AutoPropel Dashboard" style={{ maxWidth: '1000px', width: '100%', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}
+          <img src="/autopilot/screenshot.png" alt="AutoPilot Dashboard" style={{ maxWidth: '1000px', width: '100%', borderRadius: '12px', border: '1px solid var(--border)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}
                onError={(e) => { e.target.style.display = 'none'; }} />
         </div>
       </main>
       <footer style={{ padding: '24px', textAlign: 'center', color: 'var(--txt-muted)', borderTop: '1px solid var(--border)' }}>
-        © {new Date().getFullYear()} AutoPropel Inc. All rights reserved.
+        © {new Date().getFullYear()} AutoPilot Inc. All rights reserved.
       </footer>
     </div>
   );

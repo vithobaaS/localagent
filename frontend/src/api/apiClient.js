@@ -10,7 +10,7 @@ export async function api(path, opts = {}) {
   if (res.status === 401) {
     localStorage.removeItem('ap_token');
     localStorage.removeItem('ap_user');
-    window.location.href = '/autopropel/dashboard/#/login';
+    window.location.href = '/autopilot/dashboard/#/login';
   }
   return res;
 }

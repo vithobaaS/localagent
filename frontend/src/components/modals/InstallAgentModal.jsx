@@ -44,7 +44,7 @@ export function InstallAgentModal({ onClose }) {
         </div>
         <div className="modal-body">
           <p style={{ marginTop: '4px', fontSize: '14px', marginBottom: '16px' }}>
-            To start running tests, you need to install the AutoPropel agent on your machine or server.
+            To start running tests, you need to install the AutoPilot agent on your machine or server.
           </p>
           <div className="tabs" style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
             {['windows', 'mac', 'linux'].map(os => (
