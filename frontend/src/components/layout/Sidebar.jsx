@@ -39,10 +39,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       <div className="sidebar-header">
         <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
           <div className="logo-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z"
-                fill="white" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" />
-            </svg>
+            <img src="/logo.png" alt="AutoPilot Logo" />
           </div>
           <div className="logo-text">Auto<span>Pilot</span></div>
         </Link>

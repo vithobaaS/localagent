@@ -3,18 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const LogoSVG = () => (
-  <svg className="auth-logo-svg" viewBox="0 0 40 40" fill="none">
-    <circle cx="20" cy="20" r="20" fill="url(#authGrad)" />
-    <path d="M20 8L23.5 17H33L25.5 22.5L28 31.5L20 26.5L12 31.5L14.5 22.5L7 17H16.5L20 8Z"
-      fill="none" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-    <circle cx="20" cy="20" r="3" fill="white" />
-    <defs>
-      <linearGradient id="authGrad" x1="0" y1="0" x2="40" y2="40">
-        <stop offset="0%" stopColor="#7c3aed" />
-        <stop offset="100%" stopColor="#3b82f6" />
-      </linearGradient>
-    </defs>
-  </svg>
+  <div className="logo-icon">
+    <img src="/logo.png" alt="AutoPilot Logo" />
+  </div>
 );
 
 export default function LoginPage() {
@@ -61,7 +52,7 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <div className="auth-logo">
+        <div className="auth-logo" style={{ display: 'flex', gap: '10px' }}>
           <LogoSVG />
           <div className="auth-brand">
             {orgData ? orgData.name : <><span style={{ color: 'var(--txt-h)' }}>Auto</span><span>Pilot</span></>}

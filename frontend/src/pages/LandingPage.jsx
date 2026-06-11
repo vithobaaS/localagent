@@ -8,9 +8,7 @@ export default function LandingPage() {
       <header style={{ padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
         <div className="logo">
           <div className="logo-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z" fill="white" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" />
-            </svg>
+            <img src="/logo.png" alt="AutoPilot Logo" />
           </div>
           <div className="logo-text">Auto<span>Pilot</span></div>
         </div>
@@ -169,9 +167,7 @@ export default function LandingPage() {
           <div style={{ maxWidth: '300px' }}>
              <div className="logo" style={{ marginBottom: '16px' }}>
               <div className="logo-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z" fill="white" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" />
-                </svg>
+                <img src="/logo.png" alt="AutoPilot Logo" />
               </div>
               <div className="logo-text" style={{ fontSize: '20px' }}>Auto<span>Pilot</span></div>
             </div>
