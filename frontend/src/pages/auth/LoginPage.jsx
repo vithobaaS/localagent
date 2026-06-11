@@ -2,11 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const LogoSVG = () => (
-  <div className="logo-icon">
-    <img src="/logo.png" alt="AutoPilot Logo" />
-  </div>
-);
+const LogoSVG = () => null;
 
 export default function LoginPage() {
   const navigate = useNavigate();

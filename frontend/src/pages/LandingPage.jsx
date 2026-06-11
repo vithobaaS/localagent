@@ -7,9 +7,6 @@ export default function LandingPage() {
       {/* Header */}
       <header style={{ padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
         <div className="logo">
-          <div className="logo-icon">
-            <img src="/logo.png" alt="AutoPilot Logo" />
-          </div>
           <div className="logo-text">Auto<span>Pilot</span></div>
         </div>
         <div>
@@ -166,9 +163,6 @@ export default function LandingPage() {
           
           <div style={{ maxWidth: '300px' }}>
              <div className="logo" style={{ marginBottom: '16px' }}>
-              <div className="logo-icon">
-                <img src="/logo.png" alt="AutoPilot Logo" />
-              </div>
               <div className="logo-text" style={{ fontSize: '20px' }}>Auto<span>Pilot</span></div>
             </div>
             <p style={{ color: 'var(--txt-muted)', fontSize: '14px', lineHeight: 1.6 }}>

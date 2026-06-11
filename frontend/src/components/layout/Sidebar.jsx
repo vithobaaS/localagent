@@ -38,9 +38,6 @@ export default function Sidebar({ user, sidebarOpen, path }) {
     <aside className="sidebar">
       <div className="sidebar-header">
         <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
-          <div className="logo-icon">
-            <img src="/logo.png" alt="AutoPilot Logo" />
-          </div>
           <div className="logo-text">Auto<span>Pilot</span></div>
         </Link>
       </div>

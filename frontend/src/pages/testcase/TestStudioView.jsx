@@ -373,9 +373,6 @@ export default function TestStudioView() {
       {/* ── Topbar ── */}
       <div className="ts-topbar">
         <div className="ts-logo">
-          <div className="ts-logo-icon">
-            <img src="/logo.png" alt="AutoPilot Logo" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-          </div>
           <span className="ts-logo-text">Auto<span style={{color:'var(--txt-h)'}}>Pilot</span></span>
         </div>
         <span className="ts-badge">Test Studio</span>

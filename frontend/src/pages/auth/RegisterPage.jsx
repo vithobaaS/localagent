@@ -3,11 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from '../../components/common/ToastContainer';
 
-const LogoSVG = () => (
-  <div className="logo-icon">
-    <img src="/logo.png" alt="AutoPilot Logo" />
-  </div>
-);
+const LogoSVG = () => null;
 
 export default function RegisterPage() {
   const navigate = useNavigate();

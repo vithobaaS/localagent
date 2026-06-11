@@ -13,9 +13,6 @@ export function SplashScreen({ onDone }) {
     <div className={`splash-screen ${phase}`}>
       <div className="splash-inner">
         <div className="splash-logo-wrap">
-          <div className="splash-logo-icon" style={{ width: '56px', height: '56px', marginBottom: '16px', animation: 'logoPulse 3s ease-in-out infinite', borderRadius: '14px', overflow: 'hidden' }}>
-            <img src="/logo.png" alt="AutoPilot Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
           <div className="splash-brand">Auto<span>Pilot</span></div>
         </div>
         <p className="splash-tagline">Autonomous Testing Platform</p>

@@ -53,9 +53,6 @@ export default function ChangePasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="logo-icon">
-            <img src="/logo.png" alt="AutoPilot Logo" />
-          </div>
           <div className="auth-brand">Auto<span>Pilot</span></div>
         </div>
         <h1 className="auth-title">Action Required</h1>
