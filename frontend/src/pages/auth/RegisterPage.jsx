@@ -38,6 +38,7 @@ export default function RegisterPage() {
       if (!res.ok) { setError(data.error || 'Registration failed'); setLoading(false); return; }
       localStorage.setItem('ap_token', data.token);
       localStorage.setItem('ap_user', JSON.stringify(data));
+      localStorage.setItem('ap_new_registration', 'true');
       setUser(data);
       if (setShowSplash) setShowSplash(true);
       toast('success', 'Welcome!', 'Your account has been created.');

@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import {
   LayoutDashboard, Play, History, CalendarClock,
@@ -28,6 +28,8 @@ function NavItem({ to, icon: Icon, label, active, onClick }) {
 
 export default function Sidebar({ user, sidebarOpen, path }) {
   const { setShowOnboarding, logout } = useContext(AuthContext);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const navigate = useNavigate();
   const is = (p) => path === p;
 
   if (!sidebarOpen) return null;
@@ -35,7 +37,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <div className="logo">
+        <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
           <div className="logo-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L14.5 9H22L16 13.5L18.5 20.5L12 16L5.5 20.5L8 13.5L2 9H9.5L12 2Z"
@@ -43,7 +45,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
             </svg>
           </div>
           <div className="logo-text">Auto<span>Pilot</span></div>
-        </div>
+        </Link>
       </div>
 
       <nav className="sidebar-nav">
@@ -83,17 +85,27 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       </nav>
 
       <div className="sidebar-footer" style={{ padding: '16px 12px' }}>
-        <div className="sidebar-profile-card" style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)' }}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <div className="footer-dot" style={{width: 8, height: 8, borderRadius: '50%', background: 'var(--green)', marginRight: 10}} />
-            <div className="footer-text">
-              <p style={{color: 'var(--txt-h)', fontWeight: 600, fontSize: '13px', margin: 0, textTransform: 'lowercase'}}>{user?.fullName || user?.email || 'User'}</p>
-              <span style={{color: 'var(--txt-muted)', fontSize: '11px', display: 'block'}}>{user?.plan ? `Plan: ${user.plan}` : 'Plan: trial'}</span>
+        <div style={{ position: 'relative' }}>
+          {profileOpen && (
+            <div className="profile-dropdown" style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: '8px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '6px', zIndex: 10, boxShadow: 'var(--shadow-md)' }}>
+               <button onClick={() => { setProfileOpen(false); navigate('/settings'); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Settings size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Settings</button>
+               <button onClick={() => { setProfileOpen(false); setShowOnboarding(true); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Download size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Install Agent</button>
+               <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
+               <button onClick={logout} className="profile-dropdown-item text-danger" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><LogOut size={14} style={{ marginRight: 8 }}/> Sign Out</button>
             </div>
+          )}
+          <div className="sidebar-profile-card" onClick={() => setProfileOpen(!profileOpen)} style={{ cursor: 'pointer', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)' }}>
+            <div style={{display: 'flex', alignItems: 'center'}}>
+              <div className="footer-dot" style={{width: 8, height: 8, borderRadius: '50%', background: 'var(--green)', marginRight: 10}} />
+              <div className="footer-text">
+                <p style={{color: 'var(--txt-h)', fontWeight: 600, fontSize: '13px', margin: 0, textTransform: 'lowercase'}}>{user?.fullName || user?.email || 'User'}</p>
+                <span style={{color: 'var(--txt-muted)', fontSize: '11px', display: 'block'}}>{user?.plan ? `Plan: ${user.plan}` : 'Plan: trial'}</span>
+              </div>
+            </div>
+            <button className="logout-btn" style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-muted)', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '6px'}} title="Toggle Menu">
+              <Settings size={16} />
+            </button>
           </div>
-          <button onClick={logout} className="logout-btn" style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-muted)', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '6px'}} title="Log Out">
-            <LogOut size={16} />
-          </button>
         </div>
       </div>
     </aside>

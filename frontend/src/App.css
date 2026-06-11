@@ -16,7 +16,7 @@
   --brand-subtle:   rgba(124,58,237,0.08);
 
   --sb-w:           260px;
-  --sb-bg:          #1A1A1A;
+  --sb-bg:          #222831;
   --sb-border:      rgba(255,255,255,0.08);
   --sb-txt:         #a1a1b5;
   --sb-hover-bg:    rgba(255,255,255,0.08);
@@ -25,9 +25,9 @@
   --sb-active-txt:  #ddd6fe;
   --sb-active-bar:  #7c3aed;
 
-  --bg:             #121212;
-  --surface:        #1E1E1E;
-  --surface-2:      #272727;
+  --bg:             #222831;
+  --surface:        #393E46;
+  --surface-2:      #4A505A;
   --border:         rgba(255,255,255,0.12);
   --border-hover:   rgba(255,255,255,0.20);
 
@@ -80,7 +80,7 @@
 
 /* ──── Light Theme Overrides ──── */
 :root[data-theme="light"] {
-  --sb-bg:          #F5F5F5;
+  --sb-bg:          #FBFAF5;
   --sb-border:      #E5E5E5;
   --sb-txt:         #4B4B60;
   --sb-hover-bg:    #EBEBEB;
@@ -88,7 +88,7 @@
   --sb-active-bg:   rgba(124,58,237,0.1);
   --sb-active-txt:  #7c3aed;
 
-  --bg:             #FAFAFA;
+  --bg:             #FBFAF5;
   --surface:        #FFFFFF;
   --surface-2:      #F5F5F5;
   --border:         #E5E5E5;
@@ -128,8 +128,6 @@
 
 /* Light theme header fix */
 :root[data-theme="light"] .top-header { background: var(--header-bg); }
-:root[data-theme="light"] .footer-text p { color: rgba(255,255,255,0.80); }
-:root[data-theme="light"] .footer-text span { color: rgba(255,255,255,0.55); }
 
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }

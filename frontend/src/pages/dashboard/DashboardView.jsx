@@ -132,7 +132,8 @@ export default function DashboardView() {
     ]).then(([dExecs, dAgents]) => {
       setExecs(dExecs || []);
       setLoading(false);
-      if ((dAgents || []).length === 0 && user && !localStorage.getItem(`onboarding_dismissed_${user.email}`)) {
+      if (localStorage.getItem('ap_new_registration') === 'true') {
+        localStorage.removeItem('ap_new_registration');
         setShowOnboarding(true);
       }
     }).catch(() => setLoading(false));
