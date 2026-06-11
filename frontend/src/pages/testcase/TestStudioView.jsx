@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { toast } from '../../components/common/ToastContainer';
+import { Save, Plus, FileText, Settings, Search } from 'lucide-react';
 import './TestStudio.css';
 
 // ─── All 300+ Actions ────────────────────────────────────────────────────────
@@ -155,8 +156,8 @@ function Configurator({ step, onChange }) {
         <div className="ts-config-title" style={{color:'#9ca3af'}}>No step selected</div>
       </div>
       <div className="ts-config-empty">
-        <div style={{fontSize:'2rem',marginBottom:8}}>⚙️</div>
-        <div style={{color:'#9ca3af',fontSize:'0.84rem',lineHeight:1.6}}>Click any step<br/>on the canvas to configure it here</div>
+        <div style={{marginBottom:8, color:'var(--txt-muted)'}}><Settings size={32} /></div>
+        <div style={{color:'var(--txt-muted)',fontSize:'0.84rem',lineHeight:1.6}}>Click any step<br/>on the canvas to configure it here</div>
       </div>
     </div>
   );
@@ -369,16 +370,18 @@ export default function TestStudioView() {
       {/* ── Topbar ── */}
       <div className="ts-topbar">
         <div className="ts-logo">
-          <div className="ts-logo-icon">⚡</div>
-          <span className="ts-logo-text">Autopropel</span>
+          <div className="ts-logo-icon">
+            <img src="/logo.png" alt="AutoPilot Logo" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+          </div>
+          <span className="ts-logo-text">Auto<span style={{color:'var(--txt-h)'}}>Pilot</span></span>
         </div>
         <span className="ts-badge">Test Studio</span>
         <Link to="/test-cases" className="ts-exit-btn">← Exit</Link>
         <input className="ts-name-input" placeholder="Test Case Name *" value={name} onChange={e => setName(e.target.value)} />
         <input className="ts-desc-input" placeholder="Description (optional)" value={desc} onChange={e => setDesc(e.target.value)} />
         <div className="ts-step-counter">{steps.length} step{steps.length !== 1 ? 's' : ''}</div>
-        <button className="ts-save-btn" onClick={save} disabled={saving}>
-          {saving ? '⏳ Saving…' : '💾 Save'}
+        <button className="ts-save-btn" onClick={save} disabled={saving} style={{display:'flex',alignItems:'center',gap:'6px'}}>
+          {saving ? '⏳ Saving…' : <><Save size={16}/> Save</>}
         </button>
       </div>
 
@@ -393,7 +396,7 @@ export default function TestStudioView() {
           <div className="ts-canvas-toolbar">
             <span className="ts-canvas-title">Canvas</span>
             <span className="ts-canvas-count">{steps.length} step{steps.length !== 1 ? 's' : ''}</span>
-            <button className="ts-add-btn" onClick={() => addStep()}>➕ Add Step</button>
+            <button className="ts-add-btn" onClick={() => addStep()} style={{display:'flex',alignItems:'center',gap:'6px'}}><Plus size={16}/> Add Step</button>
           </div>
 
           <div
@@ -404,7 +407,7 @@ export default function TestStudioView() {
           >
             {steps.length === 0 ? (
               <div className="ts-empty-canvas">
-                <div className="ts-empty-icon">📋</div>
+                <div className="ts-empty-icon"><FileText size={40} /></div>
                 <div className="ts-empty-title">Canvas is empty</div>
                 <div className="ts-empty-sub">Click or drag any action from the left panel</div>
               </div>

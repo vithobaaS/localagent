@@ -10,10 +10,10 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #f3f4f6;
+  background: var(--bg);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
-  color: #111827;
+  color: var(--txt);
   -webkit-font-smoothing: antialiased;
   z-index: 9999;
 }
@@ -26,8 +26,8 @@
   padding: 0 16px;
   height: 56px;
   min-height: 56px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   z-index: 10;
   flex-shrink: 0;
@@ -38,7 +38,7 @@
   align-items: center;
   gap: 7px;
   padding-right: 12px;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--border);
   margin-right: 2px;
   flex-shrink: 0;
 }
@@ -66,34 +66,34 @@
 .ts-exit-btn {
   display: flex; align-items: center;
   padding: 6px 12px;
-  background: #f9fafb; border: 1px solid #e5e7eb;
-  border-radius: 7px; color: #6b7280;
+  background: var(--surface-hover); border: 1px solid var(--border);
+  border-radius: 7px; color: var(--txt-muted);
   font-size: 0.82rem; font-weight: 500;
   text-decoration: none; cursor: pointer;
   transition: all 0.15s; flex-shrink: 0;
 }
-.ts-exit-btn:hover { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
+.ts-exit-btn:hover { background: var(--border-hover); color: var(--txt); border-color: var(--border); }
 
 .ts-name-input {
   flex: 1;
   min-width: 180px;
-  background: #f9fafb; border: 1px solid #e5e7eb;
+  background: var(--bg); border: 1px solid var(--border);
   border-radius: 7px; padding: 7px 12px;
-  color: #111827; font-size: 0.9rem; font-weight: 600;
+  color: var(--txt-h); font-size: 0.9rem; font-weight: 600;
   outline: none; transition: all 0.15s;
 }
-.ts-name-input:focus { border-color: #7c3aed; background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
-.ts-name-input::placeholder { color: #9ca3af; font-weight: 400; }
+.ts-name-input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+.ts-name-input::placeholder { color: var(--txt-muted); font-weight: 400; }
 
 .ts-desc-input {
   width: 220px;
-  background: #f9fafb; border: 1px solid #e5e7eb;
+  background: var(--bg); border: 1px solid var(--border);
   border-radius: 7px; padding: 7px 12px;
-  color: #6b7280; font-size: 0.82rem;
+  color: var(--txt); font-size: 0.82rem;
   outline: none; transition: all 0.15s;
 }
-.ts-desc-input:focus { border-color: #7c3aed; background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
-.ts-desc-input::placeholder { color: #c4c9d4; }
+.ts-desc-input:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+.ts-desc-input::placeholder { color: var(--txt-muted); }
 
 .ts-step-counter {
   font-size: 0.78rem; font-weight: 600;
@@ -128,8 +128,8 @@
 .ts-sidebar {
   width: 272px;
   min-width: 272px;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -138,8 +138,8 @@
 .ts-sidebar-search-wrap {
   position: relative;
   padding: 12px 12px 8px;
-  background: #ffffff;
-  border-bottom: 1px solid #f3f4f6;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -151,12 +151,12 @@
 
 .ts-sidebar-search {
   width: 100%;
-  background: #f3f4f6; border: 1px solid #e5e7eb;
+  background: var(--bg); border: 1px solid var(--border);
   border-radius: 8px; padding: 7px 10px 7px 32px;
-  color: #111827; font-size: 0.82rem;
+  color: var(--txt-h); font-size: 0.82rem;
   outline: none; transition: all 0.15s;
 }
-.ts-sidebar-search:focus { border-color: #7c3aed; background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+.ts-sidebar-search:focus { border-color: var(--brand); background: var(--surface); box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
 .ts-sidebar-search::placeholder { color: #9ca3af; }
 
 .ts-sidebar-scroll {
@@ -182,8 +182,8 @@
   gap: 8px;
   padding: 7px 10px;
   margin-bottom: 2px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 7px;
   cursor: grab;
   user-select: none;
@@ -211,7 +211,7 @@
 
 .ts-action-name {
   flex: 1; font-size: 0.8rem; font-weight: 500;
-  color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--txt-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .ts-action-block:hover .ts-action-name { color: #5b21b6; }
 
@@ -227,7 +227,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #f3f4f6;
+  background: var(--bg);
   min-width: 0;
 }
 
@@ -236,14 +236,14 @@
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .ts-canvas-title {
   font-size: 0.76rem; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase; color: #6b7280;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--txt-muted);
 }
 
 .ts-canvas-count {
@@ -256,8 +256,8 @@
   margin-left: auto;
   display: flex; align-items: center; gap: 5px;
   padding: 6px 13px;
-  background: #fff; border: 1px solid #d1d5db;
-  border-radius: 7px; color: #374151;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 7px; color: var(--txt-h);
   font-size: 0.8rem; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
@@ -279,9 +279,9 @@
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   min-height: 260px;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px; background: #fafafa;
-  color: #9ca3af; text-align: center; padding: 40px;
+  border: 2px dashed var(--border);
+  border-radius: 12px; background: var(--surface);
+  color: var(--txt-muted); text-align: center; padding: 40px;
   transition: all 0.2s;
 }
 .ts-canvas-body.drag-active .ts-empty-canvas {
@@ -297,8 +297,8 @@
   align-items: center;
   gap: 10px;
   padding: 11px 14px;
-  background: #ffffff;
-  border: 1.5px solid #e5e7eb;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s;
@@ -337,8 +337,8 @@
 }
 
 .ts-step-info { flex: 1; min-width: 0; }
-.ts-step-action { font-size: 0.85rem; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ts-step-detail { font-size: 0.72rem; color: #9ca3af; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-step-action { font-size: 0.85rem; font-weight: 600; color: var(--txt-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-step-detail { font-size: 0.72rem; color: var(--txt-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .ts-step-delete {
   padding: 3px 6px; background: none; border: none;
@@ -352,10 +352,10 @@
 .ts-drop-more {
   margin-top: 4px;
   padding: 12px;
-  border: 2px dashed #e5e7eb;
+  border: 2px dashed var(--border);
   border-radius: 8px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--txt-muted);
   font-size: 0.78rem;
   transition: all 0.2s;
 }
@@ -365,8 +365,8 @@
 .ts-config {
   width: 300px;
   min-width: 300px;
-  background: #ffffff;
-  border-left: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -374,12 +374,12 @@
 
 .ts-config-header {
   padding: 14px 16px 12px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafafa;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
   flex-shrink: 0;
 }
-.ts-config-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #9ca3af; margin-bottom: 3px; }
-.ts-config-title { font-size: 0.95rem; font-weight: 700; color: #111827; }
+.ts-config-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--txt-muted); margin-bottom: 3px; }
+.ts-config-title { font-size: 0.95rem; font-weight: 700; color: var(--txt-h); }
 
 .ts-config-empty {
   flex: 1; display: flex; flex-direction: column;
@@ -399,9 +399,9 @@
 
 .ts-input {
   width: 100%;
-  background: #f9fafb; border: 1px solid #e5e7eb;
+  background: var(--bg); border: 1px solid var(--border);
   border-radius: 7px; padding: 8px 11px;
-  color: #111827; font-size: 0.84rem;
+  color: var(--txt-h); font-size: 0.84rem;
   outline: none; transition: all 0.15s;
 }
 .ts-input:focus { border-color: #7c3aed; background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
@@ -409,7 +409,7 @@
 
 .ts-dropdown {
   position: absolute; bottom: calc(100% + 4px); left: 0; right: 0;
-  background: #fff; border: 1px solid #e5e7eb;
+  background: var(--surface); border: 1px solid var(--border);
   border-radius: 8px; max-height: 220px; overflow-y: auto; z-index: 100;
   box-shadow: 0 -6px 20px rgba(0,0,0,0.1);
 }
