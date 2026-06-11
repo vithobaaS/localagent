@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { toast } from '../../components/common/ToastContainer';
+import { Trash2 } from 'lucide-react';
 import { fmt } from '../../utils/helpers';
 
 export default function ApiKeysView() {
@@ -101,7 +102,7 @@ export default function ApiKeysView() {
                   <td><span className="text-muted text-sm">{fmt(k.createdAt)}</span></td>
                   <td>
                     <div className="action-row">
-                      <button className="act-btn kill" style={{ color: '#dc2626' }} onClick={() => del(k.id, k.name)} title="Revoke">🗑️ Revoke</button>
+                      <button className="act-btn kill" style={{ color: '#dc2626' }} onClick={() => del(k.id, k.name)} title="Revoke"><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>

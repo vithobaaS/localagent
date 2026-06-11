@@ -6,7 +6,7 @@ import {
   PackageOpen, FlaskConical, SlidersHorizontal, Database, Globe,
   MonitorDot, Users2, Download,
   BarChart2, Eye, Share2,
-  Settings, Users, ShieldCheck, KeyRound, Bell, ScrollText, Trash2
+  Settings, Users, ShieldCheck, KeyRound, Bell, ScrollText, Trash2, LogOut
 } from 'lucide-react';
 
 function NavItem({ to, icon: Icon, label, active, onClick }) {
@@ -27,7 +27,7 @@ function NavItem({ to, icon: Icon, label, active, onClick }) {
 }
 
 export default function Sidebar({ user, sidebarOpen, path }) {
-  const { setShowOnboarding } = useContext(AuthContext);
+  const { setShowOnboarding, logout } = useContext(AuthContext);
   const is = (p) => path === p;
 
   if (!sidebarOpen) return null;
@@ -83,12 +83,17 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="sidebar-footer-inner">
-          <div className="footer-dot" />
-          <div className="footer-text">
-            <p>{user?.orgName || 'AutoPilot Cloud'}</p>
-            <span>{user?.plan ? `Plan: ${user.plan}` : 'v1.0 Beta — All systems operational'}</span>
+        <div className="sidebar-footer-inner" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 8px'}}>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <div className="footer-dot" style={{width: 8, height: 8, borderRadius: '50%', background: '#059669', marginRight: 10}} />
+            <div className="footer-text">
+              <p style={{color: '#fff', fontWeight: 600, fontSize: '13px', margin: 0, textTransform: 'lowercase'}}>{user?.fullName || user?.email || 'User'}</p>
+              <span style={{color: 'rgba(255,255,255,0.5)', fontSize: '11px', display: 'block'}}>{user?.plan ? `Plan: ${user.plan}` : 'Plan: trial'}</span>
+            </div>
           </div>
+          <button onClick={logout} style={{background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center'}} title="Log Out">
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </aside>

@@ -25,7 +25,7 @@ function PageHeader({ title, crumb, actions }) {
   );
 }
 
-function TableCard({ title, headerRight, search, onSearch, entries, onEntries, children, total, page, onPage }) {
+function TableCard({ title, headerRight, search, onSearch, entries, onEntries, children, total, page, onPage, maxHeight }) {
   return (
     <div className="card">
       <div className="card-header">
@@ -47,7 +47,7 @@ function TableCard({ title, headerRight, search, onSearch, entries, onEntries, c
           )}
         </div>
       </div>
-      <div className="table-responsive">{children}</div>
+      <div className="table-responsive" style={maxHeight ? { maxHeight, overflowY: 'auto' } : {}}>{children}</div>
       {onPage && (
         <div className="table-footer">
           <span className="pag-info">Showing {Math.min(total, entries)} of {total}</span>
@@ -224,16 +224,16 @@ export default function DashboardView() {
       {/* Charts Row */}
       <div className="charts-row">
         <div className="card chart-card">
-          <div className="card-header">
-            <h2><PieChartIcon size={20} className="mr-2 inline" /> Pass / Fail Distribution</h2>
+          <div className="card-header" style={{ display: 'flex', alignItems: 'center' }}>
+            <h2 style={{ display: 'flex', alignItems: 'center', margin: 0 }}><PieChartIcon size={20} className="mr-2" /> Pass / Fail Distribution</h2>
           </div>
           <div className="chart-body">
             <DonutChart data={donutData} />
           </div>
         </div>
         <div className="card chart-card">
-          <div className="card-header">
-            <h2><BarChart3 size={20} className="mr-2 inline" /> Executions — Last 7 Days</h2>
+          <div className="card-header" style={{ display: 'flex', alignItems: 'center' }}>
+            <h2 style={{ display: 'flex', alignItems: 'center', margin: 0 }}><BarChart3 size={20} className="mr-2" /> Executions — Last 7 Days</h2>
           </div>
           <div className="chart-body">
             <BarChart data={barData} />
@@ -241,7 +241,7 @@ export default function DashboardView() {
         </div>
       </div>
 
-      <TableCard title="Recent Test Executions" total={filtered.length}
+      <TableCard title="Recent Test Executions" total={filtered.length} maxHeight="400px"
         search={search} onSearch={s => { setSearch(s); setPage(0); }}
         entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
         page={page} onPage={setPage}

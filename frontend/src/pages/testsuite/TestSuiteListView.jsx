@@ -4,6 +4,7 @@ import { api } from '../../api/apiClient';
 import { fmt, statusBadge } from '../../utils/helpers';
 import { toast } from '../../components/common/ToastContainer';
 import { PageHeader, TableCard } from '../../components/common/PageComponents';
+import { Play, Plug, Eye, ChevronUp, Pencil, Trash2 } from 'lucide-react';
 
 export default function TestSuiteListView() {
   const [data, setData] = useState([]); const [loading, setLoading] = useState(true);
@@ -67,11 +68,11 @@ export default function TestSuiteListView() {
                 <td><span className={`badge ${statusBadge(s.status)}`}>{s.status}</span></td>
                 <td className="text-muted text-sm">{fmt(s.createdAt)}</td>
                 <td><div className="action-row">
-                  <button className="act-btn view" style={{background:'var(--green-bg)',borderColor:'var(--green)',color:'var(--green)'}} title="Run Now" onClick={() => setRunModalSuite(s)}>▶️</button>
-                  <button className="act-btn view" title="CI/CD Snippet" onClick={() => setSnippetSuite(s)}>🔌</button>
-                  <button className="act-btn view" onClick={() => toggle(s.id)}>{expanded === s.id ? '▲' : '👁️'}</button>
-                  <Link to={`/test-suites/edit/${s.id}`} className="act-btn view" title="Edit">✏️</Link>
-                  <button className="act-btn delete" onClick={() => remove(s.id)}>🗑️</button>
+                  <button className="act-btn view" style={{background:'var(--green-bg)',borderColor:'var(--green)',color:'var(--green)'}} title="Run Now" onClick={() => setRunModalSuite(s)}><Play size={16} /></button>
+                  <button className="act-btn view" title="CI/CD Snippet" onClick={() => setSnippetSuite(s)}><Plug size={16} /></button>
+                  <button className="act-btn view" onClick={() => toggle(s.id)}>{expanded === s.id ? <ChevronUp size={16} /> : <Eye size={16} />}</button>
+                  <Link to={`/test-suites/edit/${s.id}`} className="act-btn view" title="Edit"><Pencil size={16} /></Link>
+                  <button className="act-btn delete" onClick={() => remove(s.id)}><Trash2 size={16} /></button>
                 </div></td>
               </tr>
               {expanded === s.id && <tr key={`${s.id}-exp`} className="expand-panel"><td colSpan={6}><div className="expand-panel-inner">
