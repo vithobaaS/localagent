@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { PageHeader, Card } from '../../components/common/PageComponents';
 import { toast } from '../../components/common/ToastContainer';
 import { fmt } from '../../utils/helpers';
-import { Trash2, Copy, CheckCircle } from 'lucide-react';
+import { Trash2, Copy, CheckCircle, Sun, Moon, Monitor } from 'lucide-react';
 
 export default function SettingsView() {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const isAdmin = user?.role === 'admin';
-  const [tab, setTab] = useState('org');
   const [users, setUsers] = useState([]);
   const [tokens, setTokens] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,9 +39,9 @@ export default function SettingsView() {
   };
 
   useEffect(() => {
-    if (tab === 'users') fetchUsers();
-    if (tab === 'tokens') fetchTokens();
-  }, [tab]);
+    fetchUsers();
+    fetchTokens();
+  }, []);
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -81,20 +82,49 @@ export default function SettingsView() {
   };
 
   return (
-    <div className="page-view">
-      <PageHeader title="Organization Settings" />
+    <div className="page-view" style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+      <PageHeader title="Platform Settings" />
 
-      <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '4px' }}>
-        {['org', 'users', 'tokens'].map(t => (
-          <button key={t} onClick={() => setTab(t)} style={tabStyle(t)}>
-            {t === 'org' ? 'Organization' : t === 'users' ? 'Team Members' : 'Agent Tokens'}
-          </button>
-        ))}
-      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '60px' }}>
+        
+        {/* Profile Details */}
+        <Card title="Personal Profile">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div>
+              <label className="form-label" style={{ color: 'var(--txt-muted)', marginBottom: '6px', display: 'block' }}>Full Name</label>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--txt-h)' }}>{user?.fullName || '—'}</div>
+            </div>
+            <div>
+              <label className="form-label" style={{ color: 'var(--txt-muted)', marginBottom: '6px', display: 'block' }}>Email Address</label>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--txt-h)' }}>{user?.email}</div>
+            </div>
+            <div>
+              <label className="form-label" style={{ color: 'var(--txt-muted)', marginBottom: '6px', display: 'block' }}>Your Role</label>
+              <span className="badge" style={{ background: user?.role === 'admin' ? 'var(--red-bg)' : 'var(--blue-bg)', color: user?.role === 'admin' ? 'var(--red-txt)' : 'var(--blue-txt)', padding: '5px 12px', borderRadius: '6px', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 700 }}>
+                {user?.role}
+              </span>
+            </div>
+          </div>
+        </Card>
 
-      {tab === 'org' && (
-        <Card title="Organization Overview">
-          <div style={{ display: 'grid', gap: '24px', maxWidth: '600px' }}>
+        {/* Theme Details */}
+        <Card title="Theme Preferences">
+          <p style={{ color: 'var(--txt-muted)', fontSize: '14px', marginBottom: '16px' }}>Choose how AutoPilot looks to you.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
+            <button onClick={() => setTheme('light')} style={{ background: 'var(--surface)', border: `2px solid ${theme === 'light' ? 'var(--brand)' : 'var(--border)'}`, padding: '24px', borderRadius: 'var(--r-lg)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', transition: 'var(--t)' }}>
+              <Sun size={28} color={theme === 'light' ? 'var(--brand)' : 'var(--txt-muted)'} />
+              <span style={{ fontWeight: 600, color: theme === 'light' ? 'var(--txt-h)' : 'var(--txt-muted)' }}>Light Theme</span>
+            </button>
+            <button onClick={() => setTheme('dark')} style={{ background: 'var(--surface)', border: `2px solid ${theme === 'dark' ? 'var(--brand)' : 'var(--border)'}`, padding: '24px', borderRadius: 'var(--r-lg)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', transition: 'var(--t)' }}>
+              <Moon size={28} color={theme === 'dark' ? 'var(--brand)' : 'var(--txt-muted)'} />
+              <span style={{ fontWeight: 600, color: theme === 'dark' ? 'var(--txt-h)' : 'var(--txt-muted)' }}>Dark Theme</span>
+            </button>
+          </div>
+        </Card>
+
+        {/* Tenant Details */}
+        <Card title="Tenant Details">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <div>
               <label className="form-label" style={{ color: 'var(--txt-muted)', marginBottom: '6px', display: 'block' }}>Organization ID</label>
               <div style={{ fontSize: '1.15rem', fontWeight: 700, fontFamily: 'monospace', color: 'var(--brand)', letterSpacing: '1px' }}>
@@ -114,23 +144,14 @@ export default function SettingsView() {
             <div>
               <label className="form-label" style={{ color: 'var(--txt-muted)', marginBottom: '6px', display: 'block' }}>Subscription Plan</label>
               <span className="badge" style={{ background: 'var(--green-bg)', color: 'var(--green-txt)', padding: '5px 12px', borderRadius: '6px', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 700 }}>
-                {user?.plan}
+                {user?.plan || 'TRIAL'}
               </span>
             </div>
-            {user?.role && (
-              <div>
-                <label className="form-label" style={{ color: 'var(--txt-muted)', marginBottom: '6px', display: 'block' }}>Your Role</label>
-                <span className="badge" style={{ background: user.role === 'admin' ? 'var(--red-bg)' : 'var(--blue-bg)', color: user.role === 'admin' ? 'var(--red-txt)' : 'var(--blue-txt)', padding: '5px 12px', borderRadius: '6px', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 700 }}>
-                  {user.role}
-                </span>
-              </div>
-            )}
           </div>
         </Card>
-      )}
 
-      {tab === 'users' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '24px' }}>
+        {/* Team Directory & Invite */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px' }}>
           <Card title="Team Directory">
             {loading ? (
               <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -156,7 +177,7 @@ export default function SettingsView() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {isAdmin ? (
-              <Card title="Invite Team Member">
+              <Card title="Invite Member">
                 <form onSubmit={handleInvite}>
                   <div className="form-group">
                     <label className="form-label">Email Address</label>
@@ -170,20 +191,19 @@ export default function SettingsView() {
                 </form>
               </Card>
             ) : (
-              <Card title="Invite Team Member">
+              <Card title="Invite Member">
                 <div style={{ textAlign: 'center', padding: '20px', color: 'var(--txt-muted)' }}>
                   <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔒</div>
-                  <p style={{ fontSize: '14px', lineHeight: '1.6' }}>Only <strong>administrators</strong> can invite new team members.</p>
+                  <p style={{ fontSize: '14px', lineHeight: '1.6' }}>Only administrators can invite new team members.</p>
                 </div>
               </Card>
             )}
 
-            {/* Temp password reveal after invite */}
             {newInvite && (
               <div style={{ background: 'var(--green-bg)', border: '1px solid var(--green)', borderRadius: 'var(--r-lg)', padding: '16px' }}>
                 <div style={{ fontWeight: 700, color: 'var(--green-txt)', marginBottom: '8px' }}>✓ User Invited!</div>
                 <div style={{ fontSize: '13px', color: 'var(--txt-muted)', marginBottom: '10px' }}>
-                  Share this temporary password with <strong>{newInvite.email}</strong>. They must change it on first login.
+                  Share this temporary password with <strong>{newInvite.email}</strong>.
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--surface)', borderRadius: 'var(--r-md)', padding: '10px 14px', border: '1px solid var(--border)' }}>
                   <code style={{ flex: 1, fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, letterSpacing: '2px', color: 'var(--brand)' }}>
@@ -198,11 +218,10 @@ export default function SettingsView() {
             )}
           </div>
         </div>
-      )}
 
-      {tab === 'tokens' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '24px' }}>
-          <Card title="Active Agent Tokens">
+        {/* Agent Tokens */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px' }}>
+          <Card title="Agent Connection Tokens">
             {loading ? (
               <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[1,2,3].map(i => <div key={i} className="skeleton skeleton-row" />)}
@@ -242,7 +261,8 @@ export default function SettingsView() {
             </form>
           </Card>
         </div>
-      )}
+
+      </div>
     </div>
   );
 }

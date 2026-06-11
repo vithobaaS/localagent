@@ -2385,7 +2385,7 @@ input, select, textarea { font-family: inherit; }
 .splash-screen {
   position: fixed;
   inset: 0;
-  background: #0c0b1a;
+  background: var(--bg);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -2418,13 +2418,13 @@ input, select, textarea { font-family: inherit; }
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 34px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--txt-h);
   letter-spacing: -1px;
 }
-.splash-brand span { color: #a78bfa; }
+.splash-brand span { color: var(--brand); }
 .splash-tagline {
   font-size: 11px;
-  color: rgba(255,255,255,0.30);
+  color: var(--txt-muted);
   letter-spacing: 2.5px;
   text-transform: uppercase;
   font-weight: 500;

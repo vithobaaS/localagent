@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 
 export function SplashScreen({ onDone }) {
-  const [phase, setPhase] = useState('in'); // 'in' | 'hold' | 'out'
+  const [phase, setPhase] = useState('hold'); // 'hold' | 'out'
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('hold'), 400);
     const t2 = setTimeout(() => setPhase('out'), 1600);
     const t3 = setTimeout(() => onDone(), 2100);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    return () => { clearTimeout(t2); clearTimeout(t3); };
   }, [onDone]);
 
   return (

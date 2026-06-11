@@ -82,8 +82,8 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <NavItem to="/admin/retention"     icon={Trash2}          label="Retention Policies" active={is('/admin/retention')} />
       </nav>
 
-      <div className="sidebar-footer">
-        <div className="sidebar-footer-inner" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 8px'}}>
+      <div className="sidebar-footer" style={{ padding: '16px 12px' }}>
+        <div className="sidebar-profile-card" style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)' }}>
           <div style={{display: 'flex', alignItems: 'center'}}>
             <div className="footer-dot" style={{width: 8, height: 8, borderRadius: '50%', background: 'var(--green)', marginRight: 10}} />
             <div className="footer-text">
@@ -91,7 +91,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
               <span style={{color: 'var(--txt-muted)', fontSize: '11px', display: 'block'}}>{user?.plan ? `Plan: ${user.plan}` : 'Plan: trial'}</span>
             </div>
           </div>
-          <button onClick={logout} className="logout-btn" style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-muted)', display: 'flex', alignItems: 'center'}} title="Log Out">
+          <button onClick={logout} className="logout-btn" style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-muted)', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '6px'}} title="Log Out">
             <LogOut size={16} />
           </button>
         </div>
