@@ -87,7 +87,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       <div className="sidebar-footer" style={{ padding: '16px 12px', position: 'relative' }}>
         <div style={{ position: 'relative' }}>
           {profileOpen && (
-            <div className="profile-dropdown" style={{ position: 'absolute', bottom: 'calc(100% + 12px)', left: 0, right: 0, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '6px', zIndex: 9999, boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ position: 'absolute', bottom: 'calc(100% + 12px)', top: 'auto', left: 0, right: 0, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '6px', zIndex: 9999, boxShadow: 'var(--shadow-lg)' }}>
                <button onClick={() => { setProfileOpen(false); navigate('/settings'); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Settings size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Settings</button>
                <button onClick={() => { setProfileOpen(false); setShowOnboarding(true); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Download size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Install Agent</button>
                <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />

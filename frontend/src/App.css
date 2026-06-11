@@ -16,18 +16,18 @@
   --brand-subtle:   rgba(124,58,237,0.08);
 
   --sb-w:           260px;
-  --sb-bg:          #0b1120;
-  --sb-border:      rgba(255,255,255,0.05);
-  --sb-txt:         #94a3b8;
-  --sb-hover-bg:    rgba(255,255,255,0.05);
-  --sb-hover-txt:   #f8fafc;
+  --sb-bg:          #111111;
+  --sb-border:      rgba(255,255,255,0.06);
+  --sb-txt:         #a1a1aa;
+  --sb-hover-bg:    rgba(255,255,255,0.06);
+  --sb-hover-txt:   #fafafa;
   --sb-active-bg:   rgba(124,58,237,0.15);
-  --sb-active-txt:  #e2e8f0;
+  --sb-active-txt:  #e4d4ff;
   --sb-active-bar:  #7c3aed;
 
-  --bg:             #0f172a;
-  --surface:        #1e293b;
-  --surface-2:      #334155;
+  --bg:             #111111;
+  --surface:        #1a1a1a;
+  --surface-2:      #242424;
   --border:         rgba(255,255,255,0.08);
   --border-hover:   rgba(255,255,255,0.15);
 
