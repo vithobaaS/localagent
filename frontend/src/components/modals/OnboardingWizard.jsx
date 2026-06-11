@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { InstallAgentModal } from './InstallAgentModal';
+import { Rocket, Cloud } from 'lucide-react';
 
 export function OnboardingWizard({ onClose }) {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export function OnboardingWizard({ onClose }) {
         
         {step === 1 && (
           <div className="wizard-step">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👋</div>
+            <div style={{ marginBottom: '1rem', color: 'var(--brand)' }}><Rocket size={48}/></div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--txt-h)' }}>
               Welcome to AutoPilot, {user?.fullName || 'there'}!
             </h2>
@@ -35,7 +36,7 @@ export function OnboardingWizard({ onClose }) {
 
         {step === 2 && (
           <div className="wizard-step">
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>☁️</div>
+            <div style={{ marginBottom: '1rem', color: 'var(--brand)' }}><Cloud size={48}/></div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: 'var(--txt-h)' }}>
               How AutoPilot Works
             </h2>

@@ -190,8 +190,8 @@
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 .ts-action-block:hover {
-  background: #ede9fe;
-  border-color: #a78bfa;
+  background: var(--bg);
+  border-color: var(--brand);
   box-shadow: 0 1px 4px rgba(124,58,237,0.12);
   cursor: pointer;
 }
@@ -201,7 +201,7 @@
   color: #d1d5db; font-size: 1rem; flex-shrink: 0;
   transition: color 0.12s;
 }
-.ts-action-block:hover .ts-action-grip { color: #7c3aed; }
+.ts-action-block:hover .ts-action-grip { color: var(--brand); }
 
 .ts-action-icon {
   width: 26px; height: 26px; border-radius: 6px;
@@ -213,7 +213,7 @@
   flex: 1; font-size: 0.8rem; font-weight: 500;
   color: var(--txt-h); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.ts-action-block:hover .ts-action-name { color: #5b21b6; }
+.ts-action-block:hover .ts-action-name { color: var(--brand); }
 
 .ts-action-tag {
   font-size: 0.62rem; font-weight: 700;
@@ -247,7 +247,7 @@
 }
 
 .ts-canvas-count {
-  background: #ede9fe; color: #5b21b6;
+  background: var(--surface-hover); color: var(--brand);
   font-size: 0.7rem; font-weight: 700;
   padding: 2px 8px; border-radius: 100px;
 }
@@ -261,7 +261,7 @@
   font-size: 0.8rem; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
-.ts-add-btn:hover { background: #ede9fe; border-color: #a78bfa; color: #5b21b6; }
+.ts-add-btn:hover { background: var(--surface-hover); border-color: var(--brand); color: var(--brand); }
 
 .ts-canvas-body {
   flex: 1;
@@ -270,7 +270,7 @@
   min-height: 0;
   transition: background 0.2s;
 }
-.ts-canvas-body.drag-active { background: #ede9fe; }
+.ts-canvas-body.drag-active { background: var(--surface-hover); }
 .ts-canvas-body::-webkit-scrollbar { width: 5px; }
 .ts-canvas-body::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 
@@ -285,7 +285,7 @@
   transition: all 0.2s;
 }
 .ts-canvas-body.drag-active .ts-empty-canvas {
-  border-color: #7c3aed; background: #f5f3ff; color: #7c3aed;
+  border-color: var(--brand); background: var(--surface-hover); color: var(--brand);
 }
 .ts-empty-icon { font-size: 2.2rem; margin-bottom: 8px; opacity: 0.5; }
 .ts-empty-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
@@ -306,9 +306,9 @@
   position: relative;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-.ts-step-card:hover { border-color: #a78bfa; box-shadow: 0 2px 8px rgba(124,58,237,0.1); }
-.ts-step-card.selected { border-color: #7c3aed; background: #faf5ff; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
-.ts-step-card.drag-over { border-color: #7c3aed; background: #f5f3ff; transform: scale(1.01); }
+.ts-step-card:hover { border-color: var(--brand); box-shadow: 0 2px 8px rgba(124,58,237,0.1); }
+.ts-step-card.selected { border-color: var(--brand); background: var(--surface-hover); box-shadow: 0 0 0 1px var(--brand); }
+.ts-step-card.drag-over { border-color: var(--brand); background: var(--surface-hover); transform: scale(1.01); }
 
 /* left accent bar */
 .ts-step-card::before {
@@ -317,15 +317,15 @@
   width: 3px; border-radius: 0 3px 3px 0;
   background: transparent; transition: background 0.2s;
 }
-.ts-step-card.selected::before { background: #7c3aed; }
-.ts-step-card:hover:not(.selected)::before { background: #c4b5fd; }
+.ts-step-card.selected::before { background: var(--brand); }
+.ts-step-card:hover:not(.selected)::before { background: var(--brand); opacity: 0.5; }
 
 .ts-step-grip { color: #d1d5db; cursor: grab; font-size: 1rem; flex-shrink: 0; }
 .ts-step-card:hover .ts-step-grip { color: #9ca3af; }
 
 .ts-step-num {
   width: 22px; height: 22px; border-radius: 6px;
-  background: #ede9fe; color: #5b21b6;
+  background: var(--surface-hover); color: var(--brand);
   font-size: 0.68rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
@@ -359,7 +359,7 @@
   font-size: 0.78rem;
   transition: all 0.2s;
 }
-.ts-drop-more.drag-active { border-color: #7c3aed; background: #f5f3ff; color: #7c3aed; }
+.ts-drop-more.drag-active { border-color: var(--brand); background: var(--surface-hover); color: var(--brand); }
 
 /* ── Right Configurator ── */
 .ts-config {
