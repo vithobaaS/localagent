@@ -85,13 +85,13 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       <div className="sidebar-footer">
         <div className="sidebar-footer-inner" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 8px'}}>
           <div style={{display: 'flex', alignItems: 'center'}}>
-            <div className="footer-dot" style={{width: 8, height: 8, borderRadius: '50%', background: '#059669', marginRight: 10}} />
+            <div className="footer-dot" style={{width: 8, height: 8, borderRadius: '50%', background: 'var(--green)', marginRight: 10}} />
             <div className="footer-text">
-              <p style={{color: '#fff', fontWeight: 600, fontSize: '13px', margin: 0, textTransform: 'lowercase'}}>{user?.fullName || user?.email || 'User'}</p>
-              <span style={{color: 'rgba(255,255,255,0.5)', fontSize: '11px', display: 'block'}}>{user?.plan ? `Plan: ${user.plan}` : 'Plan: trial'}</span>
+              <p style={{color: 'var(--txt-h)', fontWeight: 600, fontSize: '13px', margin: 0, textTransform: 'lowercase'}}>{user?.fullName || user?.email || 'User'}</p>
+              <span style={{color: 'var(--txt-muted)', fontSize: '11px', display: 'block'}}>{user?.plan ? `Plan: ${user.plan}` : 'Plan: trial'}</span>
             </div>
           </div>
-          <button onClick={logout} style={{background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center'}} title="Log Out">
+          <button onClick={logout} className="logout-btn" style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-muted)', display: 'flex', alignItems: 'center'}} title="Log Out">
             <LogOut size={16} />
           </button>
         </div>

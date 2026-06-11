@@ -80,19 +80,19 @@
 
 /* ──── Light Theme Overrides ──── */
 :root[data-theme="light"] {
-  --sb-bg:          #1e1b4b;
-  --sb-border:      rgba(255,255,255,0.08);
-  --sb-txt:         #a5b4fc;
-  --sb-hover-bg:    rgba(255,255,255,0.08);
-  --sb-hover-txt:   #ffffff;
-  --sb-active-bg:   rgba(124,58,237,0.25);
-  --sb-active-txt:  #ddd6fe;
+  --sb-bg:          #F5F5F5;
+  --sb-border:      #E5E5E5;
+  --sb-txt:         #4B4B60;
+  --sb-hover-bg:    #EBEBEB;
+  --sb-hover-txt:   #0f0e1a;
+  --sb-active-bg:   rgba(124,58,237,0.1);
+  --sb-active-txt:  #7c3aed;
 
-  --bg:             #f4f3ff;
-  --surface:        #ffffff;
-  --surface-2:      #f9f8fe;
-  --border:         #e5e4f0;
-  --border-hover:   #c9c8dc;
+  --bg:             #FAFAFA;
+  --surface:        #FFFFFF;
+  --surface-2:      #F5F5F5;
+  --border:         #E5E5E5;
+  --border-hover:   #D4D4D4;
 
   --txt-h:          #0f0e1a;
   --txt:            #4b4b60;
@@ -209,7 +209,7 @@ input, select, textarea { font-family: inherit; }
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
+  color: var(--txt-h);
   letter-spacing: -0.5px;
 }
 
@@ -234,7 +234,8 @@ input, select, textarea { font-family: inherit; }
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.40);
+  color: var(--sb-txt);
+  opacity: 0.7;
   padding: 18px 10px 7px;
   display: flex;
   align-items: center;
@@ -245,7 +246,7 @@ input, select, textarea { font-family: inherit; }
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255,255,255,0.05);
+  background: var(--sb-border);
 }
 
 .nav-item {
