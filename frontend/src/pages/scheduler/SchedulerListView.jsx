@@ -4,6 +4,7 @@ import { api } from '../../api/apiClient';
 import { fmt, statusBadge } from '../../utils/helpers';
 import { toast } from '../../components/common/ToastContainer';
 import { PageHeader, TableCard } from '../../components/common/PageComponents';
+import { Edit2, Trash2, Plus, Calendar } from 'lucide-react';
 
 const DAY_OPTIONS = [
   { key: 'MON', label: 'Mon' }, { key: 'TUE', label: 'Tue' }, { key: 'WED', label: 'Wed' },
@@ -56,13 +57,13 @@ export default function SchedulerListView() {
 
   return (
     <div className="page-view">
-      <PageHeader title="Schedulers" crumb="All Schedulers" actions={<Link to="/scheduler/create" className="btn btn-primary">➕ New Scheduler</Link>} />
+      <PageHeader title="Schedulers" crumb="All Schedulers" actions={<Link to="/scheduler/create" className="btn btn-primary" style={{display:'flex',alignItems:'center',gap:'6px'}}><Plus size={16}/> New Scheduler</Link>} />
       <TableCard title="Scheduled Test Runs" total={allSchedulers.length} entries={entries} onEntries={n => { setEntries(n); setPage(0); }} page={page} onPage={setPage}>
         <table className="data-table">
           <thead><tr><th>Suite Name</th><th>Type</th><th>Schedule</th><th>Browser</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody>
             {loading ? <tr className="row-loading"><td colSpan={7}><div className="spinner"/></td></tr>
-            : paged.length === 0 ? <tr className="row-empty"><td colSpan={7}><div className="empty-state"><div className="empty-state-icon">📅</div><h3>No schedulers yet</h3><p><Link to="/scheduler/create" style={{color:'var(--brand)'}}>Create your first scheduler</Link></p></div></td></tr>
+            : paged.length === 0 ? <tr className="row-empty"><td colSpan={7}><div className="empty-state"><div className="empty-state-icon"><Calendar size={32} style={{margin:'auto'}}/></div><h3>No schedulers yet</h3><p><Link to="/scheduler/create" style={{color:'var(--brand)'}}>Create your first scheduler</Link></p></div></td></tr>
             : paged.map(s => (
               <tr key={s.id}>
                 <td><span className="cell-bold">{s.testSuiteName}</span></td>
@@ -72,8 +73,8 @@ export default function SchedulerListView() {
                 <td><span className={`badge ${statusBadge(s.status)}`}>{s.status}</span></td>
                 <td><span className="text-muted text-sm">{fmt(s.createdAt)}</span></td>
                 <td><div className="action-row">
-                  <Link to={`/scheduler/edit/${s.id}`} className="act-btn view" title="Edit">✏️</Link>
-                  <button className="act-btn delete" title="Delete" onClick={() => remove(s.id)}>🗑️</button>
+                  <Link to={`/scheduler/edit/${s.id}`} className="act-btn view" title="Edit"><Edit2 size={16}/></Link>
+                  <button className="act-btn delete" title="Delete" onClick={() => remove(s.id)}><Trash2 size={16}/></button>
                 </div></td>
               </tr>
             ))}

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { toast } from '../../components/common/ToastContainer';
-import { Save, Plus, FileText, Settings, Search } from 'lucide-react';
+import { Save, Plus, FileText, Settings, Search, Compass, MousePointer2, Keyboard, CheckCircle, ArrowUpDown, Hourglass, Code } from 'lucide-react';
 import './TestStudio.css';
 
 // ─── All 300+ Actions ────────────────────────────────────────────────────────
@@ -11,20 +11,20 @@ const ALL_ACTIONS = ['AcceptCookies', 'AssertAttributeValue', 'AssertAudioComple
 const LOCATORS = ['id','name','xpath','css','linkText','partialLinkText','className','tagName','accessibilityId','iosClassChain','androidUIAutomator'];
 
 const ACTION_CATEGORIES = [
-  { label:'Navigation',  color:'icon-navigate', emoji:'🔗', tag:'NAV',  tagStyle:{background:'#dbeafe',color:'#1d4ed8'}, actions:['Navigate','GoBack','Refresh','GetCurrentURL','GetPageTitle','OpenNewTab','CloseTab','SwitchTab'] },
-  { label:'Interaction', color:'icon-click',    emoji:'🖱️', tag:'ACT',  tagStyle:{background:'#d1fae5',color:'#065f46'}, actions:['Click','DoubleClick','RightClick','ClickAndHold','Hover','DragAndDrop','DragAndDropByOffset','Release','ClickAlert','PinchToZoom','TouchSwipeLeft'] },
-  { label:'Input',       color:'icon-input',    emoji:'⌨️', tag:'INP',  tagStyle:{background:'#fef3c7',color:'#92400e'}, actions:['Set','SendKeys','ClearField','PasteText','CopyText','PressEnter','PressTab','KeyDown','KeyUp','SelectDropdown','SelectByIndex','SelectByValue','SetCheckBoxStatus','UploadFile'] },
-  { label:'Assertions',  color:'icon-assert',   emoji:'✅', tag:'CHK',  tagStyle:{background:'#fee2e2',color:'#991b1b'}, actions:['VerifyText','VerifyURL','VerifyElementExists','VerifyElementVisible','VerifyElementHidden','VerifyAttribute','VerifyTitle','AssertEquals','AssertContains','AssertVisible','AssertNotVisible','AssertEnabled','AssertDisabled','AssertSelected','AssertAttributeValue'] },
-  { label:'Scroll',      color:'icon-scroll',   emoji:'↕️', tag:'SCR',  tagStyle:{background:'#cffafe',color:'#155e75'}, actions:['ScrollDown','ScrollUp','ScrollTo','ScrollToCoordinates'] },
-  { label:'Wait',        color:'icon-wait',     emoji:'⏳', tag:'WAIT', tagStyle:{background:'#ede9fe',color:'#5b21b6'}, actions:['Wait','WaitUntill','WaitUntillWithtimer','WaitUntilElementIsClickable','WaitUntilInvisible','WaitUntilTextPresent','WaitForURL','WaitForTitle'] },
-  { label:'Data & Script',color:'icon-key',     emoji:'⚙️', tag:'ADV',  tagStyle:{background:'#fce7f3',color:'#9d174d'}, actions:['ExecuteScript','ExecuteSQLQuery','GetAttribute','GetText','GetCssValue','MockNetworkResponse','TakeFullPageScreenshot','SwitchFrame','SwitchDefaultContent','SetWindowSize','MaximizeWindow','MinimizeWindow','AcceptCookies'] },
+  { label:'Navigation', color:'icon-navigate', icon:<Compass size={16}/>, tag:'NAV', tagStyle:{background:'#dbeafe',color:'#1d4ed8'}, actions:['Navigate','GoBack','Refresh','GetCurrentURL','GetPageTitle','OpenNewTab','CloseTab','SwitchTab'] },
+  { label:'Interaction',color:'icon-click',    icon:<MousePointer2 size={16}/>, tag:'ACT', tagStyle:{background:'#d1fae5',color:'#065f46'}, actions:['Click','DoubleClick','RightClick','ClickAndHold','Hover','DragAndDrop','DragAndDropByOffset','Release','ClickAlert','PinchToZoom','TouchSwipeLeft'] },
+  { label:'Input',      color:'icon-input',    icon:<Keyboard size={16}/>, tag:'INP', tagStyle:{background:'#fef3c7',color:'#92400e'}, actions:['Set','SendKeys','ClearField','PasteText','CopyText','PressEnter','PressTab','KeyDown','KeyUp','SelectDropdown','SelectByIndex','SelectByValue','SetCheckBoxStatus','UploadFile'] },
+  { label:'Assertions', color:'icon-assert',   icon:<CheckCircle size={16}/>, tag:'CHK', tagStyle:{background:'#fee2e2',color:'#991b1b'}, actions:['VerifyText','VerifyURL','VerifyElementExists','VerifyElementVisible','VerifyElementHidden','VerifyAttribute','VerifyTitle','AssertEquals','AssertContains','AssertVisible','AssertNotVisible','AssertEnabled','AssertDisabled','AssertSelected','AssertAttributeValue'] },
+  { label:'Scroll',     color:'icon-scroll',   icon:<ArrowUpDown size={16}/>, tag:'SCR', tagStyle:{background:'#cffafe',color:'#155e75'}, actions:['ScrollDown','ScrollUp','ScrollTo','ScrollToCoordinates'] },
+  { label:'Wait',       color:'icon-wait',     icon:<Hourglass size={16}/>, tag:'WAIT', tagStyle:{background:'#ede9fe',color:'#5b21b6'}, actions:['Wait','WaitUntill','WaitUntillWithtimer','WaitUntilElementIsClickable','WaitUntilInvisible','WaitUntilTextPresent','WaitForURL','WaitForTitle'] },
+  { label:'Data & Script',color:'icon-key',    icon:<Code size={16}/>, tag:'ADV', tagStyle:{background:'#fce7f3',color:'#9d174d'}, actions:['ExecuteScript','ExecuteSQLQuery','GetAttribute','GetText','GetCssValue','MockNetworkResponse','TakeFullPageScreenshot','SwitchFrame','SwitchDefaultContent','SetWindowSize','MaximizeWindow','MinimizeWindow','AcceptCookies'] },
 ];
 
 function getActionMeta(actionName) {
   for (const cat of ACTION_CATEGORIES) {
     if (cat.actions.includes(actionName)) return cat;
   }
-  return { color:'icon-default', emoji:'⚡', tag:'', tagStyle:{} };
+  return { color:'icon-default', icon:<Settings size={16}/>, tag:'', tagStyle:{} };
 }
 
 function makeStep(actionName = '') {
@@ -37,7 +37,7 @@ function ActionSidebar({ onAdd }) {
 
   const groups = search.trim()
     ? [{ 
-        label: 'Search Results', color: 'icon-default', emoji: '🔍', tag: '', tagStyle: {}, 
+        label: 'Search Results', color: 'icon-default', icon: <Search size={16}/>, tag: '', tagStyle: {}, 
         actions: ALL_ACTIONS
           .filter(a => a.toLowerCase().includes(search.toLowerCase()))
           .sort((a, b) => {
@@ -102,7 +102,7 @@ function ActionBlock({ action, cat, onAdd }) {
       onClick={handleClick}
     >
       <span className="ts-action-grip" title="Drag to canvas">⠿</span>
-      <div className={`ts-action-icon ${cat.color}`}>{cat.emoji}</div>
+      <div className={`ts-action-icon ${cat.color}`}>{cat.icon}</div>
       <span className="ts-action-name">{action}</span>
       {cat.tag && <span className="ts-action-tag" style={cat.tagStyle}>{cat.tag}</span>}
     </div>
@@ -127,7 +127,7 @@ function StepCard({ step, index, selected, onSelect, onDelete, dragHandlers }) {
     >
       <span className="ts-step-grip">⠿</span>
       <div className="ts-step-num">{index + 1}</div>
-      <div className={`ts-step-icon ${meta.color}`}>{meta.emoji}</div>
+      <div className={`ts-step-icon ${meta.color}`}>{meta.icon}</div>
       <div className="ts-step-info">
         <div className="ts-step-action">
           {isVerify && <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#d1fae5', color: '#065f46', marginRight: 6 }}>VERIFY</span>}
@@ -152,7 +152,7 @@ function Configurator({ step, onChange }) {
   if (!step) return (
     <div className="ts-config">
       <div className="ts-config-header">
-        <div className="ts-config-label">Step Configurator</div>
+        <div className="ts-config-label" style={{display:'flex',alignItems:'center',gap:'6px'}}><Settings size={14}/> Step Configurator</div>
         <div className="ts-config-title" style={{color:'#9ca3af'}}>No step selected</div>
       </div>
       <div className="ts-config-empty">
@@ -168,8 +168,11 @@ function Configurator({ step, onChange }) {
   return (
     <div className="ts-config">
       <div className="ts-config-header">
-        <div className="ts-config-label">⚙️ Step Configurator</div>
-        <div className="ts-config-title">{meta.emoji} {step.actionName || 'New Step'}</div>
+        <div className="ts-config-label" style={{display:'flex',alignItems:'center',gap:'6px'}}><Settings size={14}/> Step Configurator</div>
+        <div className="ts-config-title" style={{display:'flex',alignItems:'center',gap:'8px'}}>
+          <div className={`ts-action-icon ${meta.color}`} style={{width: 20, height: 20}}>{meta.icon}</div>
+          {step.actionName || 'New Step'}
+        </div>
       </div>
       <div className="ts-config-body">
 
@@ -183,7 +186,7 @@ function Configurator({ step, onChange }) {
                   background: step.stepType === t ? (t === 'VERIFY' ? '#d1fae5' : 'var(--brand)') : 'transparent',
                   color: step.stepType === t ? (t === 'VERIFY' ? '#065f46' : '#fff') : 'var(--txt-muted)',
                   borderColor: step.stepType === t ? (t === 'VERIFY' ? '#10b981' : 'var(--brand)') : 'var(--border)' }}>
-                {t === 'ACTION' ? '⚡ ACTION' : '✅ VERIFY'}
+                {t === 'ACTION' ? <><Settings size={14}/> ACTION</> : <><CheckCircle size={14}/> VERIFY</>}
               </button>
             ))}
           </div>

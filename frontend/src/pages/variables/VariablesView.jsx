@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { toast } from '../../components/common/ToastContainer';
+import { Edit2, Trash2, Plus, Settings, Lock, Save } from 'lucide-react';
 
 const SCOPES = ['GLOBAL', 'SUITE', 'ENVIRONMENT'];
 
@@ -48,30 +49,30 @@ export default function VariablesView() {
           <div className="breadcrumbs"><Link to="/dashboard">Home</Link><span className="sep">›</span><span>Variables</span></div>
         </div>
         <div className="page-header-actions">
-          <button className="btn btn-primary" onClick={openCreate}>＋ New Variable</button>
+          <button className="btn btn-primary" onClick={openCreate} style={{display:'flex',alignItems:'center',gap:'6px'}}><Plus size={16}/> New Variable</button>
         </div>
       </div>
 
       <div className="card">
         <div className="card-header">
-          <div><h2>🔧 Variable Registry</h2><p>Use <code>$&#123;variable_name&#125;</code> in test data to inject values at runtime.</p></div>
+          <div style={{display:'flex',alignItems:'center',gap:'8px'}}><h2 style={{display:'flex',alignItems:'center',gap:'6px'}}><Settings size={20}/> Variable Registry</h2><p>Use <code>$&#123;variable_name&#125;</code> in test data to inject values at runtime.</p></div>
         </div>
         <div className="table-responsive">
           <table className="data-table">
             <thead><tr><th>Name</th><th>Value</th><th>Scope</th><th>Secret</th><th>Actions</th></tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={5}><div className="spinner" /></td></tr>
-              : variables.length === 0 ? <tr><td colSpan={5}><div className="empty-state"><div className="empty-state-icon">🔧</div><h3>No variables yet</h3><p>Create your first variable to start injecting dynamic values into test steps.</p></div></td></tr>
+              : variables.length === 0 ? <tr><td colSpan={5}><div className="empty-state"><div className="empty-state-icon"><Settings size={32} style={{margin:'auto'}}/></div><h3>No variables yet</h3><p>Create your first variable to start injecting dynamic values into test steps.</p></div></td></tr>
               : variables.map(v => (
                 <tr key={v.id}>
                   <td><code style={{ color: 'var(--brand)', fontWeight: 700 }}>${'{'}{ v.keyName }{'}'}</code></td>
                   <td><span style={{ fontFamily: 'monospace', color: v.isSecret ? '#9ca3af' : 'var(--txt)' }}>{v.value}</span></td>
                   <td><span className="badge" style={{ background: scopeColor(v.scope) + '22', color: scopeColor(v.scope), border: `1px solid ${scopeColor(v.scope)}55` }}>{v.scope}</span></td>
-                  <td>{v.isSecret ? '🔒 Yes' : '—'}</td>
+                  <td>{v.isSecret ? <div style={{display:'flex',alignItems:'center',gap:'4px'}}><Lock size={14}/> Yes</div> : '—'}</td>
                   <td>
                     <div className="action-row">
-                      <button className="act-btn view" onClick={() => openEdit(v)} title="Edit">✏️</button>
-                      <button className="act-btn kill" style={{ color: '#dc2626' }} onClick={() => del(v.id, v.keyName)} title="Delete">🗑️</button>
+                      <button className="act-btn view" onClick={() => openEdit(v)} title="Edit"><Edit2 size={16}/></button>
+                      <button className="act-btn kill" style={{ color: '#dc2626' }} onClick={() => del(v.id, v.keyName)} title="Delete"><Trash2 size={16}/></button>
                     </div>
                   </td>
                 </tr>
@@ -85,7 +86,7 @@ export default function VariablesView() {
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-header">
-              <h2>{editing ? '✏️ Edit Variable' : '＋ New Variable'}</h2>
+              <h2 style={{display:'flex',alignItems:'center',gap:'6px'}}>{editing ? <><Edit2 size={18}/> Edit Variable</> : <><Plus size={18}/> New Variable</>}</h2>
               <button className="modal-close" onClick={() => setShowForm(false)}>✕</button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -106,12 +107,12 @@ export default function VariablesView() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input type="checkbox" id="isSecret" checked={form.isSecret} onChange={e => setForm(f => ({ ...f, isSecret: e.target.checked }))} />
-                <label htmlFor="isSecret" style={{ fontSize: '0.85rem', color: 'var(--txt)' }}>🔒 Secret (value will be masked in UI)</label>
+                <label htmlFor="isSecret" style={{ fontSize: '0.85rem', color: 'var(--txt)', display:'flex', alignItems:'center', gap:'4px' }}><Lock size={14}/> Secret (value will be masked in UI)</label>
               </div>
             </div>
             <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={save}>💾 Save Variable</button>
+              <button className="btn btn-primary" onClick={save} style={{display:'flex',alignItems:'center',gap:'6px'}}><Save size={16}/> Save</button>
             </div>
           </div>
         </div>
