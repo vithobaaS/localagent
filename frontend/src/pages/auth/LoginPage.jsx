@@ -19,7 +19,7 @@ const LogoSVG = () => (
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { setUser, setShowSplash } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,10 +52,9 @@ export default function LoginPage() {
       if (!res.ok) { setError(data.error || 'Login failed'); setLoading(false); return; }
       localStorage.setItem('ap_token', data.token);
       localStorage.setItem('ap_user', JSON.stringify(data));
-      sessionStorage.setItem('ap_show_splash', '1');
       setUser(data);
+      if (setShowSplash) setShowSplash(true);
       navigate('/dashboard', { replace: true });
-      setTimeout(() => window.location.reload(), 50);
     } catch { setError('Network error. Please try again.'); setLoading(false); }
   };
 

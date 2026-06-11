@@ -16,20 +16,20 @@
   --brand-subtle:   rgba(124,58,237,0.08);
 
   --sb-w:           260px;
-  --sb-bg:          #0c0c18;
-  --sb-border:      rgba(255,255,255,0.06);
+  --sb-bg:          #1A1A1A;
+  --sb-border:      rgba(255,255,255,0.08);
   --sb-txt:         #a1a1b5;
-  --sb-hover-bg:    rgba(255,255,255,0.06);
+  --sb-hover-bg:    rgba(255,255,255,0.08);
   --sb-hover-txt:   #f3f4f6;
-  --sb-active-bg:   rgba(124,58,237,0.18);
+  --sb-active-bg:   rgba(124,58,237,0.15);
   --sb-active-txt:  #ddd6fe;
   --sb-active-bar:  #7c3aed;
 
-  --bg:             #0f0e1a;
-  --surface:        #1a1928;
-  --surface-2:      #16152a;
-  --border:         rgba(255,255,255,0.08);
-  --border-hover:   rgba(255,255,255,0.15);
+  --bg:             #121212;
+  --surface:        #1E1E1E;
+  --surface-2:      #272727;
+  --border:         rgba(255,255,255,0.12);
+  --border-hover:   rgba(255,255,255,0.20);
 
   --txt-h:          #f3f4f6;
   --txt:            #c4c4d4;
@@ -64,12 +64,12 @@
   --t-spring: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
 
   /* Auth page dark */
-  --auth-bg:      linear-gradient(135deg, #0d0c1e 0%, #1a1240 50%, #0d0c1e 100%);
-  --auth-card-bg: rgba(26,25,40,0.95);
-  --auth-border:  rgba(124,58,237,0.2);
+  --auth-bg:      #121212;
+  --auth-card-bg: #1E1E1E;
+  --auth-border:  rgba(255,255,255,0.12);
 
   /* Header dark */
-  --header-bg:    rgba(15,14,26,0.90);
+  --header-bg:    rgba(18,18,18,0.95);
 
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;

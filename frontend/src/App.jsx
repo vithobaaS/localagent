@@ -74,7 +74,7 @@ export default function App() {
   if (path === '/login' || path === '/register' || path === '/change-password' || path === '/') {
     return (
       <ThemeProvider>
-      <AuthContext.Provider value={{ user, setUser }}>
+      <AuthContext.Provider value={{ user, setUser, setShowSplash }}>
         <Routes>
           <Route path="/"         element={<LandingPage />} />
           <Route path="/login"    element={<LoginPage />} />
@@ -90,7 +90,7 @@ export default function App() {
   if (path.startsWith('/test-cases/studio')) {
     return (
       <ThemeProvider>
-      <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding }}>
+      <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding, setShowSplash }}>
         {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
         <Routes>
           <Route path="/test-cases/studio/create"   element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
@@ -104,7 +104,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-    <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding }}>
+    <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding, setShowSplash }}>
       {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
       <div className="app-layout">
       <Sidebar user={user} sidebarOpen={sidebarOpen} path={path} />
