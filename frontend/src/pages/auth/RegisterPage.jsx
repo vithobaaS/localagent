@@ -35,7 +35,7 @@ export default function RegisterPage() {
       <div className="auth-card">
         <div className="auth-logo">
           <div className="logo-icon">⚡</div>
-          <div className="auth-brand">Auto<span>Propel</span></div>
+          <div className="auth-brand">Auto<span>Pilot</span></div>
         </div>
         <h1 className="auth-title">Start your free trial</h1>
         <p className="auth-sub">No credit card required • Cancel anytime</p>

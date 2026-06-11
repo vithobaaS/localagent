@@ -42,6 +42,8 @@ export default function SettingsView() {
     try {
       const res = await api('/api/auth/users/invite', { method: 'POST', body: JSON.stringify({ email: inviteEmail, fullName: inviteName }) });
       if (res.ok) {
+        const data = await res.json();
+        window.prompt(`User invited!\n\nPlease copy this temporary password and send it securely to ${inviteEmail}. They will be required to change it on their first login:`, data.temporaryPassword);
         toast('success', 'User invited successfully');
         setInviteEmail(''); setInviteName('');
         fetchUsers();

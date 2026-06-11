@@ -13,6 +13,7 @@ public class AppUser {
     @Column(name = "full_name") private String fullName;
     @Column(nullable = false) private String role = "admin";
     @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
+    @Column(name = "requires_password_change") private boolean requiresPasswordChange = false;
     @PrePersist protected void onCreate() { this.createdAt = LocalDateTime.now(); }
     public Long getId() { return id; } public void setId(Long id) { this.id = id; }
     public Long getOrgId() { return orgId; } public void setOrgId(Long orgId) { this.orgId = orgId; }
@@ -21,4 +22,5 @@ public class AppUser {
     public String getFullName() { return fullName; } public void setFullName(String fullName) { this.fullName = fullName; }
     public String getRole() { return role; } public void setRole(String role) { this.role = role; }
     public LocalDateTime getCreatedAt() { return createdAt; } public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public boolean isRequiresPasswordChange() { return requiresPasswordChange; } public void setRequiresPasswordChange(boolean requiresPasswordChange) { this.requiresPasswordChange = requiresPasswordChange; }
 }

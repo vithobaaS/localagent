@@ -122,7 +122,8 @@ public class AuthController {
                 "orgName", org.getName(),
                 "subdomain", org.getSubdomain(),
                 "plan", org.getPlan(),
-                "agentToken", agentToken
+                "agentToken", agentToken,
+                "requiresPasswordChange", user.isRequiresPasswordChange()
         ));
     }
 
@@ -140,7 +141,8 @@ public class AuthController {
                 "orgName", org.getName(),
                 "subdomain", org.getSubdomain(),
                 "plan", org.getPlan(),
-                "agentToken", agentToken
+                "agentToken", agentToken,
+                "requiresPasswordChange", userRepository.findByEmail((String) req.getAttribute("email")).map(AppUser::isRequiresPasswordChange).orElse(false)
         ));
     }
 
@@ -196,14 +198,17 @@ public class AuthController {
         user.setRole(role);
         
         // Random password for invited users, they can reset it later
-        user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        String randomPassword = UUID.randomUUID().toString().substring(0, 8);
+        user.setPasswordHash(passwordEncoder.encode(randomPassword));
+        user.setRequiresPasswordChange(true);
         user = userRepository.save(user);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
             "id", user.getId(),
             "email", user.getEmail(),
             "role", user.getRole(),
-            "fullName", user.getFullName() != null ? user.getFullName() : ""
+            "fullName", user.getFullName() != null ? user.getFullName() : "",
+            "temporaryPassword", randomPassword
         ));
     }
 
@@ -230,5 +235,27 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).<Void>build();
             }
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(
+            @RequestBody Map<String, String> body,
+            jakarta.servlet.http.HttpServletRequest req) {
+        String email = (String) req.getAttribute("email");
+        if (email == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        String newPassword = body.get("newPassword");
+        if (newPassword == null || newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 8 characters"));
+        }
+        
+        AppUser user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setRequiresPasswordChange(false);
+        userRepository.save(user);
+        
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
     }
 }

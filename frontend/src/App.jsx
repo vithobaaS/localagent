@@ -8,12 +8,13 @@ import { ToastContainer } from './components/common/ToastContainer';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
-import { InstallAgentModal } from './components/modals/InstallAgentModal';
+import { OnboardingWizard } from './components/modals/OnboardingWizard';
 import { PairAgentModal } from './components/modals/PairAgentModal';
 
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 import DashboardView from './pages/dashboard/DashboardView';
 import TestCaseListView from './pages/testcase/TestCaseListView';
 import TestCaseFormView from './pages/testcase/TestCaseFormView';
@@ -63,13 +64,14 @@ export default function App() {
   };
 
   // Public routes — don't show the shell
-  if (path === '/login' || path === '/register' || path === '/') {
+  if (path === '/login' || path === '/register' || path === '/change-password' || path === '/') {
     return (
       <AuthContext.Provider value={{ user, setUser }}>
         <Routes>
           <Route path="/"         element={<LandingPage />} />
           <Route path="/login"    element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/change-password" element={<ChangePasswordPage />} />
         </Routes>
         <ToastContainer />
       </AuthContext.Provider>
@@ -139,7 +141,7 @@ export default function App() {
         </div>
       </main>
 
-      {showOnboarding && <InstallAgentModal onClose={closeOnboarding} />}
+      {showOnboarding && <OnboardingWizard onClose={closeOnboarding} />}
       {showPairing && <PairAgentModal onClose={() => setShowPairing(false)} />}
 
       {lightbox && (
