@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 @RestController
@@ -63,6 +64,15 @@ public class AuthController {
             counter++;
         }
         org.setSubdomain(slug);
+        
+        // Generate unique public ID like VIT-49281
+        String namePrefix = orgName.replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
+        namePrefix = namePrefix.length() >= 3 ? namePrefix.substring(0, 3) : namePrefix;
+        String publicId;
+        do {
+            publicId = namePrefix + "-" + String.format("%05d", (int)(Math.random() * 99999));
+        } while (orgRepository.findByPublicId(publicId) != null);
+        org.setPublicId(publicId);
         org = orgRepository.save(org);
 
         // Create user
@@ -82,16 +92,19 @@ public class AuthController {
         agentTokenRepository.save(token);
 
         String jwt = jwtUtil.generateToken(user.getEmail(), org.getId(), user.getRole());
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "token", jwt,
-                "email", user.getEmail(),
-                "fullName", user.getFullName() != null ? user.getFullName() : "",
-                "orgId", org.getId(),
-                "orgName", org.getName(),
-                "subdomain", org.getSubdomain(),
-                "plan", org.getPlan(),
-                "agentToken", token.getToken()
-        ));
+        Map<String, Object> registerResp = new HashMap<>();
+        registerResp.put("token", jwt);
+        registerResp.put("email", user.getEmail());
+        registerResp.put("fullName", user.getFullName() != null ? user.getFullName() : "");
+        registerResp.put("orgId", org.getId());
+        registerResp.put("orgPublicId", org.getPublicId() != null ? org.getPublicId() : "");
+        registerResp.put("orgName", org.getName());
+        registerResp.put("subdomain", org.getSubdomain());
+        registerResp.put("plan", org.getPlan());
+        registerResp.put("role", user.getRole());
+        registerResp.put("agentToken", token.getToken());
+        registerResp.put("requiresPasswordChange", user.isRequiresPasswordChange());
+        return ResponseEntity.status(HttpStatus.CREATED).body(registerResp);
     }
 
     /** POST /api/auth/login â€” verify credentials, return JWT */
@@ -114,17 +127,19 @@ public class AuthController {
                 .stream().findFirst().map(AgentToken::getToken).orElse("");
 
         String jwt = jwtUtil.generateToken(user.getEmail(), org.getId(), user.getRole());
-        return ResponseEntity.ok(Map.of(
-                "token", jwt,
-                "email", user.getEmail(),
-                "fullName", user.getFullName() != null ? user.getFullName() : "",
-                "orgId", org.getId(),
-                "orgName", org.getName(),
-                "subdomain", org.getSubdomain(),
-                "plan", org.getPlan(),
-                "agentToken", agentToken,
-                "requiresPasswordChange", user.isRequiresPasswordChange()
-        ));
+        Map<String, Object> loginResp = new HashMap<>();
+        loginResp.put("token", jwt);
+        loginResp.put("email", user.getEmail());
+        loginResp.put("fullName", user.getFullName() != null ? user.getFullName() : "");
+        loginResp.put("orgId", org.getId());
+        loginResp.put("orgPublicId", org.getPublicId() != null ? org.getPublicId() : "");
+        loginResp.put("orgName", org.getName());
+        loginResp.put("subdomain", org.getSubdomain());
+        loginResp.put("plan", org.getPlan());
+        loginResp.put("role", user.getRole());
+        loginResp.put("agentToken", agentToken);
+        loginResp.put("requiresPasswordChange", user.isRequiresPasswordChange());
+        return ResponseEntity.ok(loginResp);
     }
 
     /** GET /api/auth/me â€” get current user info from JWT */
@@ -136,13 +151,16 @@ public class AuthController {
         if (org == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         String agentToken = agentTokenRepository.findByOrgId(orgId)
                 .stream().findFirst().map(AgentToken::getToken).orElse("");
+        AppUser currentUser = userRepository.findByEmail((String) req.getAttribute("email")).orElse(null);
         return ResponseEntity.ok(Map.of(
                 "orgId", orgId,
+                "orgPublicId", org.getPublicId() != null ? org.getPublicId() : "",
                 "orgName", org.getName(),
                 "subdomain", org.getSubdomain(),
                 "plan", org.getPlan(),
+                "role", currentUser != null ? currentUser.getRole() : "user",
                 "agentToken", agentToken,
-                "requiresPasswordChange", userRepository.findByEmail((String) req.getAttribute("email")).map(AppUser::isRequiresPasswordChange).orElse(false)
+                "requiresPasswordChange", currentUser != null && currentUser.isRequiresPasswordChange()
         ));
     }
 
@@ -179,6 +197,13 @@ public class AuthController {
             jakarta.servlet.http.HttpServletRequest req) {
         Long orgId = (Long) req.getAttribute("orgId");
         if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        
+        // Only admins can invite users
+        String callerEmail = (String) req.getAttribute("email");
+        AppUser caller = callerEmail != null ? userRepository.findByEmail(callerEmail).orElse(null) : null;
+        if (caller == null || !"admin".equals(caller.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Only administrators can invite users"));
+        }
         
         String email = body.get("email");
         String role = body.getOrDefault("role", "user");

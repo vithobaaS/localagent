@@ -3,8 +3,10 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import './App.css';
 
 import { AuthContext } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { getUser } from './api/apiClient';
 import { ToastContainer } from './components/common/ToastContainer';
+import { SplashScreen } from './components/common/SplashScreen';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
@@ -42,6 +44,11 @@ export default function App() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showPairing, setShowPairing] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => {
+    const should = sessionStorage.getItem('ap_show_splash') === '1';
+    if (should) sessionStorage.removeItem('ap_show_splash');
+    return should;
+  });
 
   const location = useLocation();
   const path = location.pathname;
@@ -66,6 +73,7 @@ export default function App() {
   // Public routes — don't show the shell
   if (path === '/login' || path === '/register' || path === '/change-password' || path === '/') {
     return (
+      <ThemeProvider>
       <AuthContext.Provider value={{ user, setUser }}>
         <Routes>
           <Route path="/"         element={<LandingPage />} />
@@ -75,25 +83,30 @@ export default function App() {
         </Routes>
         <ToastContainer />
       </AuthContext.Provider>
+      </ThemeProvider>
     );
   }
 
-  // Studio routes — fullscreen, no sidebar/header shell
   if (path.startsWith('/test-cases/studio')) {
     return (
+      <ThemeProvider>
       <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding }}>
+        {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
         <Routes>
           <Route path="/test-cases/studio/create"   element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
           <Route path="/test-cases/studio/edit/:id" element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
         </Routes>
         <ToastContainer />
       </AuthContext.Provider>
+      </ThemeProvider>
     );
   }
 
   return (
+    <ThemeProvider>
     <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding }}>
-    <div className="app-layout">
+      {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
+      <div className="app-layout">
       <Sidebar user={user} sidebarOpen={sidebarOpen} path={path} />
 
       <main className="main-content">
@@ -153,5 +166,6 @@ export default function App() {
       <ToastContainer />
     </div>
     </AuthContext.Provider>
+    </ThemeProvider>
   );
 }
