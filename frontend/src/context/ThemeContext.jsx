@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-const ThemeContext = createContext({ theme: 'system', toggleTheme: () => {} });
+const ThemeContext = createContext({ theme: 'system', resolvedTheme: 'dark', setTheme: () => {}, toggleTheme: () => {} });
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('ap_theme') || 'system';
   });
+  
+  const [resolvedTheme, setResolvedTheme] = useState('dark');
 
   useEffect(() => {
     const applyTheme = (t) => {
@@ -14,6 +16,7 @@ export function ThemeProvider({ children }) {
         resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       document.documentElement.setAttribute('data-theme', resolved);
+      setResolvedTheme(resolved);
     };
 
     applyTheme(theme);
@@ -39,7 +42,7 @@ export function ThemeProvider({ children }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

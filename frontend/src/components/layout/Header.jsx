@@ -4,7 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 export default function Header({ user, profileOpen, setProfileOpen, setSidebarOpen, setShowOnboarding, setShowPairing, logout }) {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   return (
     <header className="top-header">
@@ -13,8 +13,8 @@ export default function Header({ user, profileOpen, setProfileOpen, setSidebarOp
       </button>
       <div className="header-right">
         {/* Theme Toggle */}
-        <button className="theme-toggle-btn" onClick={toggleTheme} title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
-          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+        <button className="theme-toggle-btn" onClick={toggleTheme} title={resolvedTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          {resolvedTheme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
         </button>
 
       </div>
