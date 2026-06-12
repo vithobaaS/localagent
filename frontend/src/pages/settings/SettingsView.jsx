@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { PageHeader, Card } from '../../components/common/PageComponents';
 import { toast } from '../../components/common/ToastContainer';
 import { fmt } from '../../utils/helpers';
-import { Trash2, Copy, CheckCircle, Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon, Monitor, Eye, EyeOff, Save, Key, RefreshCw, Plus, Trash2, Mail, Shield, Building2 } from 'lucide-react';
 
 export default function SettingsView() {
   const { user } = useAuth();
@@ -118,6 +118,10 @@ export default function SettingsView() {
             <button onClick={() => setTheme('dark')} style={{ background: 'var(--surface)', border: `2px solid ${theme === 'dark' ? 'var(--brand)' : 'var(--border)'}`, padding: '24px', borderRadius: 'var(--r-lg)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', transition: 'var(--t)' }}>
               <Moon size={28} color={theme === 'dark' ? 'var(--brand)' : 'var(--txt-muted)'} />
               <span style={{ fontWeight: 600, color: theme === 'dark' ? 'var(--txt-h)' : 'var(--txt-muted)' }}>Dark Theme</span>
+            </button>
+            <button onClick={() => setTheme('system')} style={{ background: 'var(--surface)', border: `2px solid ${theme === 'system' ? 'var(--brand)' : 'var(--border)'}`, padding: '24px', borderRadius: 'var(--r-lg)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', transition: 'var(--t)' }}>
+              <Monitor size={28} color={theme === 'system' ? 'var(--brand)' : 'var(--txt-muted)'} />
+              <span style={{ fontWeight: 600, color: theme === 'system' ? 'var(--txt-h)' : 'var(--txt-muted)' }}>System Default</span>
             </button>
           </div>
         </Card>
