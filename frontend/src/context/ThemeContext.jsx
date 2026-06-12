@@ -7,7 +7,11 @@ export function ThemeProvider({ children }) {
     return localStorage.getItem('ap_theme') || 'system';
   });
   
-  const [resolvedTheme, setResolvedTheme] = useState('dark');
+  const [resolvedTheme, setResolvedTheme] = useState(() => {
+    const t = localStorage.getItem('ap_theme') || 'system';
+    if (t === 'system') return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return t;
+  });
 
   useEffect(() => {
     const applyTheme = (t) => {
