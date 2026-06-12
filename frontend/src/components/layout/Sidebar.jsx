@@ -37,9 +37,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <Link to="/" className="logo" style={{ textDecoration: 'none' }}>
-          <div className="logo-text">Auto<span>Pilot</span></div>
-        </Link>
+          <div className="logo-text">Auto<span>Pilot</span></div>   
       </div>
 
       <nav className="sidebar-nav">
