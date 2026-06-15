@@ -130,15 +130,24 @@ export default function DashboardView() {
       api('/api/executions').then(r => r.json()),
       api('/api/agents').then(r => r.json())
     ]).then(([dExecs, dAgents]) => {
-      setExecs(dExecs || []);
+      const execsList = dExecs || [];
+      const agentsList = dAgents || [];
+      setExecs(execsList);
       setLoading(false);
+      
+      const isFirstTimer = execsList.length === 0 && agentsList.length === 0;
+      const hasDismissed = localStorage.getItem(`onboarding_dismissed_${user?.email}`) === 'true';
+      
+      if (isFirstTimer && !hasDismissed) {
+        setShowOnboarding(true);
+      }
+      
       if (localStorage.getItem('ap_new_registration') === 'true') {
         localStorage.removeItem('ap_new_registration');
-        setShowOnboarding(true);
       }
     }).catch(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.orgExecutionId || e.id}`; } catch { return `Run #${e.orgExecutionId || e.id}`; } };
   const getBrowser = (e) => { try { return (JSON.parse(e.environmentJson || '{}').browserTypeName || 'chrome').toLowerCase(); } catch { return 'chrome'; } };

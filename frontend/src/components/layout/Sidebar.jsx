@@ -27,7 +27,7 @@ function NavItem({ to, icon: Icon, label, active, onClick }) {
 }
 
 export default function Sidebar({ user, sidebarOpen, path }) {
-  const { setShowOnboarding, logout } = useContext(AuthContext);
+  const { setShowInstall, logout } = useContext(AuthContext);
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const is = (p) => path === p;
@@ -61,7 +61,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <div className="nav-section">Agents</div>
         <NavItem to="/agents"              icon={MonitorDot}      label="Agent Directory"  active={is('/agents')} />
         <NavItem to="/groups"              icon={Users2}          label="Agent Pools"      active={path.startsWith('/groups')} />
-        <NavItem                           icon={Download}        label="Install Agent"    onClick={() => setShowOnboarding(true)} />
+        <NavItem                           icon={Download}        label="Install Agent"    onClick={() => setShowInstall(true)} />
 
         <div className="nav-section">Reports</div>
         <NavItem to="/reports/executions"  icon={BarChart2}       label="Executions"       active={is('/reports/executions')} />
@@ -83,7 +83,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
           {profileOpen && (
             <div style={{ position: 'absolute', bottom: 'calc(100% + 12px)', top: 'auto', left: 0, right: 0, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '6px', zIndex: 9999, boxShadow: 'var(--shadow-lg)' }}>
                <button onClick={() => { setProfileOpen(false); navigate('/settings'); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Settings size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Settings</button>
-               <button onClick={() => { setProfileOpen(false); setShowOnboarding(true); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Download size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Install Agent</button>
+               <button onClick={() => { setProfileOpen(false); setShowInstall(true); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Download size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Install Agent</button>
                <div style={{ height: '1px', background: 'var(--border)', margin: '4px 0' }} />
                <button onClick={logout} className="profile-dropdown-item text-danger" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><LogOut size={14} style={{ marginRight: 8 }}/> Sign Out</button>
             </div>

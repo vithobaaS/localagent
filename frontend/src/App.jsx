@@ -42,6 +42,7 @@ export default function App() {
   const [user, setUser] = useState(getUser);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showInstall, setShowInstall] = useState(false);
   const [showPairing, setShowPairing] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
     const should = sessionStorage.getItem('ap_show_splash') === '1';
@@ -103,7 +104,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-    <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding, setShowSplash }}>
+    <AuthContext.Provider value={{ user, setUser, logout, setShowOnboarding, setShowInstall, setShowSplash }}>
       {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
       <div className="app-layout">
       <Sidebar user={user} sidebarOpen={sidebarOpen} path={path} />
@@ -115,6 +116,7 @@ export default function App() {
           setProfileOpen={setProfileOpen}
           setSidebarOpen={setSidebarOpen}
           setShowOnboarding={setShowOnboarding}
+          setShowInstall={setShowInstall}
           setShowPairing={setShowPairing}
           logout={logout}
         />
@@ -154,6 +156,7 @@ export default function App() {
       </main>
 
       {showOnboarding && <OnboardingWizard onClose={closeOnboarding} />}
+      {showInstall && <InstallAgentModal onClose={() => setShowInstall(false)} />}
       {showPairing && <PairAgentModal onClose={() => setShowPairing(false)} />}
 
       {lightbox && (
