@@ -36,9 +36,11 @@ export default function Sidebar({ user, sidebarOpen, path }) {
 
   return (
     <aside className="sidebar">
+      <Link to="/dashboard" className="logo-link">
       <div className="sidebar-header">
           <div className="logo-text">Auto<span>Pilot</span></div>   
-      </div>
+        </div>
+      </Link>
 
       <nav className="sidebar-nav">
         <div className="nav-section">Dashboard</div>
