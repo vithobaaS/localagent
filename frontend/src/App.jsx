@@ -12,6 +12,7 @@ import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import { OnboardingWizard } from './components/modals/OnboardingWizard';
 import { PairAgentModal } from './components/modals/PairAgentModal';
+import { InstallAgentModal } from './components/modals/InstallAgentModal';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
