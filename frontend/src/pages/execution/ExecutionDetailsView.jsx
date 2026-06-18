@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import { api } from '../../api/apiClient';
 import { fmt, statusBadge } from '../../utils/helpers';
 import { diagnose } from '../../utils/errorDiagnostics';
@@ -69,13 +70,64 @@ export default function ExecutionDetailsView() {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState(null);
+  const timelineEndRef = useRef(null);
 
-  useEffect(() => {
+  const fetchExecution = () => {
     api(`/api/executions/${id}`)
       .then(r => r.json())
       .then(d => { setDetail(d); setLoading(false); })
       .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchExecution();
+    const interval = setInterval(() => {
+      setDetail(prev => {
+        if (prev && prev.execution) {
+          const status = prev.execution.status?.toLowerCase();
+          if (status === 'running' || status === 'queued' || status === 'assigned') {
+            fetchExecution();
+          }
+        }
+        return prev;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
   }, [id]);
+
+  useEffect(() => {
+    if (timelineEndRef.current && detail?.execution?.status?.toLowerCase() === 'running') {
+      timelineEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [detail]);
+
+  const handleExportCSV = () => {
+    if (!detail) return;
+    const { execution, steps } = detail;
+    const rows = [
+      ['Step', 'Action', 'Locator', 'Data', 'Status', 'Error']
+    ];
+    steps.forEach((s, i) => {
+      const stepIndex = s.stepIndex || i + 1;
+      const status = s.resultStatus === 2 ? 'Failed' : s.resultStatus === 1 ? 'Passed' : 'Skipped';
+      rows.push([
+        stepIndex, 
+        s.actionName || '', 
+        s.locatorName ? `${s.locatorName}: ${s.objectDetail}` : '', 
+        s.testData || '', 
+        status, 
+        s.errorJson ? 'Error occurred' : ''
+      ]);
+    });
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `execution_${execution.id}_report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getName = (e) => {
     try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.orgExecutionId || e.id}`; }
@@ -132,7 +184,25 @@ export default function ExecutionDetailsView() {
       <PageHeader
         title={`Execution #${execution.orgExecutionId || execution.id}`}
         crumb={getName(execution)}
+        actions={
+          <button className="btn btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Download size={16} /> Export Report
+          </button>
+        }
       />
+
+      {/* Progress Bar for Live Tracking */}
+      {isRunning && (
+        <div style={{ marginBottom: '20px', background: 'var(--surface)', padding: '16px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', fontWeight: 500, color: 'var(--txt-h)' }}>
+            <span>Execution Progress</span>
+            <span>{passedCount + failedCount} / {steps.length} Steps</span>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${Math.min(100, ((passedCount + failedCount) / (steps.length || 1)) * 100)}%`, height: '100%', background: 'var(--brand)', transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
+      )}
 
       {/* Meta Bar */}
       <div className="exec-meta-bar">
@@ -237,6 +307,7 @@ export default function ExecutionDetailsView() {
                 </div>
               );
             })}
+            <div ref={timelineEndRef} />
           </div>
         )}
       </div>

@@ -36,6 +36,7 @@ import SettingsView from './pages/settings/SettingsView';
 import ApiKeysView from './pages/admin/ApiKeysView';
 import VariablesView from './pages/variables/VariablesView';
 import EnvironmentsView from './pages/environments/EnvironmentsView';
+import AnalyticsView from './pages/analytics/AnalyticsView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -128,6 +129,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
             <Route path="/dashboard"               element={<PrivateRoute><DashboardView /></PrivateRoute>} />
+            <Route path="/analytics"               element={<PrivateRoute><AnalyticsView /></PrivateRoute>} />
             <Route path="/scheduler"               element={<PrivateRoute><SchedulerListView /></PrivateRoute>} />
             <Route path="/scheduler/create"        element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
             <Route path="/scheduler/edit/:id"      element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />

@@ -64,7 +64,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <NavItem                           icon={Download}        label="Install Agent"    onClick={() => setShowInstall(true)} />
 
         <div className="nav-section">Reports</div>
-        <NavItem to="/reports/executions"  icon={BarChart2}       label="Executions"       active={is('/reports/executions')} />
+        <NavItem to="/analytics"           icon={BarChart2}       label="Analytics"        active={is('/analytics')} />
         <NavItem to="/reports/visual"      icon={Eye}             label="Visual Regression" active={is('/reports/visual')} />
         <NavItem to="/reports/shared"      icon={Share2}          label="Shared Reports"   active={is('/reports/shared')} />
 
