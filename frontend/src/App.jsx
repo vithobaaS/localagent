@@ -37,6 +37,7 @@ import ApiKeysView from './pages/admin/ApiKeysView';
 import VariablesView from './pages/variables/VariablesView';
 import EnvironmentsView from './pages/environments/EnvironmentsView';
 import AnalyticsView from './pages/analytics/AnalyticsView';
+import ExecutionListView from './pages/execution/ExecutionListView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -133,6 +134,8 @@ export default function App() {
             <Route path="/scheduler"               element={<PrivateRoute><SchedulerListView /></PrivateRoute>} />
             <Route path="/scheduler/create"        element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
             <Route path="/scheduler/edit/:id"      element={<PrivateRoute><SchedulerFormView /></PrivateRoute>} />
+            <Route path="/executions/running"      element={<PrivateRoute><ExecutionListView type="running" /></PrivateRoute>} />
+            <Route path="/executions/history"      element={<PrivateRoute><ExecutionListView type="history" /></PrivateRoute>} />
             <Route path="/executions/:id"          element={<PrivateRoute><ExecutionDetailsView /></PrivateRoute>} />
             <Route path="/agents"                  element={<PrivateRoute><AgentListView /></PrivateRoute>} />
             <Route path="/groups"                  element={<PrivateRoute><GroupsListView /></PrivateRoute>} />
