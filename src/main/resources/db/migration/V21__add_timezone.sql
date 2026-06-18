@@ -1,0 +1,1 @@
+ALTER TABLE schedulers ADD COLUMN timezone VARCHAR(100);

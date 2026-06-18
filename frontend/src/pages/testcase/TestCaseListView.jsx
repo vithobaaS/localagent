@@ -16,7 +16,7 @@ export default function TestCaseListView() {
   const toggle = (id) => { if (expanded === id) { setExpanded(null); return; } setExpanded(id); api(`/api/test-cases/${id}`).then(r => r.json()).then(d => setExpandedSteps(d.steps || [])); };
   const remove = (id) => { api(`/api/test-cases/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(t => t.id !== id)); toast('success', 'Deleted'); } }); };
 
-  const filtered = data.filter(t => { const q = search.toLowerCase(); return t.name.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q); });
+  const filtered = [...data].filter(t => { const q = search.toLowerCase(); return t.name.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q); }).sort((a, b) => b.id - a.id);
   const paged = filtered.slice(page * entries, (page + 1) * entries);
 
   return (

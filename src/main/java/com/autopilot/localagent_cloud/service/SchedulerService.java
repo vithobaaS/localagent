@@ -103,6 +103,9 @@ public class SchedulerService {
                 s.setRecurrenceEndDate(null);
             }
         }
+        if (body.containsKey("timezone") && body.get("timezone") != null) {
+            s.setTimezone((String) body.get("timezone"));
+        }
         return s;
     }
 }

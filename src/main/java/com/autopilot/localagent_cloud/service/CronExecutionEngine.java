@@ -27,8 +27,8 @@ public class CronExecutionEngine {
     // Runs at the 0th second of every minute
     @Scheduled(cron = "0 * * * * *")
     public void evaluateCronSchedules() {
-        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        logger.debug("Evaluating cron schedules at: {}", now);
+        LocalDateTime serverNow = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        logger.debug("Evaluating cron schedules at: {}", serverNow);
 
         List<Scheduler> activeSchedules = schedulerRepository.findAll().stream()
                 .filter(s -> "scheduled".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
@@ -36,6 +36,15 @@ public class CronExecutionEngine {
 
         for (Scheduler schedule : activeSchedules) {
             try {
+                LocalDateTime now = serverNow;
+                if (schedule.getTimezone() != null && !schedule.getTimezone().isBlank()) {
+                    try {
+                        now = LocalDateTime.now(java.time.ZoneId.of(schedule.getTimezone())).truncatedTo(ChronoUnit.MINUTES);
+                    } catch (Exception e) {
+                        logger.warn("Invalid timezone '{}' for schedule ID {}", schedule.getTimezone(), schedule.getId());
+                    }
+                }
+
                 if (shouldRunOutlookSchedule(schedule, now)) {
                     logger.info("Outlook schedule triggered for suite: {}", schedule.getTestSuiteName());
                     queueExecution(schedule);
@@ -184,6 +193,8 @@ public class CronExecutionEngine {
         job.setTestSuiteId(original.getTestSuiteId());
         job.setTestSuiteName(original.getTestSuiteName());
         job.setBrowserType(original.getBrowserType());
+        job.setBrowserVersion(original.getBrowserVersion());
+        job.setTargetGroupId(original.getTargetGroupId());
         job.setExecutionType("now");
         job.setStatus("active");
         job.setOrgId(original.getOrgId());

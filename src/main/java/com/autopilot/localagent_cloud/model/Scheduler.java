@@ -74,7 +74,10 @@ public class Scheduler {
     @Column(name = "recurrence_end_date")
     private LocalDate recurrenceEndDate;
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    @Column(name = "timezone")
+    private String timezone;
+
+    // ———————————————————————————————————————————————————————————————————————————
 
     @PrePersist
     protected void onCreate() {
@@ -184,6 +187,14 @@ public class Scheduler {
 
     public void setRecurrenceEndDate(LocalDate recurrenceEndDate) {
         this.recurrenceEndDate = recurrenceEndDate;
+    }
+
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
     }
 
     public Long getOrgId() { return orgId; }

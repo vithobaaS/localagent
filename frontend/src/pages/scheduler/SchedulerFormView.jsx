@@ -122,6 +122,7 @@ export default function SchedulerFormView() {
       scheduledTime: form.executionType === 'scheduled' && form.scheduledTime ? form.scheduledTime + ':00' : null,
       recurrenceDays: form.executionType === 'scheduled' && form.recurrenceType === 'weekly' ? form.recurrenceDays.join(',') : null,
       recurrenceEndDate: form.executionType === 'scheduled' && form.recurrenceEndDate ? form.recurrenceEndDate : null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
     const url = isEdit ? `/api/schedulers/${id}` : '/api/schedulers';
     const method = isEdit ? 'PUT' : 'POST';
