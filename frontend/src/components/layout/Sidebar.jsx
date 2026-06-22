@@ -72,7 +72,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <NavItem to="/settings"            icon={Settings}        label="Settings"         active={is('/settings')} />
         <NavItem to="/admin/users"         icon={Users}           label="Users"            active={is('/admin/users')} />
         <NavItem to="/admin/roles"         icon={ShieldCheck}     label="Roles"            active={is('/admin/roles')} />
-        <NavItem to="/admin/api-keys"      icon={KeyRound}        label="API Keys"         active={is('/admin/api-keys')} />
+        <NavItem to="/admin/api-keys"      icon={KeyRound}        label="CI/CD & API Keys" active={is('/admin/api-keys')} />
         <NavItem to="/admin/notifications" icon={Bell}            label="Notifications"    active={is('/admin/notifications')} />
         <NavItem to="/admin/audit-logs"    icon={ScrollText}      label="Audit Logs"       active={is('/admin/audit-logs')} />
         <NavItem to="/admin/retention"     icon={Trash2}          label="Retention Policies" active={is('/admin/retention')} />

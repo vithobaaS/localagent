@@ -50,7 +50,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } else if (token.startsWith("ap_live_")) {
                 // It's an API Key
                 apiKeyRepository.findByToken(token).ifPresent(key -> {
-                    // Update last used at? We'll do it async or just set it
+                    // Throttle updates: only save if lastUsedAt is null or older than 5 minutes
+                    java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                    if (key.getLastUsedAt() == null || key.getLastUsedAt().isBefore(now.minusMinutes(5))) {
+                        key.setLastUsedAt(now);
+                        apiKeyRepository.save(key);
+                    }
                     req.setAttribute("orgId", key.getOrgId());
                     var auth = new UsernamePasswordAuthenticationToken(
                             "api-key-" + key.getId(), null,
