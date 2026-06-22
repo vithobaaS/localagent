@@ -65,4 +65,17 @@ public class AnalyticsController {
         Map<String, Object> data = analyticsService.getFleetHealth(orgId);
         return ResponseEntity.ok(data);
     }
+
+    /**
+     * GET /api/analytics/suite-performance
+     * Returns ranked list of test suites by success rate, avg duration, and run count.
+     */
+    @GetMapping("/suite-performance")
+    public ResponseEntity<List<Map<String, Object>>> getSuitePerformance(
+            @RequestParam(defaultValue = "10") int limit,
+            HttpServletRequest req) {
+        Long orgId = orgId(req);
+        List<Map<String, Object>> data = analyticsService.getSuitePerformance(orgId, limit);
+        return ResponseEntity.ok(data);
+    }
 }

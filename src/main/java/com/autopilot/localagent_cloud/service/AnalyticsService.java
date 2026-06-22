@@ -124,6 +124,80 @@ public class AnalyticsService {
     }
 
     /**
+     * Returns per-suite performance stats for the leaderboard:
+     *   suiteName, totalRuns, passedRuns, failedRuns, successRate, avgDurationSecs, lastRunAt
+     * Sorted by successRate descending (best performers first).
+     */
+    public List<Map<String, Object>> getSuitePerformance(Long orgId, int limit) {
+        // Get all terminal executions (not QUEUED/RUNNING) linked to a scheduler
+        List<Execution> allExecs = executionRepository.findAllByOrderByIdDesc()
+                .stream()
+                .filter(e -> orgId == null || orgId.equals(e.getOrgId()))
+                .filter(e -> e.getSchedulerId() != null)
+                .filter(e -> {
+                    String s = e.getStatus();
+                    return s != null && !s.equalsIgnoreCase("queued") && !s.equalsIgnoreCase("running");
+                })
+                .collect(Collectors.toList());
+
+        // Build scheduler name lookup
+        Map<Long, String> schedulerNames = new HashMap<>();
+        schedulerRepository.findAll().forEach(s -> schedulerNames.put(s.getId(), s.getTestSuiteName()));
+
+        // Group by suite name
+        Map<String, List<Execution>> bySuite = allExecs.stream()
+                .collect(Collectors.groupingBy(e -> {
+                    String name = schedulerNames.get(e.getSchedulerId());
+                    return name != null ? name : "Suite #" + e.getSchedulerId();
+                }));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, List<Execution>> entry : bySuite.entrySet()) {
+            String suiteName = entry.getKey();
+            List<Execution> runs = entry.getValue();
+            int totalRuns = runs.size();
+
+            long passedRuns = runs.stream().filter(e ->
+                    e.getStatus().equalsIgnoreCase("success") || e.getStatus().equalsIgnoreCase("completed")
+            ).count();
+            long failedRuns = runs.stream().filter(e -> e.getStatus().equalsIgnoreCase("failed")).count();
+
+            double successRate = totalRuns > 0 ? (double) passedRuns / totalRuns * 100.0 : 0.0;
+
+            // Average duration in seconds (only for executions that have both timestamps)
+            OptionalDouble avgDuration = runs.stream()
+                    .filter(e -> e.getCreatedAt() != null && e.getFinishedAt() != null)
+                    .mapToLong(e -> java.time.Duration.between(e.getCreatedAt(), e.getFinishedAt()).getSeconds())
+                    .average();
+
+            // Most recent run
+            Optional<LocalDateTime> lastRun = runs.stream()
+                    .map(Execution::getCreatedAt)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.naturalOrder());
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("suiteName", suiteName);
+            data.put("totalRuns", totalRuns);
+            data.put("passedRuns", passedRuns);
+            data.put("failedRuns", failedRuns);
+            data.put("successRate", Math.round(successRate * 10.0) / 10.0);
+            data.put("avgDurationSecs", avgDuration.isPresent() ? Math.round(avgDuration.getAsDouble()) : null);
+            data.put("lastRunAt", lastRun.orElse(null));
+            result.add(data);
+        }
+
+        // Sort by successRate descending, then by totalRuns descending as tiebreaker
+        result.sort((a, b) -> {
+            int cmp = Double.compare((double) b.get("successRate"), (double) a.get("successRate"));
+            if (cmp != 0) return cmp;
+            return Integer.compare((int) b.get("totalRuns"), (int) a.get("totalRuns"));
+        });
+
+        return result.stream().limit(limit).collect(Collectors.toList());
+    }
+
+    /**
      * Calculates live fleet health: agent statuses + queue depth.
      * An agent is considered ONLINE if it sent a heartbeat within the last 2 minutes.
      * An agent is RUNNING if it has an ASSIGNED job with a valid lease.

@@ -8,7 +8,7 @@ import {
   Rocket, CheckCircle2, XCircle, Zap, 
   Search, Download, PieChart as PieChartIcon, 
   BarChart3, Inbox, OctagonX, Play, Eye, AlertTriangle, TrendingDown, TrendingUp, Minus,
-  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered
+  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered, Trophy, Timer
 } from 'lucide-react';
 
 /* ───────────────────────────────────────
@@ -228,6 +228,132 @@ function FleetHealthWidget({ data, loading }) {
 }
 
 /* ───────────────────────────────────────
+   SUITE PERFORMANCE LEADERBOARD WIDGET
+─────────────────────────────────────── */
+function SuitePerformanceWidget({ data, loading }) {
+  if (loading) return (
+    <div className="card" style={{ padding: '24px' }}>
+      <div className="spinner" style={{ margin: '0 auto' }} />
+    </div>
+  );
+
+  const MEDALS = ['🥇', '🥈', '🥉'];
+
+  const fmtDuration = (secs) => {
+    if (secs == null) return '—';
+    if (secs < 60) return `${secs}s`;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  };
+
+  const fmtRelative = (iso) => {
+    if (!iso) return 'Never';
+    const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (secs < 60) return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+    if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+    return `${Math.floor(secs / 86400)}d ago`;
+  };
+
+  return (
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          <Trophy size={20} style={{ color: '#f59e0b' }} />
+          Suite Performance Leaderboard
+        </h2>
+        <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>Ranked by success rate · All time</span>
+      </div>
+
+      {data.length === 0 ? (
+        <div className="empty-state" style={{ padding: '40px 0' }}>
+          <div className="empty-state-icon"><Trophy size={40} style={{ color: 'var(--txt-muted)' }} /></div>
+          <h3>No Completed Runs Yet</h3>
+          <p>Run your test suites to see performance rankings here.</p>
+        </div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th style={{ width: 48, textAlign: 'center' }}>#</th>
+                <th>Suite Name</th>
+                <th style={{ textAlign: 'center' }}>Total Runs</th>
+                <th style={{ textAlign: 'center' }}>Passed</th>
+                <th style={{ textAlign: 'center' }}>Failed</th>
+                <th style={{ minWidth: 180 }}>Success Rate</th>
+                <th style={{ textAlign: 'center' }}><span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Timer size={13} /> Avg Duration</span></th>
+                <th style={{ textAlign: 'center' }}>Last Run</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((suite, i) => {
+                const rate = suite.successRate;
+                const rateColor = rate >= 90 ? '#059669' : rate >= 70 ? '#f59e0b' : '#dc2626';
+                const rateBg   = rate >= 90 ? 'rgba(5,150,105,0.1)' : rate >= 70 ? 'rgba(245,158,11,0.1)' : 'rgba(220,38,38,0.1)';
+                return (
+                  <tr key={i}>
+                    <td style={{ textAlign: 'center' }}>
+                      {i < 3
+                        ? <span style={{ fontSize: '1.2rem' }}>{MEDALS[i]}</span>
+                        : <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--txt-muted)' }}>#{i + 1}</span>
+                      }
+                    </td>
+                    <td>
+                      <span className="cell-bold">{suite.suiteName}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className="text-muted">{suite.totalRuns}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ color: '#059669', fontWeight: 700 }}>{suite.passedRuns}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ color: suite.failedRuns > 0 ? '#dc2626' : 'var(--txt-muted)', fontWeight: suite.failedRuns > 0 ? 700 : 400 }}>
+                        {suite.failedRuns}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'var(--border)', overflow: 'hidden', minWidth: 80 }}>
+                          <div style={{
+                            width: `${Math.min(rate, 100)}%`,
+                            height: '100%',
+                            background: `linear-gradient(90deg, ${rateColor}99, ${rateColor})`,
+                            borderRadius: 4,
+                            transition: 'width 0.8s ease'
+                          }} />
+                        </div>
+                        <span style={{
+                          fontSize: '0.82rem', fontWeight: 700,
+                          color: rateColor, background: rateBg,
+                          padding: '2px 9px', borderRadius: 20, minWidth: 52, textAlign: 'center'
+                        }}>{rate}%</span>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: '0.8rem', color: 'var(--txt-muted)' }}>
+                        <Timer size={12} />{fmtDuration(suite.avgDurationSecs)}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: '0.78rem', color: 'var(--txt-muted)' }}>
+                        <Clock size={12} />{fmtRelative(suite.lastRunAt)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────
    FLAKINESS WIDGET
 ─────────────────────────────────────── */
 function FlakinessWidget({ data, loading }) {
@@ -319,6 +445,8 @@ export default function DashboardView() {
   const [flakyLoading, setFlakyLoading] = useState(true);
   const [fleetHealth, setFleetHealth] = useState(null);
   const [fleetLoading, setFleetLoading] = useState(true);
+  const [suitePerf, setSuitePerf] = useState([]);
+  const [suitePerfLoading, setSuitePerfLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [entries, setEntries] = useState(10);
@@ -357,6 +485,11 @@ export default function DashboardView() {
       .then(r => r.json())
       .then(data => { setFleetHealth(data); setFleetLoading(false); })
       .catch(() => setFleetLoading(false));
+
+    api('/api/analytics/suite-performance?limit=10')
+      .then(r => r.json())
+      .then(data => { setSuitePerf(data || []); setSuitePerfLoading(false); })
+      .catch(() => setSuitePerfLoading(false));
   }, [user, setShowOnboarding]);
 
   useEffect(() => {
@@ -469,6 +602,9 @@ export default function DashboardView() {
 
       {/* Agent Fleet Health */}
       <FleetHealthWidget data={fleetHealth} loading={fleetLoading} />
+
+      {/* Suite Performance Leaderboard */}
+      <SuitePerformanceWidget data={suitePerf} loading={suitePerfLoading} />
 
       {/* Flakiness Tracker */}
       <FlakinessWidget data={flakySuites} loading={flakyLoading} />
