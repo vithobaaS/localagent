@@ -147,9 +147,17 @@ public class AnalyticsService {
                 .collect(Collectors.toSet());
 
         // Count queue depth (QUEUED jobs with no agent yet)
-        long queueDepth = jobRepository.findAll().stream()
+        long jobQueueDepth = jobRepository.findAll().stream()
                 .filter(j -> "QUEUED".equalsIgnoreCase(j.getStatus()))
                 .count();
+
+        // Also count Schedulers that are waiting to be unwrapped by an agent
+        long activeSchedulers = schedulerRepository.findAll().stream()
+                .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
+                .filter(s -> orgId == null || orgId.equals(s.getOrgId()))
+                .count();
+
+        long queueDepth = jobQueueDepth + activeSchedulers;
 
         // Build per-agent summaries
         List<Map<String, Object>> agentDetails = new ArrayList<>();
