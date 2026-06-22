@@ -275,4 +275,99 @@ public class AnalyticsService {
         result.put("agents", agentDetails);
         return result;
     }
+
+    /**
+     * Calculates the "Time Saved" ROI metric for the org.
+     *
+     * Assumptions (industry-standard estimates):
+     *   - Manual test execution time: 15 minutes per test run
+     *   - QA engineer hourly rate: $50 USD
+     *
+     * Returns:
+     *   totalRuns, totalAutomatedSecs, manualEstimateSecs, timeSavedSecs,
+     *   hoursSaved, dollarsSaved, avgDurationSecs,
+     *   todayRuns, weekRuns,
+     *   manualMinsPerRun (assumption), hourlyRate (assumption)
+     */
+    public Map<String, Object> getTimeSavedRoi(Long orgId) {
+        final int MANUAL_MINS_PER_RUN = 15; // assumed manual time per test run
+        final double HOURLY_RATE = 50.0;    // assumed QA hourly rate in USD
+
+        List<Execution> completedExecs = executionRepository.findAllByOrderByIdDesc()
+                .stream()
+                .filter(e -> orgId == null || orgId.equals(e.getOrgId()))
+                .filter(e -> {
+                    String s = e.getStatus();
+                    return s != null && (s.equalsIgnoreCase("success")
+                            || s.equalsIgnoreCase("completed")
+                            || s.equalsIgnoreCase("failed"));
+                })
+                .collect(Collectors.toList());
+
+        int totalRuns = completedExecs.size();
+
+        // Sum actual automated execution durations
+        long totalAutomatedSecs = completedExecs.stream()
+                .filter(e -> e.getCreatedAt() != null && e.getFinishedAt() != null)
+                .mapToLong(e -> Math.max(0, java.time.Duration.between(e.getCreatedAt(), e.getFinishedAt()).getSeconds()))
+                .sum();
+
+        OptionalDouble avgDur = completedExecs.stream()
+                .filter(e -> e.getCreatedAt() != null && e.getFinishedAt() != null)
+                .mapToLong(e -> Math.max(0, java.time.Duration.between(e.getCreatedAt(), e.getFinishedAt()).getSeconds()))
+                .average();
+
+        // Manual estimate: each run would take MANUAL_MINS_PER_RUN minutes
+        long manualEstimateSecs = (long) totalRuns * MANUAL_MINS_PER_RUN * 60L;
+
+        // Time saved = manual - automated (floored at 0)
+        long timeSavedSecs = Math.max(0, manualEstimateSecs - totalAutomatedSecs);
+
+        double hoursSaved  = timeSavedSecs / 3600.0;
+        double dollarsSaved = hoursSaved * HOURLY_RATE;
+
+        // Today and this week counts
+        LocalDateTime startOfToday = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime startOfWeek  = startOfToday.minusDays(6);
+
+        long todayRuns = completedExecs.stream()
+                .filter(e -> e.getCreatedAt() != null && e.getCreatedAt().isAfter(startOfToday))
+                .count();
+        long weekRuns = completedExecs.stream()
+                .filter(e -> e.getCreatedAt() != null && e.getCreatedAt().isAfter(startOfWeek))
+                .count();
+
+        // Daily breakdown for last 14 days (for sparkline)
+        List<Map<String, Object>> dailyBreakdown = new ArrayList<>();
+        for (int i = 13; i >= 0; i--) {
+            LocalDateTime dayStart = startOfToday.minusDays(i);
+            LocalDateTime dayEnd   = dayStart.plusDays(1);
+            long dayRuns = completedExecs.stream()
+                    .filter(e -> e.getCreatedAt() != null
+                            && !e.getCreatedAt().isBefore(dayStart)
+                            && e.getCreatedAt().isBefore(dayEnd))
+                    .count();
+            long daySavedSecs = dayRuns * MANUAL_MINS_PER_RUN * 60L;
+            Map<String, Object> day = new LinkedHashMap<>();
+            day.put("date", dayStart.toLocalDate().toString());
+            day.put("runs", dayRuns);
+            day.put("savedMins", daySavedSecs / 60);
+            dailyBreakdown.add(day);
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalRuns", totalRuns);
+        result.put("totalAutomatedSecs", totalAutomatedSecs);
+        result.put("manualEstimateSecs", manualEstimateSecs);
+        result.put("timeSavedSecs", timeSavedSecs);
+        result.put("hoursSaved", Math.round(hoursSaved * 10.0) / 10.0);
+        result.put("dollarsSaved", Math.round(dollarsSaved * 100.0) / 100.0);
+        result.put("avgDurationSecs", avgDur.isPresent() ? Math.round(avgDur.getAsDouble()) : 0);
+        result.put("todayRuns", todayRuns);
+        result.put("weekRuns", weekRuns);
+        result.put("manualMinsPerRun", MANUAL_MINS_PER_RUN);
+        result.put("hourlyRate", HOURLY_RATE);
+        result.put("dailyBreakdown", dailyBreakdown);
+        return result;
+    }
 }

@@ -8,7 +8,7 @@ import {
   Rocket, CheckCircle2, XCircle, Zap, 
   Search, Download, PieChart as PieChartIcon, 
   BarChart3, Inbox, OctagonX, Play, Eye, AlertTriangle, TrendingDown, TrendingUp, Minus,
-  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered, Trophy, Timer
+  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered, Trophy, Timer, DollarSign, Sparkles
 } from 'lucide-react';
 
 /* ───────────────────────────────────────
@@ -437,6 +437,229 @@ function FlakinessWidget({ data, loading }) {
 }
 
 /* ───────────────────────────────────────
+   TIME SAVED ROI WIDGET
+─────────────────────────────────────── */
+function TimeSavedWidget({ data, loading }) {
+  if (loading) return (
+    <div className="card" style={{ padding: '32px' }}>
+      <div className="spinner" style={{ margin: '0 auto' }} />
+    </div>
+  );
+
+  const {
+    totalRuns = 0,
+    hoursSaved = 0,
+    dollarsSaved = 0,
+    avgDurationSecs = 0,
+    todayRuns = 0,
+    weekRuns = 0,
+    manualMinsPerRun = 15,
+    hourlyRate = 50,
+    dailyBreakdown = [],
+    timeSavedSecs = 0,
+  } = data || {};
+
+  const fmtDuration = (secs) => {
+    if (!secs) return '0s';
+    if (secs < 60) return `${secs}s`;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  };
+
+  const fmtHours = (h) => {
+    if (h < 1) return `${Math.round(h * 60)}m`;
+    return `${h.toFixed(1)}h`;
+  };
+
+  // Sparkline SVG for daily savings
+  const maxSaved = Math.max(...dailyBreakdown.map(d => d.savedMins), 1);
+  const svgW = 320, svgH = 60, pad = 4;
+  const pts = dailyBreakdown.map((d, i) => {
+    const x = pad + (i / Math.max(dailyBreakdown.length - 1, 1)) * (svgW - pad * 2);
+    const y = svgH - pad - (d.savedMins / maxSaved) * (svgH - pad * 2);
+    return `${x},${y}`;
+  });
+  const areaPath = pts.length > 1
+    ? `M${pts[0]} L${pts.join(' L')} L${svgW - pad},${svgH} L${pad},${svgH} Z`
+    : '';
+  const linePath = pts.length > 1 ? `M${pts[0]} L${pts.join(' L')}` : '';
+
+  // ROI bar: what % of manual time was saved
+  const manualEstimateSecs = totalRuns * manualMinsPerRun * 60;
+  const savingsPct = manualEstimateSecs > 0 ? Math.round((timeSavedSecs / manualEstimateSecs) * 100) : 0;
+
+  return (
+    <div className="card" style={{
+      overflow: 'hidden',
+      background: 'linear-gradient(135deg, var(--surface) 0%, rgba(5,150,105,0.04) 100%)',
+      border: '1px solid rgba(5,150,105,0.25)'
+    }}>
+      {/* Header */}
+      <div className="card-header" style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderBottom: '1px solid rgba(5,150,105,0.2)', background: 'rgba(5,150,105,0.05)'
+      }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0 }}>
+          <span style={{
+            width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #059669, #10b981)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(5,150,105,0.35)'
+          }}>
+            <DollarSign size={18} color="#fff" />
+          </span>
+          Time Saved — ROI Dashboard
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 700,
+            background: 'linear-gradient(90deg, #059669, #10b981)',
+            color: '#fff', padding: '3px 10px', borderRadius: 20,
+            letterSpacing: '0.05em'
+          }}>WOW FACTOR</span>
+        </h2>
+        <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>
+          vs. {manualMinsPerRun} min/run manual estimate · ${hourlyRate}/hr QA rate
+        </span>
+      </div>
+
+      {/* Hero KPI tiles */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 16, padding: '20px 24px',
+        borderBottom: '1px solid rgba(5,150,105,0.15)'
+      }}>
+        {/* Hours Saved — hero tile */}
+        <div style={{
+          background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+          borderRadius: 14, padding: '20px 22px', color: '#fff',
+          boxShadow: '0 8px 24px rgba(5,150,105,0.3)',
+          display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 1'
+        }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, opacity: 0.85, letterSpacing: '0.07em', textTransform: 'uppercase' }}>⏱ Hours Saved</span>
+          <span style={{ fontSize: '2.6rem', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em' }}>
+            {fmtHours(hoursSaved)}
+          </span>
+          <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>vs manual testing</span>
+        </div>
+
+        {/* Dollar Value Saved — hero tile */}
+        <div style={{
+          background: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
+          borderRadius: 14, padding: '20px 22px', color: '#fff',
+          boxShadow: '0 8px 24px rgba(124,58,237,0.3)',
+          display: 'flex', flexDirection: 'column', gap: 6
+        }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, opacity: 0.85, letterSpacing: '0.07em', textTransform: 'uppercase' }}>💰 Value Saved</span>
+          <span style={{ fontSize: '2.6rem', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em' }}>
+            ${dollarsSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+          <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>at ${hourlyRate}/hr QA rate</span>
+        </div>
+
+        {/* Runs Automated */}
+        <div style={{ background: 'var(--surface)', borderRadius: 14, padding: '20px 22px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--txt-muted)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>🤖 Runs Automated</span>
+          <span style={{ fontSize: '2.6rem', fontWeight: 900, lineHeight: 1, color: 'var(--txt-h)' }}>{totalRuns.toLocaleString()}</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>all-time total</span>
+        </div>
+
+        {/* This week */}
+        <div style={{ background: 'var(--surface)', borderRadius: 14, padding: '20px 22px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--txt-muted)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>📅 This Week</span>
+          <span style={{ fontSize: '2.6rem', fontWeight: 900, lineHeight: 1, color: 'var(--txt-h)' }}>{weekRuns}</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>{todayRuns} run{todayRuns !== 1 ? 's' : ''} today</span>
+        </div>
+
+        {/* Avg test duration */}
+        <div style={{ background: 'var(--surface)', borderRadius: 14, padding: '20px 22px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--txt-muted)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>⚡ Avg Run Time</span>
+          <span style={{ fontSize: '2.6rem', fontWeight: 900, lineHeight: 1, color: 'var(--txt-h)' }}>{fmtDuration(avgDurationSecs)}</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>vs {manualMinsPerRun}m manual</span>
+        </div>
+      </div>
+
+      {/* Savings efficiency bar + sparkline */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, padding: '20px 24px' }}>
+
+        {/* Efficiency bar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--txt-h)' }}>Manual Time Eliminated</span>
+            <span style={{
+              fontSize: '1.1rem', fontWeight: 900,
+              color: savingsPct >= 60 ? '#059669' : savingsPct >= 30 ? '#f59e0b' : '#dc2626'
+            }}>{savingsPct}%</span>
+          </div>
+          <div style={{ position: 'relative', height: 20, borderRadius: 10, background: 'var(--border)', overflow: 'hidden' }}>
+            <div style={{
+              width: `${Math.min(savingsPct, 100)}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, #059669, #10b981)',
+              borderRadius: 10,
+              transition: 'width 1.2s cubic-bezier(0.4,0,0.2,1)',
+              boxShadow: '2px 0 8px rgba(5,150,105,0.4)'
+            }} />
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--txt-muted)', margin: 0, lineHeight: 1.5 }}>
+            AutoPilot ran <strong>{totalRuns}</strong> tests automatically, saving an estimated
+            {' '}<strong style={{ color: '#059669' }}>{fmtHours(hoursSaved)}</strong> of manual QA time
+            — worth <strong style={{ color: '#7c3aed' }}>${dollarsSaved.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong> in engineering hours.
+          </p>
+          {/* Assumption note */}
+          <div style={{
+            fontSize: '0.7rem', color: 'var(--txt-muted)', background: 'var(--surface)',
+            border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px',
+            display: 'flex', gap: 6, alignItems: 'flex-start'
+          }}>
+            <span style={{ color: '#f59e0b', flexShrink: 0 }}>ℹ</span>
+            <span>Estimates based on {manualMinsPerRun} min manual run time &amp; ${hourlyRate}/hr QA engineer cost. Adjust in settings for precise ROI.</span>
+          </div>
+        </div>
+
+        {/* 14-day sparkline */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--txt-h)' }}>Minutes Saved / Day (14d)</span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--txt-muted)' }}>Last 2 weeks</span>
+          </div>
+          {dailyBreakdown.length > 0 && maxSaved > 0 ? (
+            <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none"
+              style={{ borderRadius: 8, overflow: 'visible' }}>
+              <defs>
+                <linearGradient id="roiAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#059669" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#059669" stopOpacity="0.03" />
+                </linearGradient>
+              </defs>
+              <path d={areaPath} fill="url(#roiAreaGrad)" />
+              <path d={linePath} fill="none" stroke="#059669" strokeWidth="2.5"
+                strokeLinejoin="round" strokeLinecap="round" />
+              {dailyBreakdown.map((d, i) => {
+                const x = pad + (i / Math.max(dailyBreakdown.length - 1, 1)) * (svgW - pad * 2);
+                const y = svgH - pad - (d.savedMins / maxSaved) * (svgH - pad * 2);
+                return d.runs > 0 ? (
+                  <circle key={i} cx={x} cy={y} r={3.5} fill="#059669" stroke="var(--bg)" strokeWidth={1.5} />
+                ) : null;
+              })}
+            </svg>
+          ) : (
+            <div style={{ height: svgH, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--txt-muted)', fontSize: '0.8rem', border: '1px dashed var(--border)', borderRadius: 8 }}>
+              No data yet — run some tests!
+            </div>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--txt-muted)' }}>
+            {dailyBreakdown.filter((_, i) => i === 0 || i === 6 || i === 13).map((d, i) => (
+              <span key={i}>{new Date(d.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────
    DASHBOARD VIEW
 ─────────────────────────────────────── */
 export default function DashboardView() {
@@ -447,6 +670,8 @@ export default function DashboardView() {
   const [fleetLoading, setFleetLoading] = useState(true);
   const [suitePerf, setSuitePerf] = useState([]);
   const [suitePerfLoading, setSuitePerfLoading] = useState(true);
+  const [roiData, setRoiData] = useState(null);
+  const [roiLoading, setRoiLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [entries, setEntries] = useState(10);
@@ -490,6 +715,11 @@ export default function DashboardView() {
       .then(r => r.json())
       .then(data => { setSuitePerf(data || []); setSuitePerfLoading(false); })
       .catch(() => setSuitePerfLoading(false));
+
+    api('/api/analytics/time-saved-roi')
+      .then(r => r.json())
+      .then(data => { setRoiData(data); setRoiLoading(false); })
+      .catch(() => setRoiLoading(false));
   }, [user, setShowOnboarding]);
 
   useEffect(() => {
@@ -599,6 +829,9 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+
+      {/* Time Saved ROI — Wow Factor */}
+      <TimeSavedWidget data={roiData} loading={roiLoading} />
 
       {/* Agent Fleet Health */}
       <FleetHealthWidget data={fleetHealth} loading={fleetLoading} />

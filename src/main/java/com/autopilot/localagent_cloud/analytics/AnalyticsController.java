@@ -78,4 +78,16 @@ public class AnalyticsController {
         List<Map<String, Object>> data = analyticsService.getSuitePerformance(orgId, limit);
         return ResponseEntity.ok(data);
     }
+
+    /**
+     * GET /api/analytics/time-saved-roi
+     * Returns ROI metrics: hours saved, dollar value saved, runs automated,
+     * vs estimated manual testing time. Includes 14-day daily breakdown.
+     */
+    @GetMapping("/time-saved-roi")
+    public ResponseEntity<Map<String, Object>> getTimeSavedRoi(HttpServletRequest req) {
+        Long orgId = orgId(req);
+        Map<String, Object> data = analyticsService.getTimeSavedRoi(orgId);
+        return ResponseEntity.ok(data);
+    }
 }
