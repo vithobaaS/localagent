@@ -13,8 +13,9 @@ export default function TestSuiteListView() {
   
   const [envs, setEnvs] = useState([]);
   const [pools, setPools] = useState([]);
-  const [runModalSuite, setRunModalSuite] = useState(null);
   const [snippetSuite, setSnippetSuite] = useState(null);
+  const [snippetMode, setSnippetMode] = useState('wait');
+  const [runModalSuite, setRunModalSuite] = useState(null);
   const [selectedEnvId, setSelectedEnvId] = useState('');
   const [selectedPoolId, setSelectedPoolId] = useState('');
   const [selectedBrowserVersion, setSelectedBrowserVersion] = useState('');
@@ -133,26 +134,68 @@ export default function TestSuiteListView() {
       {/* CI/CD Snippet Modal */}
       {snippetSuite && (
         <div className="modal-overlay" onClick={() => setSnippetSuite(null)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 650 }}>
             <div className="modal-header">
-              <h2>🔌 CI/CD Trigger Snippet</h2>
+              <h2>🔌 CI/CD Pipeline Integration</h2>
               <button className="modal-close" onClick={() => setSnippetSuite(null)}>✕</button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <p>Trigger <strong>{snippetSuite.name}</strong> (ID: {snippetSuite.id}) directly from Jenkins, GitHub Actions, or any CI/CD pipeline using the cURL snippet below.</p>
-              <div style={{ background: '#1e1e1e', padding: 16, borderRadius: 8, overflowX: 'auto', border: '1px solid #333' }}>
-                <code style={{ color: '#d4d4d4', whiteSpace: 'pre' }}>
-                  <span style={{ color: '#569cd6' }}>curl</span> -X POST "http://13.232.42.59/api/v1/suites/{snippetSuite.id}/trigger" \{"\n"}
-                  {"     "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPILOT_API_KEY</span>"
-                </code>
+              <p>Embed this script in your Jenkins, GitLab, or GitHub Actions pipeline.</p>
+              
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className={`btn ${snippetMode === 'wait' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setSnippetMode('wait')}>Trigger & Wait for Results</button>
+                <button className={`btn ${snippetMode === 'fire' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setSnippetMode('fire')}>Fire & Forget (Queue)</button>
               </div>
-              <div className="field-hint">Note: You must generate an API key from Administration &gt; API Keys and store it securely in your CI/CD platform as <code>$AUTOPILOT_API_KEY</code>.</div>
+
+              <div style={{ background: '#1e1e1e', padding: 16, borderRadius: 8, overflowX: 'auto', border: '1px solid #333' }}>
+                {snippetMode === 'wait' ? (
+                  <code style={{ color: '#d4d4d4', whiteSpace: 'pre', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#569cd6' }}>#!/bin/bash</span>{"\n\n"}
+                    <span style={{ color: '#4fc1ff' }}>echo</span> "Triggering AutoPilot Suite {snippetSuite.id}..."{"\n"}
+                    RESP=$(<span style={{ color: '#569cd6' }}>curl</span> -s -X POST "http://13.232.42.59/api/v1/suites/{snippetSuite.id}/trigger" \{"\n"}
+                    {"  "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPILOT_API_KEY</span>" \{"\n"}
+                    {"  "}-H "Content-Type: application/json"){"\n\n"}
+                    SCHED_ID=$(<span style={{ color: '#4fc1ff' }}>echo</span> $RESP | grep -o '"schedulerId":[0-9]*' | cut -d':' -f2){"\n\n"}
+                    <span style={{ color: '#c586c0' }}>if</span> [ -z "$SCHED_ID" ]; <span style={{ color: '#c586c0' }}>then</span>{"\n"}
+                    {"  "}<span style={{ color: '#4fc1ff' }}>echo</span> "Failed to trigger: $RESP"{"\n"}
+                    {"  "}<span style={{ color: '#c586c0' }}>exit</span> 1{"\n"}
+                    <span style={{ color: '#c586c0' }}>fi</span>{"\n\n"}
+                    <span style={{ color: '#4fc1ff' }}>echo</span> "Queued successfully (Scheduler ID: $SCHED_ID). Waiting for results..."{"\n\n"}
+                    <span style={{ color: '#c586c0' }}>while true; do</span>{"\n"}
+                    {"  "}STATUS_RESP=$(<span style={{ color: '#569cd6' }}>curl</span> -s "http://13.232.42.59/api/v1/schedulers/$SCHED_ID/execution-status" -H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPILOT_API_KEY</span>"){"\n"}
+                    {"  "}STATUS=$(<span style={{ color: '#4fc1ff' }}>echo</span> $STATUS_RESP | grep -o '"status":"[^"]*"' | cut -d'"' -f4){"\n\n"}
+                    {"  "}<span style={{ color: '#c586c0' }}>if</span> [ "$STATUS" == "passed" ] || [ "$STATUS" == "failed" ]; <span style={{ color: '#c586c0' }}>then</span>{"\n"}
+                    {"    "}PASS_PCT=$(<span style={{ color: '#4fc1ff' }}>echo</span> $STATUS_RESP | grep -o '"passPercentage":[0-9.]*' | cut -d':' -f2){"\n"}
+                    {"    "}AI_ANALYSIS=$(<span style={{ color: '#4fc1ff' }}>echo</span> $STATUS_RESP | grep -o '"aiAnalysis":"[^"]*"' | cut -d'"' -f4){"\n"}
+                    {"    "}<span style={{ color: '#4fc1ff' }}>echo</span> "==============================="{"\n"}
+                    {"    "}<span style={{ color: '#4fc1ff' }}>echo</span> "Execution Completed: $STATUS"{"\n"}
+                    {"    "}<span style={{ color: '#4fc1ff' }}>echo</span> "Pass Rate: $PASS_PCT%"{"\n"}
+                    {"    "}<span style={{ color: '#c586c0' }}>if</span> [ "$STATUS" == "failed" ]; <span style={{ color: '#c586c0' }}>then</span>{"\n"}
+                    {"      "}<span style={{ color: '#4fc1ff' }}>echo</span> "AI Root Cause: $AI_ANALYSIS"{"\n"}
+                    {"      "}<span style={{ color: '#c586c0' }}>exit</span> 1{"\n"}
+                    {"    "}<span style={{ color: '#c586c0' }}>fi</span>{"\n"}
+                    {"    "}<span style={{ color: '#c586c0' }}>exit</span> 0{"\n"}
+                    {"  "}<span style={{ color: '#c586c0' }}>fi</span>{"\n"}
+                    {"  "}sleep 5{"\n"}
+                    <span style={{ color: '#c586c0' }}>done</span>
+                  </code>
+                ) : (
+                  <code style={{ color: '#d4d4d4', whiteSpace: 'pre' }}>
+                    <span style={{ color: '#569cd6' }}>curl</span> -X POST "http://13.232.42.59/api/v1/suites/{snippetSuite.id}/trigger" \{"\n"}
+                    {"  "}-H "Authorization: Bearer <span style={{ color: '#ce9178' }}>$AUTOPILOT_API_KEY</span>" \{"\n"}
+                    {"  "}-H "Content-Type: application/json"
+                  </code>
+                )}
+              </div>
+              <div className="field-hint">Note: You must generate an API key from Administration &gt; API Keys and store it securely as <code>$AUTOPILOT_API_KEY</code>.</div>
             </div>
             <div className="modal-footer">
               <button className="btn btn-primary" onClick={() => {
-                copyToClipboard(`curl -X POST "http://13.232.42.59/api/v1/suites/${snippetSuite.id}/trigger" -H "Authorization: Bearer $AUTOPILOT_API_KEY"`);
+                const waitScript = `#!/bin/bash\necho "Triggering..."\nRESP=$(curl -s -X POST "http://13.232.42.59/api/v1/suites/${snippetSuite.id}/trigger" -H "Authorization: Bearer $AUTOPILOT_API_KEY" -H "Content-Type: application/json")\nSCHED_ID=$(echo $RESP | grep -o '"schedulerId":[0-9]*' | cut -d':' -f2)\nif [ -z "$SCHED_ID" ]; then exit 1; fi\nwhile true; do\nSTATUS_RESP=$(curl -s "http://13.232.42.59/api/v1/schedulers/$SCHED_ID/execution-status" -H "Authorization: Bearer $AUTOPILOT_API_KEY")\nSTATUS=$(echo $STATUS_RESP | grep -o '"status":"[^"]*"' | cut -d'"' -f4)\nif [ "$STATUS" == "passed" ] || [ "$STATUS" == "failed" ]; then\nPASS_PCT=$(echo $STATUS_RESP | grep -o '"passPercentage":[0-9.]*' | cut -d':' -f2)\necho "Pass Rate: $PASS_PCT%"\nif [ "$STATUS" == "failed" ]; then exit 1; fi\nexit 0\nfi\nsleep 5\ndone`;
+                const fireScript = `curl -X POST "http://13.232.42.59/api/v1/suites/${snippetSuite.id}/trigger" -H "Authorization: Bearer $AUTOPILOT_API_KEY" -H "Content-Type: application/json"`;
+                copyToClipboard(snippetMode === 'wait' ? waitScript : fireScript);
                 setSnippetSuite(null);
-              }}>📋 Copy Snippet</button>
+              }}>📋 Copy Script</button>
             </div>
           </div>
         </div>

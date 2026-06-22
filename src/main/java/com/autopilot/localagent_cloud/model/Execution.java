@@ -47,6 +47,12 @@ public class Execution {
     @Column(name = "environment_json", columnDefinition = "text")
     private String environmentJson;
 
+    @Column(name = "scheduler_id")
+    private Long schedulerId;
+
+    @Column(name = "ai_analysis", columnDefinition = "text")
+    private String aiAnalysis;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -109,4 +115,10 @@ public class Execution {
 
     public String getBrowserVersion() { return browserVersion; }
     public void setBrowserVersion(String browserVersion) { this.browserVersion = browserVersion; }
+
+    public Long getSchedulerId() { return schedulerId; }
+    public void setSchedulerId(Long schedulerId) { this.schedulerId = schedulerId; }
+
+    public String getAiAnalysis() { return aiAnalysis; }
+    public void setAiAnalysis(String aiAnalysis) { this.aiAnalysis = aiAnalysis; }
 }

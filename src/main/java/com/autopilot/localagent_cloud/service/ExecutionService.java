@@ -48,4 +48,18 @@ public class ExecutionService {
             return ResponseEntity.ok(detail);
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    public ResponseEntity<Map<String, Object>> getBySchedulerId(Long schedulerId) {
+        return executionRepository.findFirstBySchedulerIdOrderByIdDesc(schedulerId).map(exec -> {
+            List<StepResult> steps = stepResultRepository.findByExecutionId(exec.getId());
+            List<Screenshot> screenshots = screenshotRepository.findByExecutionId(exec.getId());
+
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("execution", exec);
+            detail.put("steps", steps);
+            detail.put("screenshots", screenshots);
+
+            return ResponseEntity.ok(detail);
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }

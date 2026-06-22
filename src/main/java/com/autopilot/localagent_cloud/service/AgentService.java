@@ -239,6 +239,7 @@ public class AgentService {
         execution.setTargetGroupId(job.getTargetGroupId());
         execution.setBrowserType(job.getBrowserType());
         execution.setBrowserVersion(job.getBrowserVersion());
+        execution.setSchedulerId(job.getId());
 
         execution.setEnvironmentJson("{\"referenceId\":\"" + job.getTestSuiteName() + "\",\"browserTypeName\":\"" + job.getBrowserType() + "\"}");
         execution.setStatus("running");

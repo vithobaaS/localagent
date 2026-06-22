@@ -40,10 +40,11 @@ public class PipelineController {
             
             if (res.getStatusCode() == HttpStatus.OK || res.getStatusCode() == HttpStatus.CREATED) {
                 Map<String, Object> body = res.getBody();
-                if (body != null && body.containsKey("executionId")) {
+                if (body != null && body.containsKey("scheduler")) {
+                    com.autopilot.localagent_cloud.model.Scheduler sched = (com.autopilot.localagent_cloud.model.Scheduler) body.get("scheduler");
                     Map<String, Object> response = new HashMap<>();
-                    response.put("executionId", body.get("executionId"));
-                    response.put("message", "Test Suite triggered successfully");
+                    response.put("schedulerId", sched.getId());
+                    response.put("message", "Test Suite queued successfully");
                     return ResponseEntity.ok(response);
                 }
             }
@@ -69,20 +70,59 @@ public class PipelineController {
             return ResponseEntity.status(res.getStatusCode()).build();
         }
 
-        Map<String, Object> executionData = res.getBody();
-        Map<String, Object> execution = (Map<String, Object>) executionData.get("execution");
-        
-        // Extract basic fields
-        Map<String, Object> response = new HashMap<>();
-        response.put("executionId", execution.get("id"));
-        response.put("status", execution.get("status"));
-        response.put("passedCount", execution.get("passedCount"));
-        response.put("failedCount", execution.get("failedCount"));
-        response.put("totalCount", execution.get("totalCount"));
-        response.put("durationMs", execution.get("durationMs"));
-        response.put("startedAt", execution.get("startedAt"));
-        response.put("completedAt", execution.get("completedAt"));
+        return ResponseEntity.ok(buildExecutionStatusResponse(res.getBody()));
+    }
 
-        return ResponseEntity.ok(response);
+    @SuppressWarnings("unchecked")
+    @GetMapping("/schedulers/{id}/execution-status")
+    public ResponseEntity<Map<String, Object>> getSchedulerExecutionStatus(
+            @PathVariable("id") Long id,
+            HttpServletRequest req) {
+        Long orgId = orgId(req);
+        if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        ResponseEntity<Map<String, Object>> res = executionService.getBySchedulerId(id);
+        if (res.getStatusCode() != HttpStatus.OK || res.getBody() == null) {
+            Map<String, Object> queuedResponse = new HashMap<>();
+            queuedResponse.put("status", "queued");
+            queuedResponse.put("message", "Waiting for Local Agent to pick up the job...");
+            return ResponseEntity.ok(queuedResponse);
+        }
+
+        return ResponseEntity.ok(buildExecutionStatusResponse(res.getBody()));
+    }
+
+    private Map<String, Object> buildExecutionStatusResponse(Map<String, Object> executionData) {
+        com.autopilot.localagent_cloud.model.Execution execution = (com.autopilot.localagent_cloud.model.Execution) executionData.get("execution");
+        java.util.List<com.autopilot.localagent_cloud.model.StepResult> steps = (java.util.List<com.autopilot.localagent_cloud.model.StepResult>) executionData.get("steps");
+        
+        int passed = 0;
+        int failed = 0;
+        if (steps != null) {
+            for (com.autopilot.localagent_cloud.model.StepResult step : steps) {
+                if (step.getResultStatus() != null && step.getResultStatus() == 1) passed++;
+                else if (step.getResultStatus() != null && step.getResultStatus() == 2) failed++;
+            }
+        }
+        int total = passed + failed;
+        double passPercentage = total > 0 ? ((double) passed / total) * 100.0 : 0.0;
+
+        long durationMs = 0;
+        if (execution.getCreatedAt() != null && execution.getFinishedAt() != null) {
+            durationMs = java.time.Duration.between(execution.getCreatedAt(), execution.getFinishedAt()).toMillis();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("executionId", execution.getId());
+        response.put("status", execution.getStatus());
+        response.put("passedCount", passed);
+        response.put("failedCount", failed);
+        response.put("totalCount", total);
+        response.put("passPercentage", Math.round(passPercentage * 100.0) / 100.0);
+        response.put("durationMs", durationMs);
+        response.put("aiAnalysis", execution.getAiAnalysis());
+        response.put("startedAt", execution.getCreatedAt());
+        response.put("completedAt", execution.getFinishedAt());
+        return response;
     }
 }
