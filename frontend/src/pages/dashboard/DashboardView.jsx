@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { useAuth } from '../../context/AuthContext';
@@ -326,7 +326,7 @@ export default function DashboardView() {
   const { user, setShowOnboarding } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchDashboardData = useCallback(() => {
     Promise.all([
       api('/api/executions').then(r => r.json()),
       api('/api/agents').then(r => r.json())
@@ -348,19 +348,22 @@ export default function DashboardView() {
       }
     }).catch(() => setLoading(false));
 
-    // Fetch flaky suites
     api('/api/analytics/flaky-suites?limit=5')
       .then(r => r.json())
       .then(data => { setFlakySuites(data || []); setFlakyLoading(false); })
       .catch(() => setFlakyLoading(false));
 
-    // Fetch fleet health
     api('/api/analytics/fleet-health')
       .then(r => r.json())
       .then(data => { setFleetHealth(data); setFleetLoading(false); })
       .catch(() => setFleetLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, setShowOnboarding]);
+
+  useEffect(() => {
+    fetchDashboardData();
+    const intervalId = setInterval(fetchDashboardData, 10000); // Auto-refresh every 10s
+    return () => clearInterval(intervalId);
+  }, [fetchDashboardData]);
 
   const getName = (e) => { try { return JSON.parse(e.environmentJson || '{}').referenceId || `Run #${e.orgExecutionId || e.id}`; } catch { return `Run #${e.orgExecutionId || e.id}`; } };
   const getBrowser = (e) => { try { return (JSON.parse(e.environmentJson || '{}').browserTypeName || 'chrome').toLowerCase(); } catch { return 'chrome'; } };
@@ -385,7 +388,7 @@ export default function DashboardView() {
       const res = await api(`/api/executions/${id}/rerun`, { method: 'POST' });
       if (res.ok) {
         toast('success', 'Success', 'Re-run triggered successfully.');
-        setTimeout(() => window.location.reload(), 1000);
+        setTimeout(fetchDashboardData, 1000);
       } else {
         toast('error', 'Error', 'Failed to re-run execution.');
       }
