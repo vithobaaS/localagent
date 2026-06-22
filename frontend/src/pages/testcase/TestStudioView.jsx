@@ -20,6 +20,19 @@ const ACTION_CATEGORIES = [
   { label:'Data & Script',color:'icon-key',    icon:<Code size={16}/>, tag:'ADV', tagStyle:{background:'#fce7f3',color:'#9d174d'}, actions:['ExecuteScript','ExecuteSQLQuery','GetAttribute','GetText','GetCssValue','MockNetworkResponse','TakeFullPageScreenshot','SwitchFrame','SwitchDefaultContent','SetWindowSize','MaximizeWindow','MinimizeWindow','AcceptCookies'] },
 ];
 
+const mappedActionSet = new Set(ACTION_CATEGORIES.flatMap(c => c.actions));
+const unmappedActions = ALL_ACTIONS.filter(a => !mappedActionSet.has(a));
+if (unmappedActions.length > 0) {
+  ACTION_CATEGORIES.push({
+    label: 'Extended Assertions',
+    color: 'icon-assert',
+    icon: <Settings size={16}/>,
+    tag: 'EXT',
+    tagStyle: {background:'#f3f4f6',color:'#4b5563'},
+    actions: unmappedActions
+  });
+}
+
 function getActionMeta(actionName) {
   for (const cat of ACTION_CATEGORIES) {
     if (cat.actions.includes(actionName)) return cat;
@@ -34,6 +47,11 @@ function makeStep(actionName = '') {
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 function ActionSidebar({ onAdd }) {
   const [search, setSearch] = useState('');
+  const [collapsed, setCollapsed] = useState({ 'Extended Assertions': true });
+
+  const toggleCategory = (label) => {
+    setCollapsed(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const groups = search.trim()
     ? [{ 
@@ -65,8 +83,19 @@ function ActionSidebar({ onAdd }) {
       <div className="ts-sidebar-scroll">
         {groups.map(cat => cat.actions.length === 0 ? null : (
           <div key={cat.label} className="ts-category">
-            <div className="ts-category-label">{cat.label}</div>
-            {cat.actions.slice(0, search ? 60 : undefined).map(action => (
+            <div 
+              className="ts-category-label"
+              onClick={() => !search && toggleCategory(cat.label)}
+              style={{ cursor: search ? 'default' : 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>{cat.label}</span>
+              {!search && (
+                <span style={{ fontSize: '0.7rem', color: 'var(--txt-muted)' }}>
+                  {collapsed[cat.label] ? '▼' : '▲'}
+                </span>
+              )}
+            </div>
+            {!collapsed[cat.label] && cat.actions.slice(0, search ? 60 : undefined).map(action => (
               <ActionBlock
                 key={action}
                 action={action}
