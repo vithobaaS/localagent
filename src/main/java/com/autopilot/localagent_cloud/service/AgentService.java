@@ -294,8 +294,37 @@ public class AgentService {
             }
         }
 
-        // We just created Jobs! Now recurse to pick one up!
-        return getNextJob(agentId);
+        // Bug fix: replaced unbounded recursion with a simple retry — pick up one of the jobs just created.
+        // The recursive approach had no depth limit and could cause a StackOverflowError
+        // if job creation failed unexpectedly.
+        List<com.autopilot.localagent_cloud.model.Job> retryJobs = jobRepository.findNextAvailableJobs(
+                agentId, groupIDsForQuery, PageRequest.of(0, 50));
+        com.autopilot.localagent_cloud.model.Job retryJob = retryJobs.stream().filter(j -> {
+            if (j.getBrowserVersion() == null || j.getBrowserVersion().isBlank()) return true;
+            if (finalAgentBrowserVer.isBlank()) return false;
+            String reqMajor = j.getBrowserVersion().split("\\.")[0];
+            String agentMajor = finalAgentBrowserVer.split("\\.")[0];
+            return reqMajor.equals(agentMajor);
+        }).findFirst().orElse(null);
+
+        if (retryJob != null) {
+            retryJob.setStatus("ASSIGNED");
+            retryJob.setAgentId(agentId);
+            retryJob.setLeaseExpiresAt(java.time.LocalDateTime.now().plusMinutes(10));
+            jobRepository.save(retryJob);
+            try {
+                Map<String, Object> runRequest = objectMapper.readValue(retryJob.getPayloadJson(), Map.class);
+                runRequest.put("jobId", retryJob.getId());
+                Map<String, Object> jobDto = new HashMap<>();
+                jobDto.put("executionId", retryJob.getExecutionId());
+                jobDto.put("jobId", retryJob.getId());
+                jobDto.put("payloadJson", objectMapper.writeValueAsString(runRequest));
+                return ResponseEntity.ok(jobDto);
+            } catch (Exception e) {
+                return ResponseEntity.internalServerError().build();
+            }
+        }
+        return ResponseEntity.noContent().build();
     }
 
     @Transactional
@@ -398,7 +427,11 @@ public class AgentService {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            // Bug fix: was silently swallowing all exceptions and returning 200 OK even when data was lost.
+            // Now logs the error properly and returns 500 so the agent knows it must retry.
+            org.slf4j.LoggerFactory.getLogger(AgentService.class)
+                    .error("Critical error processing results for executionId={}: {}", executionId, ex.getMessage(), ex);
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.ok().build();
     }

@@ -14,7 +14,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/apikeys")
-@CrossOrigin(origins = "*")
 public class ApiKeyController {
 
     private final ApiKeyRepository apiKeyRepository;
@@ -48,9 +47,8 @@ public class ApiKeyController {
         ApiKey key = new ApiKey();
         key.setOrgId(orgId);
         key.setName(name);
-        // Generate a secure, unique token: ap_live_ + UUID without dashes
         key.setToken("ap_live_" + UUID.randomUUID().toString().replace("-", ""));
-        
+
         ApiKey saved = apiKeyRepository.save(key);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -67,5 +65,16 @@ public class ApiKeyController {
             apiKeyRepository.delete(key);
             return ResponseEntity.noContent().<Void>build();
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Called internally (e.g., by future API middleware) to record when an API key was last used.
+     * Fix: api_keys.last_used_at was never being updated anywhere.
+     */
+    public void recordKeyUsage(String token) {
+        apiKeyRepository.findByToken(token).ifPresent(key -> {
+            key.setLastUsedAt(LocalDateTime.now());
+            apiKeyRepository.save(key);
+        });
     }
 }

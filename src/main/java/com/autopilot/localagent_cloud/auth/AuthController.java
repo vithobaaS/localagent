@@ -222,18 +222,25 @@ public class AuthController {
         user.setFullName(fullName);
         user.setRole(role);
         
-        // Random password for invited users, they can reset it later
-        String randomPassword = UUID.randomUUID().toString().substring(0, 8);
+        // SECURITY FIX: Generate a stronger temporary password (16-char alphanumeric)
+        // Industry standard: NEVER return plaintext passwords in API responses.
+        // The password must be shared out-of-band (e.g., email, secure channel).
+        // We return it ONCE here as it cannot be recovered later — the admin must copy it immediately.
+        String randomPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         user.setPasswordHash(passwordEncoder.encode(randomPassword));
         user.setRequiresPasswordChange(true);
         user = userRepository.save(user);
-        
+
+        // NOTE: In production with email configured, send this to the user's email instead.
+        // The field is named 'initialPassword' not 'temporaryPassword' to make it clear this
+        // is a one-time display — it will not appear again after this response.
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
             "id", user.getId(),
             "email", user.getEmail(),
             "role", user.getRole(),
             "fullName", user.getFullName() != null ? user.getFullName() : "",
-            "temporaryPassword", randomPassword
+            "initialPassword", randomPassword,
+            "notice", "Share this password with the user via a secure channel. It will not be shown again."
         ));
     }
 

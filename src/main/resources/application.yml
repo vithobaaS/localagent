@@ -36,7 +36,9 @@ spring:
 # JWT Configuration
 autopilot:
   jwt:
-    secret: ${JWT_SECRET:autopilot-super-secret-key-change-this-in-production-min-256-bits-long}
+    # SECURITY: No fallback default — app will fail at startup if JWT_SECRET env var is not set.
+    # Set this via: export JWT_SECRET=$(openssl rand -base64 64)
+    secret: ${JWT_SECRET}
     expiration-ms: 86400000  # 24 hours
 
 ---
