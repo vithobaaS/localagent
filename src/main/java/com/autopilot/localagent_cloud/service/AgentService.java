@@ -159,6 +159,9 @@ public class AgentService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        agent.setLastSeenAt(java.time.LocalDateTime.now());
+        agentRepository.save(agent);
+
         Long agentOrgId = agent.getOrgId();
 
         List<Long> agentGroupIds = agentGroupMappingRepository.findByAgentId(agentId).stream()
