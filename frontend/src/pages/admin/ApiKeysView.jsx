@@ -7,7 +7,7 @@ import {
   ShieldAlert, CheckCircle, RefreshCw, AlertCircle, 
   Info, ExternalLink, Settings 
 } from 'lucide-react';
-import { fmt } from '../../utils/helpers';
+import { fmt, copyToClipboard as copyUtil } from '../../utils/helpers';
 
 export default function ApiKeysView() {
   // Tab states
@@ -65,8 +65,8 @@ export default function ApiKeysView() {
     load();
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text) => {
+    await copyUtil(text);
     toast('success', 'Copied to clipboard');
   };
 

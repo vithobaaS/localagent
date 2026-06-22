@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { PageHeader, Card } from '../../components/common/PageComponents';
 import { toast } from '../../components/common/ToastContainer';
-import { fmt } from '../../utils/helpers';
+import { fmt, copyToClipboard as copyUtil } from '../../utils/helpers';
 import { Sun, Moon, Monitor, Eye, EyeOff, Save, Key, RefreshCw, Plus, Trash2, Mail, Shield, Building2 } from 'lucide-react';
 
 export default function SettingsView() {
@@ -74,11 +74,10 @@ export default function SettingsView() {
     if (res.ok) { toast('success', 'Token revoked'); setTokens(p => p.filter(t => t.id !== id)); }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedPwd(text);
-      setTimeout(() => setCopiedPwd(''), 2000);
-    });
+  const copyToClipboard = async (text) => {
+    await copyUtil(text);
+    setCopiedPwd(text);
+    setTimeout(() => setCopiedPwd(''), 2000);
   };
 
   return (

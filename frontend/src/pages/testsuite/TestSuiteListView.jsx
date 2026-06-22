@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/apiClient';
-import { fmt, statusBadge } from '../../utils/helpers';
+import { fmt, statusBadge, copyToClipboard as copyUtil } from '../../utils/helpers';
 import { toast } from '../../components/common/ToastContainer';
 import { PageHeader, TableCard } from '../../components/common/PageComponents';
 import { Play, Plug, Eye, ChevronUp, Pencil, Trash2, Plus, Package, Layers } from 'lucide-react';
@@ -28,8 +28,8 @@ export default function TestSuiteListView() {
   const toggle = (id) => { if (expanded === id) { setExpanded(null); setExpandedDetail(null); return; } setExpanded(id); setExpandedDetail(null); api(`/api/test-suites/${id}`).then(r => r.json()).then(setExpandedDetail); };
   const remove = (id) => { api(`/api/test-suites/${id}`, { method: 'DELETE' }).then(r => { if (r.ok) { setData(p => p.filter(s => s.id !== id)); toast('success', 'Deleted'); } }); };
   
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text) => {
+    await copyUtil(text);
     toast('success', 'Copied to clipboard');
   };
   
