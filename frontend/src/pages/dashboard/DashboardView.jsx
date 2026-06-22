@@ -7,7 +7,8 @@ import { toast } from '../../components/common/ToastContainer';
 import { 
   Rocket, CheckCircle2, XCircle, Zap, 
   Search, Download, PieChart as PieChartIcon, 
-  BarChart3, Inbox, OctagonX, Play, Eye, AlertTriangle, TrendingDown, TrendingUp, Minus
+  BarChart3, Inbox, OctagonX, Play, Eye, AlertTriangle, TrendingDown, TrendingUp, Minus,
+  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered
 } from 'lucide-react';
 
 /* ───────────────────────────────────────
@@ -114,6 +115,119 @@ function BarChart({ data }) {
 }
 
 /* ───────────────────────────────────────
+   FLEET HEALTH WIDGET
+─────────────────────────────────────── */
+function FleetHealthWidget({ data, loading }) {
+  if (loading) return (
+    <div className="card" style={{ padding: '24px' }}>
+      <div className="spinner" style={{ margin: '0 auto' }} />
+    </div>
+  );
+
+  const { totalAgents = 0, onlineCount = 0, runningCount = 0, offlineCount = 0, queueDepth = 0, agents = [] } = data || {};
+  const utilization = totalAgents > 0 ? Math.round((runningCount / totalAgents) * 100) : 0;
+
+  const statusConfig = {
+    running: { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', label: 'Running', icon: <Cpu size={12} /> },
+    idle:    { color: '#059669', bg: 'rgba(5,150,105,0.12)',  label: 'Idle',    icon: <Wifi size={12} /> },
+    offline: { color: '#6b7280', bg: 'rgba(107,114,128,0.12)', label: 'Offline', icon: <WifiOff size={12} /> },
+  };
+
+  const fmtRelative = (iso) => {
+    if (!iso) return 'Never';
+    const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    if (secs < 60) return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+    return `${Math.floor(secs / 3600)}h ago`;
+  };
+
+  return (
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          <Server size={20} style={{ color: '#7c3aed' }} />
+          Agent Fleet Health
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, background: 'rgba(124,58,237,0.15)', color: '#7c3aed', padding: '2px 8px', borderRadius: 20 }}>LIVE</span>
+        </h2>
+        <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>Infrastructure utilization & queue</span>
+      </div>
+
+      {/* Summary tiles */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+        {[
+          { label: 'Total Agents',  val: totalAgents,  icon: <Server size={18} />,      color: 'var(--txt-h)' },
+          { label: 'Running',       val: runningCount,  icon: <Cpu size={18} />,         color: '#7c3aed' },
+          { label: 'Idle',          val: onlineCount,   icon: <Wifi size={18} />,        color: '#059669' },
+          { label: 'Offline',       val: offlineCount,  icon: <WifiOff size={18} />,     color: '#6b7280' },
+          { label: 'Jobs Queued',   val: queueDepth,    icon: <ListOrdered size={18} />, color: queueDepth > 5 ? '#dc2626' : '#f59e0b' },
+        ].map(tile => (
+          <div key={tile.label} style={{ background: 'var(--surface)', borderRadius: 10, padding: '12px 16px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: tile.color }}>{tile.icon}<span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--txt-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tile.label}</span></div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: tile.color, lineHeight: 1 }}>{tile.val}</div>
+          </div>
+        ))}
+        {/* Utilization bar tile */}
+        <div style={{ background: 'var(--surface)', borderRadius: 10, padding: '12px 16px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6, gridColumn: 'span 1' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--txt-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Utilization</span>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: utilization > 70 ? '#dc2626' : utilization > 30 ? '#f59e0b' : '#059669', lineHeight: 1 }}>{utilization}%</div>
+          <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+            <div style={{ width: `${utilization}%`, height: '100%', background: utilization > 70 ? '#dc2626' : utilization > 30 ? '#f59e0b' : '#059669', borderRadius: 2, transition: 'width 1s ease' }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Per-agent table */}
+      {agents.length === 0 ? (
+        <div className="empty-state" style={{ padding: '32px 0' }}>
+          <div className="empty-state-icon"><Server size={36} /></div>
+          <h3>No Agents Registered</h3>
+          <p>Install and connect a Local Agent to begin running tests.</p>
+        </div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Agent Name</th>
+                <th>OS</th>
+                <th>Version</th>
+                <th style={{ textAlign: 'center' }}>Status</th>
+                <th style={{ textAlign: 'center' }}>Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map(agent => {
+                const cfg = statusConfig[agent.status] || statusConfig.offline;
+                return (
+                  <tr key={agent.id}>
+                    <td><span className="cell-bold" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.color, display: 'inline-block', flexShrink: 0, boxShadow: agent.status === 'running' ? `0 0 0 3px ${cfg.color}33` : 'none', animation: agent.status === 'running' ? 'pulse 2s infinite' : 'none' }} />
+                      {agent.name || agent.id}
+                    </span></td>
+                    <td><span className="text-muted">{agent.os || '—'}</span></td>
+                    <td><span className="text-muted">{agent.agentVersion || '—'}</span></td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 700, color: cfg.color, background: cfg.bg, padding: '3px 10px', borderRadius: 20 }}>
+                        {cfg.icon} {cfg.label}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: '0.78rem', color: 'var(--txt-muted)' }}>
+                        <Clock size={12} />{fmtRelative(agent.lastSeenAt)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────
    FLAKINESS WIDGET
 ─────────────────────────────────────── */
 function FlakinessWidget({ data, loading }) {
@@ -203,6 +317,8 @@ export default function DashboardView() {
   const [execs, setExecs] = useState([]);
   const [flakySuites, setFlakySuites] = useState([]);
   const [flakyLoading, setFlakyLoading] = useState(true);
+  const [fleetHealth, setFleetHealth] = useState(null);
+  const [fleetLoading, setFleetLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [entries, setEntries] = useState(10);
@@ -237,6 +353,12 @@ export default function DashboardView() {
       .then(r => r.json())
       .then(data => { setFlakySuites(data || []); setFlakyLoading(false); })
       .catch(() => setFlakyLoading(false));
+
+    // Fetch fleet health
+    api('/api/analytics/fleet-health')
+      .then(r => r.json())
+      .then(data => { setFleetHealth(data); setFleetLoading(false); })
+      .catch(() => setFleetLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -341,6 +463,9 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+
+      {/* Agent Fleet Health */}
+      <FleetHealthWidget data={fleetHealth} loading={fleetLoading} />
 
       {/* Flakiness Tracker */}
       <FlakinessWidget data={flakySuites} loading={flakyLoading} />

@@ -54,4 +54,15 @@ public class AnalyticsController {
         List<Map<String, Object>> data = analyticsService.getFlakySuites(orgId, limit);
         return ResponseEntity.ok(data);
     }
+
+    /**
+     * GET /api/analytics/fleet-health
+     * Returns live fleet status: agent statuses, counts, and queue depth.
+     */
+    @GetMapping("/fleet-health")
+    public ResponseEntity<Map<String, Object>> getFleetHealth(HttpServletRequest req) {
+        Long orgId = orgId(req);
+        Map<String, Object> data = analyticsService.getFleetHealth(orgId);
+        return ResponseEntity.ok(data);
+    }
 }

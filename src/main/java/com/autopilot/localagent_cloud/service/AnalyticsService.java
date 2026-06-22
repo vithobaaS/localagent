@@ -1,13 +1,18 @@
 package com.autopilot.localagent_cloud.service;
 
+import com.autopilot.localagent_cloud.model.Agent;
 import com.autopilot.localagent_cloud.model.Execution;
+import com.autopilot.localagent_cloud.model.Job;
 import com.autopilot.localagent_cloud.model.Scheduler;
 import com.autopilot.localagent_cloud.model.StepResult;
+import com.autopilot.localagent_cloud.repository.AgentRepository;
 import com.autopilot.localagent_cloud.repository.ExecutionRepository;
+import com.autopilot.localagent_cloud.repository.JobRepository;
 import com.autopilot.localagent_cloud.repository.SchedulerRepository;
 import com.autopilot.localagent_cloud.repository.StepResultRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,13 +22,19 @@ public class AnalyticsService {
     private final ExecutionRepository executionRepository;
     private final SchedulerRepository schedulerRepository;
     private final StepResultRepository stepResultRepository;
+    private final AgentRepository agentRepository;
+    private final JobRepository jobRepository;
 
     public AnalyticsService(ExecutionRepository executionRepository,
                             SchedulerRepository schedulerRepository,
-                            StepResultRepository stepResultRepository) {
+                            StepResultRepository stepResultRepository,
+                            AgentRepository agentRepository,
+                            JobRepository jobRepository) {
         this.executionRepository = executionRepository;
         this.schedulerRepository = schedulerRepository;
         this.stepResultRepository = stepResultRepository;
+        this.agentRepository = agentRepository;
+        this.jobRepository = jobRepository;
     }
 
     /**
@@ -110,5 +121,76 @@ public class AnalyticsService {
         ));
 
         return result.stream().limit(limit).collect(Collectors.toList());
+    }
+
+    /**
+     * Calculates live fleet health: agent statuses + queue depth.
+     * An agent is considered ONLINE if it sent a heartbeat within the last 2 minutes.
+     * An agent is RUNNING if it has an ASSIGNED job with a valid lease.
+     */
+    public Map<String, Object> getFleetHealth(Long orgId) {
+        // Get all agents for this org
+        List<Agent> agents = orgId != null
+                ? agentRepository.findByOrgId(orgId)
+                : agentRepository.findAll();
+
+        LocalDateTime onlineThreshold = LocalDateTime.now().minusMinutes(2);
+
+        // Get all currently assigned jobs (to detect which agents are running)
+        List<Job> assignedJobs = jobRepository.findAll().stream()
+                .filter(j -> "ASSIGNED".equalsIgnoreCase(j.getStatus()))
+                .filter(j -> j.getLeaseExpiresAt() != null && j.getLeaseExpiresAt().isAfter(LocalDateTime.now()))
+                .collect(Collectors.toList());
+        Set<String> busyAgentIds = assignedJobs.stream()
+                .map(Job::getAgentId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // Count queue depth (QUEUED jobs with no agent yet)
+        long queueDepth = jobRepository.findAll().stream()
+                .filter(j -> "QUEUED".equalsIgnoreCase(j.getStatus()))
+                .count();
+
+        // Build per-agent summaries
+        List<Map<String, Object>> agentDetails = new ArrayList<>();
+        int onlineCount = 0;
+        int runningCount = 0;
+        int offlineCount = 0;
+
+        for (Agent agent : agents) {
+            boolean isOnline = agent.getLastSeenAt() != null && agent.getLastSeenAt().isAfter(onlineThreshold);
+            boolean isRunning = isOnline && busyAgentIds.contains(agent.getId());
+
+            String agentStatus;
+            if (isRunning) { agentStatus = "running"; runningCount++; }
+            else if (isOnline) { agentStatus = "idle"; onlineCount++; }
+            else { agentStatus = "offline"; offlineCount++; }
+
+            Map<String, Object> detail = new LinkedHashMap<>();
+            detail.put("id", agent.getId());
+            detail.put("name", agent.getName());
+            detail.put("os", agent.getOs());
+            detail.put("agentVersion", agent.getAgentVersion());
+            detail.put("status", agentStatus);
+            detail.put("lastSeenAt", agent.getLastSeenAt());
+            agentDetails.add(detail);
+        }
+
+        // Sort: running first, then idle, then offline
+        agentDetails.sort((a, b) -> {
+            String[] order = {"running", "idle", "offline"};
+            int ai = Arrays.asList(order).indexOf(a.get("status").toString());
+            int bi = Arrays.asList(order).indexOf(b.get("status").toString());
+            return Integer.compare(ai, bi);
+        });
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("totalAgents", agents.size());
+        result.put("onlineCount", onlineCount);
+        result.put("runningCount", runningCount);
+        result.put("offlineCount", offlineCount);
+        result.put("queueDepth", queueDepth);
+        result.put("agents", agentDetails);
+        return result;
     }
 }
