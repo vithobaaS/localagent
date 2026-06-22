@@ -5,7 +5,7 @@ import { toast } from '../../components/common/ToastContainer';
 import { 
   Trash2, Key, Code, Cpu, Terminal, Copy, 
   ShieldAlert, CheckCircle, RefreshCw, AlertCircle, 
-  Info, ExternalLink, Settings, Eye, EyeOff 
+  Info, ExternalLink, Settings 
 } from 'lucide-react';
 import { fmt, copyToClipboard as copyUtil } from '../../utils/helpers';
 
@@ -20,16 +20,6 @@ export default function ApiKeysView() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '' });
   const [newKey, setNewKey] = useState(null);
-  const [visibleKeys, setVisibleKeys] = useState(new Set());
-
-  const toggleKeyVisibility = (id) => {
-    setVisibleKeys(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   // AI Gating states
   const [aiEnabled, setAiEnabled] = useState(true);
@@ -217,31 +207,7 @@ export default function ApiKeysView() {
                     keys.map(k => (
                       <tr key={k.id}>
                         <td><span className="cell-bold">{k.name}</span></td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <code style={{ color: 'var(--brand)', fontWeight: 700 }}>
-                              {visibleKeys.has(k.id) ? k.token : 'ap_live_••••••••••••••••••••••••'}
-                            </code>
-                            <button 
-                              className="btn btn-ghost" 
-                              style={{ padding: '4px', minWidth: 'unset', height: 'unset' }} 
-                              onClick={() => toggleKeyVisibility(k.id)}
-                              title={visibleKeys.has(k.id) ? "Hide Key" : "View Key"}
-                            >
-                              {visibleKeys.has(k.id) ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                            {visibleKeys.has(k.id) && (
-                              <button 
-                                className="btn btn-ghost" 
-                                style={{ padding: '4px', minWidth: 'unset', height: 'unset' }} 
-                                onClick={() => copyToClipboard(k.token)}
-                                title="Copy Key"
-                              >
-                                <Copy size={14} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
+                        <td><code style={{ color: 'var(--brand)', fontWeight: 700 }}>ap_live_••••••••••••••••••••</code></td>
                         <td><span className="text-muted text-sm">{fmt(k.createdAt)}</span></td>
                         <td>
                           <span className="text-muted text-sm">
