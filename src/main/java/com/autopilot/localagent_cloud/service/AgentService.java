@@ -179,13 +179,7 @@ public class AgentService {
 
         // Phase 1: Try to pick up an existing QUEUED job
         List<com.autopilot.localagent_cloud.model.Job> candidateJobs = jobRepository.findNextAvailableJobs(agentId, groupIDsForQuery, PageRequest.of(0, 50));
-        com.autopilot.localagent_cloud.model.Job selectedJob = candidateJobs.stream().filter(j -> {
-            if (j.getBrowserVersion() == null || j.getBrowserVersion().isBlank()) return true;
-            if (finalAgentBrowserVer.isBlank()) return false;
-            String reqMajor = j.getBrowserVersion().split("\\.")[0];
-            String agentMajor = finalAgentBrowserVer.split("\\.")[0];
-            return reqMajor.equals(agentMajor);
-        }).findFirst().orElse(null);
+        com.autopilot.localagent_cloud.model.Job selectedJob = candidateJobs.stream().findFirst().orElse(null);
 
         if (selectedJob != null) {
             selectedJob.setStatus("ASSIGNED");
@@ -212,14 +206,6 @@ public class AgentService {
         List<Scheduler> activeJobs = schedulerRepository.findAll().stream()
                 .filter(s -> "now".equals(s.getExecutionType()) && "active".equals(s.getStatus()))
                 .filter(s -> agentOrgId == null || agentOrgId.equals(s.getOrgId()))
-                .filter(s -> s.getTargetGroupId() == null || agentGroupIds.contains(s.getTargetGroupId()))
-                .filter(s -> {
-                    if (s.getBrowserVersion() == null || s.getBrowserVersion().isBlank()) return true;
-                    if (finalAgentBrowserVer.isBlank()) return false;
-                    String reqMajor = s.getBrowserVersion().split("\\.")[0];
-                    String agentMajor = finalAgentBrowserVer.split("\\.")[0];
-                    return reqMajor.equals(agentMajor);
-                })
                 .toList();
 
         if (activeJobs.isEmpty()) {
