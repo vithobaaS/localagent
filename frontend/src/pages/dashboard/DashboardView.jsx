@@ -7,7 +7,7 @@ import { toast } from '../../components/common/ToastContainer';
 import { 
   Rocket, CheckCircle2, XCircle, Zap, 
   Search, Download, PieChart as PieChartIcon, 
-  BarChart3, Inbox, OctagonX, Play, Eye
+  BarChart3, Inbox, OctagonX, Play, Eye, AlertTriangle, TrendingDown, TrendingUp, Minus
 } from 'lucide-react';
 
 /* ───────────────────────────────────────
@@ -114,10 +114,95 @@ function BarChart({ data }) {
 }
 
 /* ───────────────────────────────────────
+   FLAKINESS WIDGET
+─────────────────────────────────────── */
+function FlakinessWidget({ data, loading }) {
+  if (loading) return (
+    <div className="card" style={{ padding: '24px' }}>
+      <div className="spinner" style={{ margin: '0 auto' }} />
+    </div>
+  );
+
+  return (
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          <AlertTriangle size={20} style={{ color: '#f59e0b' }} />
+          Flakiness Tracker
+          <span style={{ fontSize: '0.7rem', fontWeight: 600, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', padding: '2px 8px', borderRadius: 20 }}>LIVE</span>
+        </h2>
+        <span style={{ fontSize: '0.75rem', color: 'var(--txt-muted)' }}>Suites with inconsistent pass/fail patterns</span>
+      </div>
+
+      {data.length === 0 ? (
+        <div className="empty-state" style={{ padding: '40px 0' }}>
+          <div className="empty-state-icon"><CheckCircle2 size={40} style={{ color: '#059669' }} /></div>
+          <h3 style={{ color: '#059669' }}>All Suites Are Stable! 🎉</h3>
+          <p>No flaky test suites detected. Keep up the great work!</p>
+        </div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Test Suite</th>
+                <th style={{ textAlign: 'center' }}>Total Runs</th>
+                <th style={{ textAlign: 'center' }}>Passed</th>
+                <th style={{ textAlign: 'center' }}>Failed</th>
+                <th style={{ textAlign: 'center' }}>Flakiness Score</th>
+                <th style={{ textAlign: 'center' }}>Trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((suite, i) => {
+                const score = suite.flakinessScore;
+                const scoreColor = score >= 40 ? '#dc2626' : score >= 20 ? '#f59e0b' : '#059669';
+                const scoreBg = score >= 40 ? 'rgba(220,38,38,0.1)' : score >= 20 ? 'rgba(245,158,11,0.1)' : 'rgba(5,150,105,0.1)';
+                return (
+                  <tr key={i}>
+                    <td>
+                      <span className="cell-bold" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {score >= 40 && <AlertTriangle size={14} style={{ color: '#dc2626', flexShrink: 0 }} />}
+                        {suite.suiteName}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}><span className="text-muted">{suite.totalRuns}</span></td>
+                    <td style={{ textAlign: 'center' }}><span style={{ color: '#059669', fontWeight: 600 }}>{suite.passedRuns}</span></td>
+                    <td style={{ textAlign: 'center' }}><span style={{ color: '#dc2626', fontWeight: 600 }}>{suite.failedRuns}</span></td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <div style={{ width: 80, height: 6, borderRadius: 3, background: 'var(--border)', overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.min(score, 100)}%`, height: '100%', background: scoreColor, borderRadius: 3, transition: 'width 0.8s ease' }} />
+                        </div>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: scoreColor, background: scoreBg, padding: '2px 8px', borderRadius: 20, minWidth: 52, textAlign: 'center' }}>{score}%</span>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {suite.trend === 'deteriorating'
+                        ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, color: '#dc2626', fontSize: '0.78rem', fontWeight: 600 }}><TrendingDown size={14} /> Deteriorating</span>
+                        : suite.trend === 'improving'
+                        ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, color: '#059669', fontSize: '0.78rem', fontWeight: 600 }}><TrendingUp size={14} /> Improving</span>
+                        : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, color: 'var(--txt-muted)', fontSize: '0.78rem', fontWeight: 600 }}><Minus size={14} /> Stable</span>
+                      }
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────
    DASHBOARD VIEW
 ─────────────────────────────────────── */
 export default function DashboardView() {
   const [execs, setExecs] = useState([]);
+  const [flakySuites, setFlakySuites] = useState([]);
+  const [flakyLoading, setFlakyLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [entries, setEntries] = useState(10);
@@ -146,6 +231,12 @@ export default function DashboardView() {
         localStorage.removeItem('ap_new_registration');
       }
     }).catch(() => setLoading(false));
+
+    // Fetch flaky suites
+    api('/api/analytics/flaky-suites?limit=5')
+      .then(r => r.json())
+      .then(data => { setFlakySuites(data || []); setFlakyLoading(false); })
+      .catch(() => setFlakyLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -250,6 +341,9 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+
+      {/* Flakiness Tracker */}
+      <FlakinessWidget data={flakySuites} loading={flakyLoading} />
 
       <TableCard title="Recent Test Executions" total={filtered.length} maxHeight="400px"
         search={search} onSearch={s => { setSearch(s); setPage(0); }}
