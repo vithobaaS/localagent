@@ -1,6 +1,8 @@
 package com.autopilot.localagent_cloud.controller;
 
+import com.autopilot.localagent_cloud.model.AuditLog;
 import com.autopilot.localagent_cloud.model.TestSuite;
+import com.autopilot.localagent_cloud.repository.AuditLogRepository;
 import com.autopilot.localagent_cloud.service.TestSuiteService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,16 @@ import java.util.Map;
 public class TestSuiteController {
 
     private final TestSuiteService testSuiteService;
+    private final AuditLogRepository auditLogRepository;
 
-    public TestSuiteController(TestSuiteService testSuiteService) {
+    public TestSuiteController(TestSuiteService testSuiteService, AuditLogRepository auditLogRepository) {
         this.testSuiteService = testSuiteService;
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    private String getUserEmail(HttpServletRequest req) {
+        Object e = req.getAttribute("email");
+        return e != null ? e.toString() : "SYSTEM";
     }
 
     private Long orgId(HttpServletRequest req) {
@@ -38,14 +47,24 @@ public class TestSuiteController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createTestSuite(
             @RequestBody Map<String, Object> body, HttpServletRequest req) {
-        return testSuiteService.create(body, orgId(req));
+        ResponseEntity<Map<String, Object>> res = testSuiteService.create(body, orgId(req));
+        if (res.getStatusCode().is2xxSuccessful() && res.getBody() != null) {
+            TestSuite suite = (TestSuite) res.getBody().get("suite");
+            auditLogRepository.save(new AuditLog(orgId(req), getUserEmail(req), "CREATE", "TEST_SUITE", suite.getId().toString(), "Created Test Suite: " + suite.getName()));
+        }
+        return res;
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateTestSuite(
             @PathVariable("id") Long id,
-            @RequestBody Map<String, Object> body) {
-        return testSuiteService.update(id, body);
+            @RequestBody Map<String, Object> body, HttpServletRequest req) {
+        ResponseEntity<Map<String, Object>> res = testSuiteService.update(id, body);
+        if (res.getStatusCode().is2xxSuccessful() && res.getBody() != null) {
+            TestSuite suite = (TestSuite) res.getBody().get("suite");
+            auditLogRepository.save(new AuditLog(orgId(req), getUserEmail(req), "UPDATE", "TEST_SUITE", suite.getId().toString(), "Updated Test Suite: " + suite.getName()));
+        }
+        return res;
     }
 
     @PostMapping("/{id}/run")
@@ -57,7 +76,11 @@ public class TestSuiteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTestSuite(@PathVariable("id") Long id) {
-        return testSuiteService.delete(id);
+    public ResponseEntity<Void> deleteTestSuite(@PathVariable("id") Long id, HttpServletRequest req) {
+        ResponseEntity<Void> res = testSuiteService.delete(id);
+        if (res.getStatusCode().is2xxSuccessful()) {
+            auditLogRepository.save(new AuditLog(orgId(req), getUserEmail(req), "DELETE", "TEST_SUITE", id.toString(), "Deleted Test Suite ID: " + id));
+        }
+        return res;
     }
 }

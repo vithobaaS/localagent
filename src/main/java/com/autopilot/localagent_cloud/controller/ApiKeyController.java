@@ -1,7 +1,9 @@
 package com.autopilot.localagent_cloud.controller;
 
 import com.autopilot.localagent_cloud.model.ApiKey;
+import com.autopilot.localagent_cloud.model.AuditLog;
 import com.autopilot.localagent_cloud.repository.ApiKeyRepository;
+import com.autopilot.localagent_cloud.repository.AuditLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +19,16 @@ import java.util.UUID;
 public class ApiKeyController {
 
     private final ApiKeyRepository apiKeyRepository;
+    private final AuditLogRepository auditLogRepository;
 
-    public ApiKeyController(ApiKeyRepository apiKeyRepository) {
+    public ApiKeyController(ApiKeyRepository apiKeyRepository, AuditLogRepository auditLogRepository) {
         this.apiKeyRepository = apiKeyRepository;
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    private String getUserEmail(HttpServletRequest req) {
+        Object e = req.getAttribute("email");
+        return e != null ? e.toString() : "API_KEY";
     }
 
     private Long orgId(HttpServletRequest req) {
@@ -50,6 +59,7 @@ public class ApiKeyController {
         key.setToken("ap_live_" + UUID.randomUUID().toString().replace("-", ""));
 
         ApiKey saved = apiKeyRepository.save(key);
+        auditLogRepository.save(new AuditLog(orgId, getUserEmail(req), "CREATE", "API_KEY", saved.getId().toString(), "Generated API Key: " + saved.getName()));
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -63,6 +73,7 @@ public class ApiKeyController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).<Void>build();
             }
             apiKeyRepository.delete(key);
+            auditLogRepository.save(new AuditLog(orgId, getUserEmail(req), "DELETE", "API_KEY", key.getId().toString(), "Revoked API Key: " + key.getName()));
             return ResponseEntity.noContent().<Void>build();
         }).orElse(ResponseEntity.notFound().build());
     }

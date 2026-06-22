@@ -1,7 +1,9 @@
 package com.autopilot.localagent_cloud.controller;
 
+import com.autopilot.localagent_cloud.model.AuditLog;
 import com.autopilot.localagent_cloud.model.Environment;
 import com.autopilot.localagent_cloud.model.Variable;
+import com.autopilot.localagent_cloud.repository.AuditLogRepository;
 import com.autopilot.localagent_cloud.repository.EnvironmentRepository;
 import com.autopilot.localagent_cloud.repository.VariableRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,11 +23,19 @@ public class EnvironmentController {
 
     private final EnvironmentRepository environmentRepository;
     private final VariableRepository variableRepository;
+    private final AuditLogRepository auditLogRepository;
 
     public EnvironmentController(EnvironmentRepository environmentRepository,
-                                  VariableRepository variableRepository) {
+                                  VariableRepository variableRepository,
+                                  AuditLogRepository auditLogRepository) {
         this.environmentRepository = environmentRepository;
         this.variableRepository = variableRepository;
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    private String getUserEmail(HttpServletRequest req) {
+        Object e = req.getAttribute("email");
+        return e != null ? e.toString() : "SYSTEM";
     }
 
     private Long getOrgId(HttpServletRequest request) {
@@ -46,7 +56,9 @@ public class EnvironmentController {
         Long orgId = getOrgId(request);
         if (orgId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         env.setOrgId(orgId);
-        return ResponseEntity.ok(environmentRepository.save(env));
+        Environment saved = environmentRepository.save(env);
+        auditLogRepository.save(new AuditLog(orgId, getUserEmail(request), "CREATE", "ENVIRONMENT", saved.getId().toString(), "Created Environment: " + saved.getName()));
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/{id}")
@@ -60,7 +72,9 @@ public class EnvironmentController {
                 .map(e -> {
                     e.setName(body.getName());
                     e.setDescription(body.getDescription());
-                    return ResponseEntity.ok(environmentRepository.save(e));
+                    Environment saved = environmentRepository.save(e);
+                    auditLogRepository.save(new AuditLog(orgId, getUserEmail(request), "UPDATE", "ENVIRONMENT", saved.getId().toString(), "Updated Environment: " + saved.getName()));
+                    return ResponseEntity.ok(saved);
                 }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -78,6 +92,7 @@ public class EnvironmentController {
         List<Variable> envVars = variableRepository.findByOrgIdAndScopeAndScopeId(orgId, "ENVIRONMENT", id);
         variableRepository.deleteAll(envVars);
         environmentRepository.deleteById(id);
+        auditLogRepository.save(new AuditLog(orgId, getUserEmail(request), "DELETE", "ENVIRONMENT", id.toString(), "Deleted Environment: " + env.getName()));
         return ResponseEntity.ok().build();
     }
 
