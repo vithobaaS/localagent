@@ -8,9 +8,16 @@ export async function api(path, opts = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(path, { ...opts, headers });
   if (res.status === 401) {
-    localStorage.removeItem('ap_token');
-    localStorage.removeItem('ap_user');
-    window.location.href = '/login';
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+      const userStr = localStorage.getItem('ap_user');
+      if (userStr) {
+        window.dispatchEvent(new Event('ap_session_expired'));
+      } else {
+        localStorage.removeItem('ap_token');
+        localStorage.removeItem('ap_user');
+        window.location.href = '/login';
+      }
+    }
   }
   return res;
 }

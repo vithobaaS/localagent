@@ -13,6 +13,7 @@ import Header from './components/layout/Header';
 import { OnboardingWizard } from './components/modals/OnboardingWizard';
 import { PairAgentModal } from './components/modals/PairAgentModal';
 import { InstallAgentModal } from './components/modals/InstallAgentModal';
+import { SessionExpiredModal } from './components/modals/SessionExpiredModal';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -100,6 +101,7 @@ export default function App() {
           <Route path="/test-cases/studio/create"   element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
           <Route path="/test-cases/studio/edit/:id" element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
         </Routes>
+        <SessionExpiredModal />
         <ToastContainer />
       </AuthContext.Provider>
       </ThemeProvider>
@@ -166,6 +168,7 @@ export default function App() {
       {showOnboarding && <OnboardingWizard onClose={closeOnboarding} />}
       {showInstall && <InstallAgentModal onClose={() => setShowInstall(false)} />}
       {showPairing && <PairAgentModal onClose={() => setShowPairing(false)} />}
+      <SessionExpiredModal />
 
       {lightbox && (
         <div className="lightbox" onClick={() => setLightbox(null)}>
