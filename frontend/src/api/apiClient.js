@@ -4,6 +4,13 @@ export function getUser()  { try { return JSON.parse(localStorage.getItem('ap_us
 // Central API fetch — injects JWT on every request
 export async function api(path, opts = {}) {
   const token = getToken();
+  
+  if (!token && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+    localStorage.removeItem('ap_user');
+    window.location.href = '/login';
+    return new Response(null, { status: 401 });
+  }
+
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(path, { ...opts, headers });
