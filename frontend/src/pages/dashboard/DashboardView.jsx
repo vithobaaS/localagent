@@ -63,35 +63,79 @@ function TableCard({ title, headerRight, search, onSearch, entries, onEntries, c
   );
 }
 
-function DonutChart({ data, size = 180 }) {
+function DonutChart({ data, size = 220 }) {
   const total = data.reduce((a, d) => a + d.value, 0);
-  if (total === 0) return <div className="chart-empty">No data yet</div>;
-  const r = 70, c = 2 * Math.PI * r;
+  if (total === 0) return <div className="chart-empty" style={{ padding: '40px', textAlign: 'center', color: 'var(--txt-muted)' }}>No data yet</div>;
+  const r = 80, c = 2 * Math.PI * r;
+  
+  // Calculate success rate for center display
+  const passed = data.find(d => d.label === 'Passed')?.value || 0;
+  const successRate = total > 0 ? Math.round((passed / total) * 100) : 0;
 
   return (
-    <div className="donut-wrap">
-      <svg width={size} height={size} viewBox="0 0 200 200">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '48px', padding: '24px 10px', flexWrap: 'wrap' }}>
+      
+      {/* SVG Container with drop shadow */}
+      <div style={{ position: 'relative', width: size, height: size, filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.15))' }}>
+        <svg width={size} height={size} viewBox="0 0 200 200" style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
+          {/* Background track */}
+          <circle cx="100" cy="100" r={r} fill="none" stroke="var(--border)" strokeWidth="16" opacity="0.4" />
+          
+          {data.map((d, i) => {
+            const pct = d.value / total;
+            // Add a tiny gap between segments
+            const dash = pct * c - (pct < 1 ? 3 : 0);
+            const gap = c - dash;
+            const prevPct = data.slice(0, i).reduce((sum, item) => sum + item.value, 0) / total;
+            const o = prevPct * c;
+            
+            return (
+              <circle 
+                key={i} cx="100" cy="100" r={r} 
+                fill="none" 
+                stroke={d.color} 
+                strokeWidth={d.label === 'Passed' ? '22' : '18'}
+                strokeDasharray={`${Math.max(0, dash)} ${gap}`} 
+                strokeDashoffset={-o}
+                strokeLinecap={pct < 1 && pct > 0.03 ? "round" : "butt"}
+                style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), stroke-dashoffset 1.2s ease' }} 
+              />
+            );
+          })}
+        </svg>
+        
+        {/* Center Text (HTML overlay for sharper fonts) */}
+        <div style={{ 
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none'
+        }}>
+          <span style={{ fontSize: '2.8rem', fontWeight: 900, color: 'var(--txt-h)', lineHeight: 1, letterSpacing: '-0.04em' }}>{successRate}%</span>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--txt-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '6px' }}>Pass Rate</span>
+        </div>
+      </div>
+
+      {/* Rich Legend */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '180px' }}>
         {data.map((d, i) => {
-          const pct = d.value / total;
-          const dash = pct * c;
-          const gap = c - dash;
-          const prevPct = data.slice(0, i).reduce((sum, item) => sum + item.value, 0) / total;
-          const o = prevPct * c;
-          return <circle key={i} cx="100" cy="100" r={r} fill="none" stroke={d.color} strokeWidth="22"
-            strokeDasharray={`${dash} ${gap}`} strokeDashoffset={-o}
-            style={{ transition: 'stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease' }} />;
+          const pct = Math.round((d.value / total) * 100);
+          return (
+            <div key={i} style={{ 
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', 
+              background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)', transition: 'transform 0.2s ease', cursor: 'default'
+            }} onMouseOver={e => e.currentTarget.style.transform = 'translateX(4px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateX(0)'}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ width: '14px', height: '14px', borderRadius: '5px', background: d.color, boxShadow: `0 0 10px ${d.color}80` }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--txt-muted)' }}>{d.label}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--txt-h)' }}>{d.value}</span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 800, color: d.color, background: `${d.color}20`, padding: '2px 8px', borderRadius: '20px', minWidth: '42px', textAlign: 'center' }}>{pct}%</span>
+              </div>
+            </div>
+          );
         })}
-        <text x="100" y="94" textAnchor="middle" fill="var(--txt-h)" fontSize="28" fontWeight="800" fontFamily="'Plus Jakarta Sans'">{total}</text>
-        <text x="100" y="116" textAnchor="middle" fill="var(--txt-muted)" fontSize="11" fontWeight="500">Total Runs</text>
-      </svg>
-      <div className="donut-legend">
-        {data.map((d, i) => (
-          <div key={i} className="legend-item">
-            <span className="legend-dot" style={{ background: d.color }} />
-            <span className="legend-label">{d.label}</span>
-            <span className="legend-val">{d.value}</span>
-          </div>
-        ))}
       </div>
     </div>
   );
