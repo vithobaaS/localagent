@@ -895,12 +895,13 @@ export default function DashboardView() {
           </div>
         </div>
 
-        {/* ── ROW 4: Fleet Health | Flakiness Tracker side-by-side ── */}
-        <div style={{ minWidth: 0 }}>
+        {/* ── ROW 4: Fleet Health (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
           <FleetHealthWidget data={fleetHealth} loading={fleetLoading} />
         </div>
 
-        <div style={{ minWidth: 0 }}>
+        {/* ── ROW 5: Flakiness Tracker (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
           <FlakinessWidget data={flakySuites} loading={flakyLoading} />
         </div>
 
