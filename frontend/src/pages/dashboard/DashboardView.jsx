@@ -836,90 +836,116 @@ export default function DashboardView() {
     <div className="page-view">
       <PageHeader title="Dashboard" crumb="Overview" />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        <div className="stats-grid">
-        {[
-          { label: 'Total Runs', val: total, icon: <Rocket size={24} />, cls: 'blue', trend: 'neu', t: 'All time' },
-          { label: 'Passed', val: passed, icon: <CheckCircle2 size={24} />, cls: 'green', trend: 'up', t: `${total ? Math.round(passed / total * 100) : 0}% pass rate` },
-          { label: 'Failed', val: failed, icon: <XCircle size={24} />, cls: 'yellow', trend: failed > 0 ? 'down' : 'neu', t: failed > 0 ? 'Needs attention' : 'All clear' },
-          { label: 'Running', val: running, icon: <Zap size={24} />, cls: 'purple', trend: 'neu', t: 'In progress' },
-        ].map(s => (
-          <div key={s.label} className={`stat-card ${s.cls}`}>
-            <div className={`stat-icon ${s.cls}`}>{s.icon}</div>
-            <div className="stat-body">
-              <div className="stat-value">{s.val}</div>
-              <div className="stat-label">{s.label}</div>
-              <div className={`stat-trend ${s.trend}`}>{s.t}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* ── PRIORITY GRID LAYOUT ─────────────────────────────────────────────
+          Row 1 (full width): KPI stat cards
+          Row 2 (full width): Time Saved ROI — highest business value
+          Row 3 (2 col):      Pass/Fail Donut  |  7-Day Bar Chart
+          Row 4 (2 col):      Fleet Health     |  Flakiness Tracker
+          Row 5 (full width): Suite Leaderboard
+          Row 6 (full width): Recent Executions table
+      ─────────────────────────────────────────────────────────────────────── */}
+      <div className="dashboard-priority-grid">
 
-      {/* Charts Row */}
-      <div className="charts-row">
-        <div className="card chart-card">
+        {/* ── ROW 1: KPI Stats (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <div className="stats-grid">
+            {[
+              { label: 'Total Runs', val: total,   icon: <Rocket size={24} />,       cls: 'blue',   trend: 'neu',              t: 'All time' },
+              { label: 'Passed',     val: passed,  icon: <CheckCircle2 size={24} />, cls: 'green',  trend: 'up',               t: `${total ? Math.round(passed / total * 100) : 0}% pass rate` },
+              { label: 'Failed',     val: failed,  icon: <XCircle size={24} />,      cls: 'yellow', trend: failed > 0 ? 'down' : 'neu', t: failed > 0 ? 'Needs attention' : 'All clear' },
+              { label: 'Running',    val: running, icon: <Zap size={24} />,          cls: 'purple', trend: 'neu',              t: 'In progress' },
+            ].map(s => (
+              <div key={s.label} className={`stat-card ${s.cls}`}>
+                <div className={`stat-icon ${s.cls}`}>{s.icon}</div>
+                <div className="stat-body">
+                  <div className="stat-value">{s.val}</div>
+                  <div className="stat-label">{s.label}</div>
+                  <div className={`stat-trend ${s.trend}`}>{s.t}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── ROW 2: Time Saved ROI — Wow Factor (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <TimeSavedWidget data={roiData} loading={roiLoading} />
+        </div>
+
+        {/* ── ROW 3: Charts side-by-side ── */}
+        <div className="card chart-card" style={{ height: '100%' }}>
           <div className="card-header" style={{ display: 'flex', alignItems: 'center' }}>
-            <h2 style={{ display: 'flex', alignItems: 'center', margin: 0 }}><PieChartIcon size={20} className="mr-2" /> Pass / Fail Distribution</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', margin: 0 }}>
+              <PieChartIcon size={20} className="mr-2" /> Pass / Fail Distribution
+            </h2>
           </div>
           <div className="chart-body">
             <DonutChart data={donutData} />
           </div>
         </div>
-        <div className="card chart-card">
+
+        <div className="card chart-card" style={{ height: '100%' }}>
           <div className="card-header" style={{ display: 'flex', alignItems: 'center' }}>
-            <h2 style={{ display: 'flex', alignItems: 'center', margin: 0 }}><BarChart3 size={20} className="mr-2" /> Executions — Last 7 Days</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', margin: 0 }}>
+              <BarChart3 size={20} className="mr-2" /> Executions — Last 7 Days
+            </h2>
           </div>
           <div className="chart-body">
             <BarChart data={barData} />
           </div>
         </div>
-      </div>
 
-      {/* Time Saved ROI — Wow Factor */}
-      <TimeSavedWidget data={roiData} loading={roiLoading} />
+        {/* ── ROW 4: Fleet Health | Flakiness Tracker side-by-side ── */}
+        <div style={{ minWidth: 0 }}>
+          <FleetHealthWidget data={fleetHealth} loading={fleetLoading} />
+        </div>
 
-      {/* Agent Fleet Health */}
-      <FleetHealthWidget data={fleetHealth} loading={fleetLoading} />
+        <div style={{ minWidth: 0 }}>
+          <FlakinessWidget data={flakySuites} loading={flakyLoading} />
+        </div>
 
-      {/* Suite Performance Leaderboard */}
-      <SuitePerformanceWidget data={suitePerf} loading={suitePerfLoading} />
+        {/* ── ROW 5: Suite Performance Leaderboard (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <SuitePerformanceWidget data={suitePerf} loading={suitePerfLoading} />
+        </div>
 
-      {/* Flakiness Tracker */}
-      <FlakinessWidget data={flakySuites} loading={flakyLoading} />
+        {/* ── ROW 6: Recent Executions Table (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <TableCard title="Recent Test Executions" total={filtered.length} maxHeight="400px"
+            search={search} onSearch={s => { setSearch(s); setPage(0); }}
+            entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
+            page={page} onPage={setPage}
+            headerRight={<button className="btn btn-ghost btn-sm" onClick={() => window.print()}><Download size={16} className="mr-2 inline" /> Export</button>}>
+            <table className="data-table">
+              <thead><tr><th>#</th><th>Test Suite Name</th><th>Browser</th><th>Started</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner" /></td></tr>
+                : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}><div className="empty-state"><div className="empty-state-icon"><Inbox size={48} /></div><h3>No executions found</h3><p>Run a test suite to see results here.</p></div></td></tr>
+                : paged.map(e => (
+                  <tr key={e.id}>
+                    <td><span className="cell-bold">#{e.orgExecutionId || e.id}</span></td>
+                    <td><span className="cell-bold">{getName(e)}</span></td>
+                    <td><span className={`badge ${statusBadge(getBrowser(e))}`}>{getBrowser(e)}</span></td>
+                    <td><span className="text-muted text-sm">{fmt(e.createdAt)}</span></td>
+                    <td><span className={`badge ${statusBadge(e.status)}`}>{e.status}</span></td>
+                    <td>
+                      <div className="action-row">
+                        {(e.status === 'running' || e.status === 'queued') && (
+                          <button className="act-btn kill" title="Stop Execution" style={{color: '#dc2626'}} onClick={() => stopExecution(e.id)}><OctagonX size={18} /></button>
+                        )}
+                        {(e.status !== 'running' && e.status !== 'queued') && (
+                          <button className="act-btn view" title="Re-run Execution" style={{color: '#059669'}} onClick={() => rerunExecution(e.id)}><Play size={18} /></button>
+                        )}
+                        <button className="act-btn view" title="View Report" onClick={() => navigate(`/executions/${e.id}`)}><Eye size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableCard>
+        </div>
 
-      <TableCard title="Recent Test Executions" total={filtered.length} maxHeight="400px"
-        search={search} onSearch={s => { setSearch(s); setPage(0); }}
-        entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
-        page={page} onPage={setPage}
-        headerRight={<button className="btn btn-ghost btn-sm" onClick={() => window.print()}><Download size={16} className="mr-2 inline" /> Export</button>}>
-        <table className="data-table">
-          <thead><tr><th>#</th><th>Test Suite Name</th><th>Browser</th><th>Started</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody>
-            {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner" /></td></tr>
-            : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}><div className="empty-state"><div className="empty-state-icon"><Inbox size={48} /></div><h3>No executions found</h3><p>Run a test suite to see results here.</p></div></td></tr>
-            : paged.map(e => (
-              <tr key={e.id}>
-                <td><span className="cell-bold">#{e.orgExecutionId || e.id}</span></td>
-                <td><span className="cell-bold">{getName(e)}</span></td>
-                <td><span className={`badge ${statusBadge(getBrowser(e))}`}>{getBrowser(e)}</span></td>
-                <td><span className="text-muted text-sm">{fmt(e.createdAt)}</span></td>
-                <td><span className={`badge ${statusBadge(e.status)}`}>{e.status}</span></td>
-                <td>
-                  <div className="action-row">
-                    {(e.status === 'running' || e.status === 'queued') && (
-                      <button className="act-btn kill" title="Stop Execution" style={{color: '#dc2626'}} onClick={() => stopExecution(e.id)}><OctagonX size={18} /></button>
-                    )}
-                    {(e.status !== 'running' && e.status !== 'queued') && (
-                      <button className="act-btn view" title="Re-run Execution" style={{color: '#059669'}} onClick={() => rerunExecution(e.id)}><Play size={18} /></button>
-                    )}
-                    <button className="act-btn view" title="View Report" onClick={() => navigate(`/executions/${e.id}`)}><Eye size={18} /></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </TableCard>
       </div>
     </div>
   );

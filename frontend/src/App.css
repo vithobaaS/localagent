@@ -527,6 +527,26 @@ input, select, textarea { font-family: inherit; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── Dashboard Priority Grid ──────────────────────────────────────────────
+   A 2-column layout. Full-width items use gridColumn: 1 / -1.
+   Collapses gracefully to 1 column on narrower screens.
+────────────────────────────────────────────────────────────────────────── */
+.dashboard-priority-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-priority-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-priority-grid > * {
+    grid-column: 1 / -1 !important;
+  }
+}
+
 .page-header {
   display: flex;
   align-items: flex-start;
