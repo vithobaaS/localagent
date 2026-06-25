@@ -1,11 +1,11 @@
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   AutoPilot â€” Complete Premium Design System
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ────────────────────────────────────────────────────────────────────────────────────────────────────
+   AutoPilot — Complete Premium Design System
+   ──────────────────────────────────────────────────────────────────────────────────────────────────── */
 
-/* â”€â”€â”€â”€ Google Fonts â”€â”€â”€â”€ */
+/* ──── Google Fonts ──── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* â”€â”€â”€â”€ Design Tokens â”€â”€â”€â”€ */
+/* ──── Design Tokens ──── */
 /* ──── Design Tokens — Dark Theme (default) ──── */
 :root,
 :root[data-theme="dark"] {
@@ -78,7 +78,7 @@
 
 /* ──── Light Theme Overrides ──── */
 :root[data-theme="light"] {
-  --sb-bg:          #ffffff;
+  --sb-bg:          #e3e5e8;
   --sb-border:      #e4e4e7;
   --sb-txt:         #52525b;
   --sb-hover-bg:    #f4f4f5;
@@ -121,7 +121,7 @@
   --auth-bg:      #fafafa;
   --auth-card-bg: #ffffff;
   --auth-border:  #e4e4e7;
-  --header-bg:    rgba(255,255,255,0.90);
+  --header-bg:    rgba(227,229,232,0.90);
 }
 
 /* Light theme header fix */
