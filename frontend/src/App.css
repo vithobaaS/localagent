@@ -79,7 +79,7 @@
 /* ──── Light Theme Overrides ──── */
 :root[data-theme="light"] {
   --sb-bg:          #e3e5e8;
-  --sb-border:      #e4e4e7;
+  --sb-border:      #cbd5e1;
   --sb-txt:         #52525b;
   --sb-hover-bg:    #f4f4f5;
   --sb-hover-txt:   #18181b;
@@ -89,8 +89,8 @@
   --bg:             #e3e5e8;
   --surface:        #ffffff;
   --surface-2:      #f4f4f5;
-  --border:         #e4e4e7;
-  --border-hover:   #d4d4d8;
+  --border:         #cbd5e1;
+  --border-hover:   #94a3b8;
 
   --txt-h:          #18181b;
   --txt:            #52525b;
