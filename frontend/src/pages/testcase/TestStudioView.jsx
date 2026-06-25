@@ -191,7 +191,15 @@ function Configurator({ step, onChange }) {
     </div>
   );
 
-  const filtered = ALL_ACTIONS.filter(a => a.toLowerCase().includes(search.toLowerCase()));
+  const searchLower = search.toLowerCase();
+  const filtered = ALL_ACTIONS.filter(a => a.toLowerCase().includes(searchLower))
+    .sort((a, b) => {
+      const aStarts = a.toLowerCase().startsWith(searchLower);
+      const bStarts = b.toLowerCase().startsWith(searchLower);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      return a.localeCompare(b);
+    });
   const meta = getActionMeta(step.actionName);
 
   return (
@@ -208,14 +216,14 @@ function Configurator({ step, onChange }) {
         {/* Step Type Toggle */}
         <div className="ts-field">
           <label className="ts-field-label">Step Type</label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', background: 'var(--surface-2)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border)' }}>
             {['ACTION', 'VERIFY'].map(t => (
               <button key={t} onClick={() => onChange('stepType', t)}
-                style={{ flex: 1, padding: '7px 0', borderRadius: 8, border: '1.5px solid', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem', transition: 'all 0.15s',
-                  background: step.stepType === t ? (t === 'VERIFY' ? '#d1fae5' : 'var(--brand)') : 'transparent',
-                  color: step.stepType === t ? (t === 'VERIFY' ? '#065f46' : '#fff') : 'var(--txt-muted)',
-                  borderColor: step.stepType === t ? (t === 'VERIFY' ? '#10b981' : 'var(--brand)') : 'var(--border)' }}>
-                {t === 'ACTION' ? <><Settings size={14}/> ACTION</> : <><CheckCircle size={14}/> VERIFY</>}
+                style={{ flex: 1, padding: '8px 0', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  background: step.stepType === t ? 'var(--surface)' : 'transparent',
+                  color: step.stepType === t ? (t === 'VERIFY' ? 'var(--green)' : 'var(--brand)') : 'var(--txt-muted)',
+                  boxShadow: step.stepType === t ? 'var(--shadow-sm)' : 'none' }}>
+                {t === 'ACTION' ? <Settings size={14}/> : <CheckCircle size={14}/>} {t}
               </button>
             ))}
           </div>
@@ -224,11 +232,13 @@ function Configurator({ step, onChange }) {
         <div className="ts-field">
           <label className="ts-field-label">Action *</label>
           <div style={{position:'relative'}}>
+            <Search size={14} style={{position:'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--txt-muted)'}} />
             <input className="ts-input" value={search}
               onChange={e => { setSearch(e.target.value); onChange('actionName', e.target.value); setOpen(true); }}
               onFocus={() => setOpen(true)}
               onBlur={() => setTimeout(() => setOpen(false), 150)}
               placeholder="Search action…"
+              style={{ paddingLeft: 36 }}
             />
             {open && filtered.length > 0 && (
               <div className="ts-dropdown">
