@@ -836,7 +836,8 @@ export default function DashboardView() {
     <div className="page-view">
       <PageHeader title="Dashboard" crumb="Overview" />
 
-      <div className="stats-grid">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        <div className="stats-grid">
         {[
           { label: 'Total Runs', val: total, icon: <Rocket size={24} />, cls: 'blue', trend: 'neu', t: 'All time' },
           { label: 'Passed', val: passed, icon: <CheckCircle2 size={24} />, cls: 'green', trend: 'up', t: `${total ? Math.round(passed / total * 100) : 0}% pass rate` },
@@ -919,6 +920,7 @@ export default function DashboardView() {
           </tbody>
         </table>
       </TableCard>
+      </div>
     </div>
   );
 }
