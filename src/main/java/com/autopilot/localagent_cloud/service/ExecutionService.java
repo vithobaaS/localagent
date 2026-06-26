@@ -62,4 +62,13 @@ public class ExecutionService {
             return ResponseEntity.ok(detail);
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<Void> deleteById(Long id) {
+        if (!executionRepository.existsById(id)) return ResponseEntity.notFound().build();
+        stepResultRepository.deleteAll(stepResultRepository.findByExecutionId(id));
+        screenshotRepository.deleteAll(screenshotRepository.findByExecutionId(id));
+        executionRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
 }

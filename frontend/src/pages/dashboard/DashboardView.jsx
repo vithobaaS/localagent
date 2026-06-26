@@ -8,7 +8,7 @@ import {
   Rocket, CheckCircle2, XCircle, Zap, 
   Search, Download, PieChart as PieChartIcon, 
   BarChart3, Inbox, OctagonX, Play, Eye, AlertTriangle, TrendingDown, TrendingUp, Minus,
-  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered, Trophy, Timer, DollarSign, Sparkles
+  Server, Cpu, Wifi, WifiOff, Clock, ListOrdered, Trophy, Timer, DollarSign, Sparkles, Trash2
 } from 'lucide-react';
 
 /* ───────────────────────────────────────
@@ -790,6 +790,21 @@ export default function DashboardView() {
     }
   };
 
+  const deleteExecution = async (id) => {
+    if (!window.confirm("Are you sure you want to permanently delete this execution?")) return;
+    try {
+      const res = await api(`/api/executions/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setExecs(execs.filter(e => e.id !== id));
+        toast('success', 'Deleted', 'Execution deleted successfully.');
+      } else {
+        toast('error', 'Error', 'Failed to delete execution.');
+      }
+    } catch {
+      toast('error', 'Error', 'Error connecting to server.');
+    }
+  };
+
   const rerunExecution = async (id) => {
     try {
       const res = await api(`/api/executions/${id}/rerun`, { method: 'POST' });
@@ -867,7 +882,45 @@ export default function DashboardView() {
           </div>
         </div>
 
-        {/* ── ROW 2: Time Saved ROI — Wow Factor (full width) ── */}
+        {/* ── ROW 2: Recent Executions Table (full width) ── */}
+        <div style={{ gridColumn: '1 / -1' }}>
+          <TableCard title="Recent Test Executions" total={filtered.length} maxHeight="400px"
+            search={search} onSearch={s => { setSearch(s); setPage(0); }}
+            entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
+            page={page} onPage={setPage}
+            headerRight={<button className="btn btn-ghost btn-sm" onClick={() => window.print()}><Download size={16} className="mr-2 inline" /> Export</button>}>
+            <table className="data-table">
+              <thead><tr><th>#</th><th>Test Suite Name</th><th>Browser</th><th>Started</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner" /></td></tr>
+                : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}><div className="empty-state"><div className="empty-state-icon"><Inbox size={48} /></div><h3>No executions found</h3><p>Run a test suite to see results here.</p></div></td></tr>
+                : paged.map(e => (
+                  <tr key={e.id}>
+                    <td><span className="cell-bold">#{e.orgExecutionId || e.id}</span></td>
+                    <td><span className="cell-bold">{getName(e)}</span></td>
+                    <td><span className={`badge ${statusBadge(getBrowser(e))}`}>{getBrowser(e)}</span></td>
+                    <td><span className="text-muted text-sm">{fmt(e.createdAt)}</span></td>
+                    <td><span className={`badge ${statusBadge(e.status)}`}>{e.status}</span></td>
+                    <td>
+                      <div className="action-row">
+                        {(e.status === 'running' || e.status === 'queued') && (
+                          <button className="act-btn kill" title="Stop Execution" style={{color: '#dc2626'}} onClick={() => stopExecution(e.id)}><OctagonX size={18} /></button>
+                        )}
+                        {(e.status !== 'running' && e.status !== 'queued') && (
+                          <button className="act-btn view" title="Re-run Execution" style={{color: '#059669'}} onClick={() => rerunExecution(e.id)}><Play size={18} /></button>
+                        )}
+                        <button className="act-btn view" title="View Report" onClick={() => navigate(`/executions/${e.id}`)}><Eye size={18} /></button>
+                        <button className="act-btn delete" title="Delete Execution" onClick={() => deleteExecution(e.id)}><Trash2 size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableCard>
+        </div>
+
+        {/* ── ROW 3: Time Saved ROI — Wow Factor (full width) ── */}
         <div style={{ gridColumn: '1 / -1' }}>
           <TimeSavedWidget data={roiData} loading={roiLoading} />
         </div>
@@ -910,42 +963,7 @@ export default function DashboardView() {
           <SuitePerformanceWidget data={suitePerf} loading={suitePerfLoading} />
         </div>
 
-        {/* ── ROW 6: Recent Executions Table (full width) ── */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <TableCard title="Recent Test Executions" total={filtered.length} maxHeight="400px"
-            search={search} onSearch={s => { setSearch(s); setPage(0); }}
-            entries={entries} onEntries={n => { setEntries(n); setPage(0); }}
-            page={page} onPage={setPage}
-            headerRight={<button className="btn btn-ghost btn-sm" onClick={() => window.print()}><Download size={16} className="mr-2 inline" /> Export</button>}>
-            <table className="data-table">
-              <thead><tr><th>#</th><th>Test Suite Name</th><th>Browser</th><th>Started</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody>
-                {loading ? <tr className="row-loading"><td colSpan={6}><div className="spinner" /></td></tr>
-                : paged.length === 0 ? <tr className="row-empty"><td colSpan={6}><div className="empty-state"><div className="empty-state-icon"><Inbox size={48} /></div><h3>No executions found</h3><p>Run a test suite to see results here.</p></div></td></tr>
-                : paged.map(e => (
-                  <tr key={e.id}>
-                    <td><span className="cell-bold">#{e.orgExecutionId || e.id}</span></td>
-                    <td><span className="cell-bold">{getName(e)}</span></td>
-                    <td><span className={`badge ${statusBadge(getBrowser(e))}`}>{getBrowser(e)}</span></td>
-                    <td><span className="text-muted text-sm">{fmt(e.createdAt)}</span></td>
-                    <td><span className={`badge ${statusBadge(e.status)}`}>{e.status}</span></td>
-                    <td>
-                      <div className="action-row">
-                        {(e.status === 'running' || e.status === 'queued') && (
-                          <button className="act-btn kill" title="Stop Execution" style={{color: '#dc2626'}} onClick={() => stopExecution(e.id)}><OctagonX size={18} /></button>
-                        )}
-                        {(e.status !== 'running' && e.status !== 'queued') && (
-                          <button className="act-btn view" title="Re-run Execution" style={{color: '#059669'}} onClick={() => rerunExecution(e.id)}><Play size={18} /></button>
-                        )}
-                        <button className="act-btn view" title="View Report" onClick={() => navigate(`/executions/${e.id}`)}><Eye size={18} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableCard>
-        </div>
+        {/* End of layout */}
 
       </div>
     </div>

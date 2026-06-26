@@ -54,4 +54,9 @@ public class ExecutionController {
     public ResponseEntity<Void> rerunExecution(@PathVariable("id") Long executionId) {
         return agentService.rerunExecution(executionId);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteExecution(@PathVariable("id") Long executionId) {
+        return executionService.deleteById(executionId);
+    }
 }
