@@ -10,6 +10,7 @@ import com.autopilot.localagent_cloud.repository.ExecutionRepository;
 import com.autopilot.localagent_cloud.repository.JobRepository;
 import com.autopilot.localagent_cloud.repository.SchedulerRepository;
 import com.autopilot.localagent_cloud.repository.StepResultRepository;
+import com.autopilot.localagent_cloud.repository.TestSuiteRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,17 +25,20 @@ public class AnalyticsService {
     private final StepResultRepository stepResultRepository;
     private final AgentRepository agentRepository;
     private final JobRepository jobRepository;
+    private final TestSuiteRepository testSuiteRepository;
 
     public AnalyticsService(ExecutionRepository executionRepository,
                             SchedulerRepository schedulerRepository,
                             StepResultRepository stepResultRepository,
                             AgentRepository agentRepository,
-                            JobRepository jobRepository) {
+                            JobRepository jobRepository,
+                            TestSuiteRepository testSuiteRepository) {
         this.executionRepository = executionRepository;
         this.schedulerRepository = schedulerRepository;
         this.stepResultRepository = stepResultRepository;
         this.agentRepository = agentRepository;
         this.jobRepository = jobRepository;
+        this.testSuiteRepository = testSuiteRepository;
     }
 
     /**
@@ -62,8 +66,14 @@ public class AnalyticsService {
             schedulerSuiteIds.put(s.getId(), s.getTestSuiteId());
         });
 
+        Set<Long> existingSuiteIds = testSuiteRepository.findAll().stream().map(s -> s.getId()).collect(Collectors.toSet());
+
         // 3. Group executions by testSuiteName via schedulerId
         Map<String, List<Execution>> bySuite = allExecs.stream()
+                .filter(e -> {
+                    Long suiteId = schedulerSuiteIds.get(e.getSchedulerId());
+                    return suiteId != null && existingSuiteIds.contains(suiteId);
+                })
                 .collect(Collectors.groupingBy(e -> {
                     String name = schedulerNames.get(e.getSchedulerId());
                     return name != null ? name : "Suite #" + e.getSchedulerId();
@@ -142,10 +152,20 @@ public class AnalyticsService {
 
         // Build scheduler name lookup
         Map<Long, String> schedulerNames = new HashMap<>();
-        schedulerRepository.findAll().forEach(s -> schedulerNames.put(s.getId(), s.getTestSuiteName()));
+        Map<Long, Long> schedulerSuiteIds = new HashMap<>();
+        schedulerRepository.findAll().forEach(s -> {
+            schedulerNames.put(s.getId(), s.getTestSuiteName());
+            schedulerSuiteIds.put(s.getId(), s.getTestSuiteId());
+        });
+
+        Set<Long> existingSuiteIds = testSuiteRepository.findAll().stream().map(s -> s.getId()).collect(Collectors.toSet());
 
         // Group by suite name
         Map<String, List<Execution>> bySuite = allExecs.stream()
+                .filter(e -> {
+                    Long suiteId = schedulerSuiteIds.get(e.getSchedulerId());
+                    return suiteId != null && existingSuiteIds.contains(suiteId);
+                })
                 .collect(Collectors.groupingBy(e -> {
                     String name = schedulerNames.get(e.getSchedulerId());
                     return name != null ? name : "Suite #" + e.getSchedulerId();
