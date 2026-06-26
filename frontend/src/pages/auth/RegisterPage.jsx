@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from '../../components/common/ToastContainer';
 
@@ -35,6 +36,9 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-page">
+      <Link to="/" style={{ position: 'absolute', top: '32px', left: '32px', color: 'var(--txt-muted)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', textDecoration: 'none', fontWeight: 600, transition: 'color 0.2s' }} className="hover-text-main">
+        <ArrowLeft size={18} /> Back to Home
+      </Link>
       <div className="auth-card">
         <div className="auth-logo" style={{ display: 'flex', gap: '10px' }}>
           <LogoSVG />
