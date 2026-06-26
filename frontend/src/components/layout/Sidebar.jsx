@@ -1,12 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import {
   LayoutDashboard, Play, History, CalendarClock,
   PackageOpen, FlaskConical, SlidersHorizontal, Database, Globe,
   MonitorDot, Users2, Download,
   BarChart2, Eye, Share2,
-  Settings, Users, ShieldCheck, KeyRound, Bell, ScrollText, Trash2, LogOut
+  Settings, Users, ShieldCheck, KeyRound, Bell, ScrollText, Trash2, LogOut, FolderOpen
 } from 'lucide-react';
 
 function NavItem({ to, icon: Icon, label, active, onClick }) {
@@ -29,8 +29,19 @@ function NavItem({ to, icon: Icon, label, active, onClick }) {
 export default function Sidebar({ user, sidebarOpen, path }) {
   const { setShowInstall, logout } = useContext(AuthContext);
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   const navigate = useNavigate();
   const is = (p) => path === p;
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!sidebarOpen) return null;
 
@@ -53,7 +64,8 @@ export default function Sidebar({ user, sidebarOpen, path }) {
 
         <div className="nav-section">Test Management</div>
         <NavItem to="/test-suites"         icon={PackageOpen}     label="Suites"           active={is('/test-suites')} />
-        <NavItem to="/test-cases"          icon={FlaskConical}    label="Test Cases"       active={is('/test-cases') || is('/test-case-groups')} />
+        <NavItem to="/test-cases"          icon={FlaskConical}    label="Test Cases"       active={is('/test-cases')} />
+        <NavItem to="/test-case-groups"    icon={FolderOpen}      label="Test Groups"      active={is('/test-case-groups')} />
         <NavItem to="/variables"           icon={SlidersHorizontal} label="Variables"      active={is('/variables')} />
         <NavItem to="/datasets"            icon={Database}        label="Datasets"         active={is('/datasets')} />
         <NavItem to="/environments"        icon={Globe}           label="Environments"     active={is('/environments')} />
@@ -79,7 +91,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
       </nav>
 
       <div className="sidebar-footer" style={{ padding: '16px 12px', position: 'relative' }}>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }} ref={profileRef}>
           {profileOpen && (
             <div style={{ position: 'absolute', bottom: 'calc(100% + 12px)', top: 'auto', left: 0, right: 0, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '6px', zIndex: 9999, boxShadow: 'var(--shadow-lg)' }}>
                <button onClick={() => { setProfileOpen(false); navigate('/settings'); }} className="profile-dropdown-item" style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt-h)', borderRadius: '4px', textAlign: 'left', fontSize: '13px' }}><Settings size={14} style={{ marginRight: 8, color: 'var(--txt-muted)' }}/> Settings</button>
