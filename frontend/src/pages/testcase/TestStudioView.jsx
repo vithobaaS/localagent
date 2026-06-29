@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { api } from '../../api/apiClient';
 import { toast } from '../../components/common/ToastContainer';
-import { Save, Plus, FileText, Settings, Search, Compass, MousePointer2, Keyboard, CheckCircle, ArrowUpDown, Hourglass, Code } from 'lucide-react';
+import { Save, Plus, FileText, Settings, Search, Compass, MousePointer2, Keyboard, CheckCircle, ArrowUpDown, Hourglass, Code, Puzzle } from 'lucide-react';
 import './TestStudio.css';
 
 // ─── All 300+ Actions ────────────────────────────────────────────────────────
@@ -47,7 +47,14 @@ function makeStep(actionName = '') {
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 function ActionSidebar({ onAdd }) {
   const [search, setSearch] = useState('');
-  const [collapsed, setCollapsed] = useState({ 'Extended Assertions': true });
+  const [collapsed, setCollapsed] = useState({ 'Extended Assertions': true, 'Shared Components': false });
+  const [components, setComponents] = useState([]);
+
+  useEffect(() => {
+    api('/api/test-cases').then(r => r.json()).then(d => {
+      setComponents(d.filter(tc => tc.isComponent === true));
+    });
+  }, []);
 
   const toggleCategory = (label) => {
     setCollapsed(prev => ({ ...prev, [label]: !prev[label] }));
@@ -67,7 +74,13 @@ function ActionSidebar({ onAdd }) {
             return a.localeCompare(b);
           })
       }]
-    : ACTION_CATEGORIES;
+    : [
+        ...(components.length > 0 ? [{
+          label: 'Shared Components', color: 'icon-wait', icon: <Puzzle size={16}/>, tag: 'COMP', tagStyle: {background:'#f3e8ff',color:'#7e22ce'},
+          actions: components.map(c => `COMPONENT:${c.id}:${c.name}`)
+        }] : []),
+        ...ACTION_CATEGORIES
+      ];
 
   return (
     <div className="ts-sidebar">
@@ -132,7 +145,7 @@ function ActionBlock({ action, cat, onAdd }) {
     >
       <span className="ts-action-grip" title="Drag to canvas">⠿</span>
       <div className={`ts-action-icon ${cat.color}`}>{cat.icon}</div>
-      <span className="ts-action-name">{action}</span>
+      <span className="ts-action-name">{action.startsWith('COMPONENT:') ? action.split(':')[2] : action}</span>
       {cat.tag && <span className="ts-action-tag" style={cat.tagStyle}>{cat.tag}</span>}
     </div>
   );
@@ -160,9 +173,11 @@ function StepCard({ step, index, selected, onSelect, onDelete, dragHandlers }) {
       <div className="ts-step-info">
         <div className="ts-step-action">
           {isVerify && <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: '#d1fae5', color: '#065f46', marginRight: 6 }}>VERIFY</span>}
-          {step.actionName || <em style={{color:'#9ca3af'}}>No action</em>}
+          {step.actionName === 'CALL_COMPONENT' 
+            ? <span style={{ color: '#7c3aed', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Puzzle size={14}/> {step.testData}</span>
+            : (step.actionName || <em style={{color:'#9ca3af'}}>No action</em>)}
         </div>
-        {detail && <div className="ts-step-detail">{detail}</div>}
+        {detail && step.actionName !== 'CALL_COMPONENT' && <div className="ts-step-detail">{detail}</div>}
         {isVerify && step.expectedValue && <div className="ts-step-detail" style={{ color: '#10b981' }}>Expected: {step.expectedValue}</div>}
       </div>
       <button className="ts-step-delete" onClick={e => { e.stopPropagation(); onDelete(step._id); }} title="Delete">✕</button>
@@ -301,6 +316,8 @@ export default function TestStudioView() {
   const { id } = useParams();
   const isEdit = !!id;
   const navigate = useNavigate();
+  const { search: query } = useLocation();
+  const isComponentMode = new URLSearchParams(query).get('isComponent') === 'true';
 
   const [name, setName]           = useState('');
   const [desc, setDesc]           = useState('');
@@ -336,7 +353,15 @@ export default function TestStudioView() {
 
   // Add step (called by click or drop)
   const addStep = (actionName = '') => {
-    const step = makeStep(actionName);
+    let step;
+    if (actionName.startsWith('COMPONENT:')) {
+      const parts = actionName.split(':');
+      step = makeStep('CALL_COMPONENT');
+      step.locatorValue = parts[1];
+      step.testData = parts.slice(2).join(':');
+    } else {
+      step = makeStep(actionName);
+    }
     setSteps(prev => [...prev, step]);
     setSelectedId(step._id);
   };
@@ -392,13 +417,21 @@ export default function TestStudioView() {
   const save = async () => {
     if (!name.trim()) { toast('error', 'Validation', 'Test Case name is required.'); return; }
     setSaving(true);
-    const payload = { name, description: desc, steps: steps.map((s,i) => ({ ...s, stepOrder: i+1, stepType: s.stepType || 'ACTION', expectedValue: s.expectedValue || null })) };
+    const payload = { 
+      name, 
+      description: desc, 
+      isComponent: isComponentMode,
+      steps: steps.map((s,i) => ({ ...s, stepOrder: i+1, stepType: s.stepType || 'ACTION', expectedValue: s.expectedValue || null })) 
+    };
     const r = await api(isEdit ? `/api/test-cases/${id}` : '/api/test-cases', {
       method: isEdit ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (r.ok) { toast('success', isEdit ? 'Updated!' : 'Created!', `"${name}" — ${steps.length} steps`); setTimeout(() => navigate('/test-cases'), 900); }
+    if (r.ok) { 
+      toast('success', isEdit ? 'Updated!' : 'Created!', `"${name}" — ${steps.length} steps`); 
+      setTimeout(() => navigate(isComponentMode ? '/test-components' : '/test-cases'), 900); 
+    }
     else { toast('error', 'Save Failed'); setSaving(false); }
   };
 

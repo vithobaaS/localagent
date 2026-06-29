@@ -6,7 +6,7 @@ import {
   PackageOpen, FlaskConical, SlidersHorizontal, Database, Globe,
   MonitorDot, Users2, Download,
   BarChart2, Eye, Share2,
-  Settings, Users, ShieldCheck, KeyRound, Bell, ScrollText, Trash2, LogOut, FolderOpen
+  Settings, Users, ShieldCheck, KeyRound, Bell, ScrollText, Trash2, LogOut, FolderOpen, Puzzle
 } from 'lucide-react';
 
 function NavItem({ to, icon: Icon, label, active, onClick }) {
@@ -65,6 +65,7 @@ export default function Sidebar({ user, sidebarOpen, path }) {
         <div className="nav-section">Test Management</div>
         <NavItem to="/test-suites"         icon={PackageOpen}     label="Suites"           active={is('/test-suites')} />
         <NavItem to="/test-cases"          icon={FlaskConical}    label="Test Cases"       active={is('/test-cases')} />
+        <NavItem to="/test-components"     icon={Puzzle} label="Shared Steps"   active={is('/test-components')} />
         <NavItem to="/test-case-groups"    icon={FolderOpen}      label="Test Groups"      active={is('/test-case-groups')} />
         <NavItem to="/variables"           icon={SlidersHorizontal} label="Variables"      active={is('/variables')} />
         <NavItem to="/datasets"            icon={Database}        label="Datasets"         active={is('/datasets')} />

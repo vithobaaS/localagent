@@ -54,6 +54,10 @@ public class TestCaseService {
         tc.setName(name);
         tc.setDescription((String) body.get("description"));
         tc.setStatus(body.getOrDefault("status", "active").toString());
+        if (body.containsKey("isComponent")) {
+            Object ic = body.get("isComponent");
+            tc.setIsComponent(ic instanceof Boolean ? (Boolean) ic : Boolean.parseBoolean(ic.toString()));
+        }
         tc.setOrgId(orgId);
         tc = testCaseRepository.save(tc);
 
@@ -70,6 +74,10 @@ public class TestCaseService {
             if (body.containsKey("name")) existing.setName((String) body.get("name"));
             if (body.containsKey("description")) existing.setDescription((String) body.get("description"));
             if (body.containsKey("status")) existing.setStatus((String) body.get("status"));
+            if (body.containsKey("isComponent")) {
+                Object ic = body.get("isComponent");
+                existing.setIsComponent(ic instanceof Boolean ? (Boolean) ic : Boolean.parseBoolean(ic.toString()));
+            }
             testCaseRepository.save(existing);
 
             List<TestStep> savedSteps;

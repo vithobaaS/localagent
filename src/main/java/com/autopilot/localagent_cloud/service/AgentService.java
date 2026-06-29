@@ -256,11 +256,23 @@ public class AgentService {
             for (TestSuiteGroupMapping gm : groupMappings) {
                 List<TestCaseGroupMapping> caseMappings = testCaseGroupMappingRepository.findByTestCaseGroupIdOrderByCaseOrder(gm.getTestCaseGroupId());
                 for (TestCaseGroupMapping cm : caseMappings) {
-                    List<TestStep> steps = testStepRepository.findByTestCaseIdOrderByStepOrder(cm.getTestCaseId());
+                    List<TestStep> rawSteps = testStepRepository.findByTestCaseIdOrderByStepOrder(cm.getTestCaseId());
+                    List<TestStep> flattenedSteps = new ArrayList<>();
+                    for (TestStep s : rawSteps) {
+                        if ("CALL_COMPONENT".equals(s.getActionName())) {
+                            try {
+                                Long compId = Long.valueOf(s.getLocatorValue());
+                                List<TestStep> compSteps = testStepRepository.findByTestCaseIdOrderByStepOrder(compId);
+                                flattenedSteps.addAll(compSteps);
+                            } catch (Exception e) {}
+                        } else {
+                            flattenedSteps.add(s);
+                        }
+                    }
 
                     Map<String, Object> iter = new HashMap<>();
                     iter.put("testCaseId", cm.getTestCaseId());
-                    iter.put("steps", steps);
+                    iter.put("steps", flattenedSteps);
 
                     Map<String, Object> runRequest = new HashMap<>();
                     runRequest.put("executionId", execution.getId());

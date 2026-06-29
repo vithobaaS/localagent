@@ -29,6 +29,9 @@ public class TestCase {
     @Column(nullable = false)
     private String status = "active";
 
+    @Column(name = "is_component")
+    private Boolean isComponent = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -67,4 +70,7 @@ public class TestCase {
 
     public Long getOrgId() { return orgId; }
     public void setOrgId(Long orgId) { this.orgId = orgId; }
+
+    public Boolean getIsComponent() { return isComponent; }
+    public void setIsComponent(Boolean isComponent) { this.isComponent = isComponent; }
 }

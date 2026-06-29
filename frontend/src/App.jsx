@@ -41,6 +41,7 @@ import EnvironmentsView from './pages/environments/EnvironmentsView';
 import AnalyticsView from './pages/analytics/AnalyticsView';
 import ExecutionListView from './pages/execution/ExecutionListView';
 import DatasetsView from './pages/datasets/DatasetsView';
+import TestComponentListView from './pages/testcase/TestComponentListView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -146,6 +147,7 @@ export default function App() {
             <Route path="/groups/create"           element={<PrivateRoute><CreateGroupView /></PrivateRoute>} />
             <Route path="/groups/:id"              element={<PrivateRoute><GroupDetailsView /></PrivateRoute>} />
             <Route path="/test-cases"              element={<PrivateRoute><TestCaseListView /></PrivateRoute>} />
+            <Route path="/test-components"         element={<PrivateRoute><TestComponentListView /></PrivateRoute>} />
             <Route path="/test-cases/create"       element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
             <Route path="/test-cases/edit/:id"     element={<PrivateRoute><TestCaseFormView /></PrivateRoute>} />
             <Route path="/test-cases/studio/create"    element={<PrivateRoute><TestStudioView /></PrivateRoute>} />
