@@ -40,6 +40,7 @@ import VariablesView from './pages/variables/VariablesView';
 import EnvironmentsView from './pages/environments/EnvironmentsView';
 import AnalyticsView from './pages/analytics/AnalyticsView';
 import ExecutionListView from './pages/execution/ExecutionListView';
+import DatasetsView from './pages/datasets/DatasetsView';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -160,6 +161,7 @@ export default function App() {
             <Route path="/admin/audit-logs"        element={<PrivateRoute><AuditLogsView /></PrivateRoute>} />
             <Route path="/variables"               element={<PrivateRoute><VariablesView /></PrivateRoute>} />
             <Route path="/environments"            element={<PrivateRoute><EnvironmentsView /></PrivateRoute>} />
+            <Route path="/datasets"                element={<PrivateRoute><DatasetsView /></PrivateRoute>} />
             <Route path="*"                        element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
           </Routes>
         </div>
