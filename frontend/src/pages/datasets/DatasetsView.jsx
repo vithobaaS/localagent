@@ -296,8 +296,8 @@ export default function DatasetsView() {
 
       {/* ─── Preview Modal ──────────────────────────────────── */}
       {preview && (
-        <div className="modal-backdrop" onClick={() => setPreview(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', maxHeight: '80vh', overflow: 'auto' }}>
+        <div className="modal-overlay" onClick={() => setPreview(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', maxHeight: '80vh', overflow: 'auto', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Eye size={20} /> {preview.name}</h2>
               <button className="btn btn-ghost btn-sm" onClick={() => setPreview(null)}><X size={18} /></button>
@@ -329,8 +329,8 @@ export default function DatasetsView() {
 
       {/* ─── Create/Edit Modal ──────────────────────────────── */}
       {showForm && (
-        <div className="modal-backdrop" onClick={() => setShowForm(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '85vh', overflow: 'auto' }}>
+        <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '85vh', overflow: 'auto', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ margin: 0 }}>{editing ? 'Edit Dataset' : 'Create Dataset'}</h2>
               <button className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}><X size={18} /></button>
