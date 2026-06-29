@@ -257,22 +257,24 @@ public class AgentService {
                 List<TestCaseGroupMapping> caseMappings = testCaseGroupMappingRepository.findByTestCaseGroupIdOrderByCaseOrder(gm.getTestCaseGroupId());
                 for (TestCaseGroupMapping cm : caseMappings) {
                     List<TestStep> rawSteps = testStepRepository.findByTestCaseIdOrderByStepOrder(cm.getTestCaseId());
-                    List<TestStep> flattenedSteps = new ArrayList<>();
+                    List<Map<String, Object>> processedSteps = new ArrayList<>();
                     for (TestStep s : rawSteps) {
                         if ("CALL_COMPONENT".equals(s.getActionName())) {
                             try {
                                 Long compId = Long.valueOf(s.getLocatorValue());
                                 List<TestStep> compSteps = testStepRepository.findByTestCaseIdOrderByStepOrder(compId);
-                                flattenedSteps.addAll(compSteps);
+                                for (TestStep cs : compSteps) {
+                                    processedSteps.add(stepToMapAndReplace(cs, executionVariables));
+                                }
                             } catch (Exception e) {}
                         } else {
-                            flattenedSteps.add(s);
+                            processedSteps.add(stepToMapAndReplace(s, executionVariables));
                         }
                     }
 
                     Map<String, Object> iter = new HashMap<>();
                     iter.put("testCaseId", cm.getTestCaseId());
-                    iter.put("steps", flattenedSteps);
+                    iter.put("steps", processedSteps);
 
                     Map<String, Object> runRequest = new HashMap<>();
                     runRequest.put("executionId", execution.getId());
@@ -477,5 +479,30 @@ public class AgentService {
             }
         });
         return ResponseEntity.ok().build();
+    }
+
+    private Map<String, Object> stepToMapAndReplace(TestStep step, Map<String, String> vars) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", step.getId());
+        map.put("stepOrder", step.getStepOrder());
+        map.put("actionName", step.getActionName());
+        map.put("stepType", step.getStepType());
+        map.put("locatorType", step.getLocatorType());
+        map.put("locatorValue", replaceVars(step.getLocatorValue(), vars));
+        map.put("testData", replaceVars(step.getTestData(), vars));
+        map.put("expectedValue", replaceVars(step.getExpectedValue(), vars));
+        map.put("description", step.getDescription());
+        return map;
+    }
+
+    private String replaceVars(String text, Map<String, String> vars) {
+        if (text == null || vars == null || vars.isEmpty()) return text;
+        String result = text;
+        for (Map.Entry<String, String> entry : vars.entrySet()) {
+            if (entry.getValue() != null) {
+                result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
+            }
+        }
+        return result;
     }
 }
